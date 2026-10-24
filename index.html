@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Ir. Ts. Dr. Muhammad Hafiz HASSAN, School of Mechanical Engineering, Tuanku Syed Sirajuddin Engineering Campus, Universiti Sains Malaysia, Pulau Pinang">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIMULASI UMRAH: Niat hingga Tahallul V1</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f3d2e">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="description" content="Simulasi Umrah: panduan langkah demi langkah dari niat hingga tahallul, dengan simulasi 3D tawaf dan sa'ie.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=Amiri:wght@400;700&family=Noto+Sans+Arabic:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --glass: rgba(255,255,255,.82);
+  --glass-edge: rgba(0,0,0,.08);
+  --ink: #1c1913;
+  --ink-soft: #5b5446;
+  --gold: #9a7621;
+  --green: #17894f;
+  --chip: rgba(0,0,0,.06);
+  --chip-on: #1c1913;
+  --chip-on-ink: #fff;
+  --bg: #cfe3f3;
+  box-sizing:border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --glass: rgba(20,18,14,.78); --glass-edge: rgba(255,255,255,.1);
+    --ink:#f3eee2; --ink-soft:#bdb4a0; --gold:#dcb75c; --green:#3fcf85;
+    --chip: rgba(255,255,255,.09); --chip-on:#f3eee2; --chip-on-ink:#14120e; --bg:#0d1620;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --glass: rgba(20,18,14,.78); --glass-edge: rgba(255,255,255,.1);
+  --ink:#f3eee2; --ink-soft:#bdb4a0; --gold:#dcb75c; --green:#3fcf85;
+  --chip: rgba(255,255,255,.09); --chip-on:#f3eee2; --chip-on-ink:#14120e; --bg:#0d1620;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);font-family:Manrope, system-ui, -apple-system, "Segoe UI", sans-serif;color:var(--ink)}
+#realv{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#000;display:none}
+@media (min-aspect-ratio:1/1){#realv{object-fit:contain}}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.glass{background:var(--glass);border:1px solid var(--glass-edge);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:14px}
+#hud{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));max-width:min(420px, calc(100vw - 160px));padding:12px 14px;display:none}
+#lap{font-weight:800;font-size:28px;line-height:1;letter-spacing:-.5px}
+#lap small{font-size:15px;font-weight:600;color:var(--ink-soft)}
+#seg{margin-top:8px;font-weight:800;font-size:15px;color:var(--gold)}
+#guide{margin-top:4px;font-size:14px;line-height:1.45}
+#ar{font-family:Amiri, "Noto Naskh Arabic", serif;font-size:22px;line-height:1.7;direction:rtl;text-align:right;margin-top:6px}
+#tr{font-size:13px;font-style:italic;color:var(--ink-soft)}
+#tip{margin-top:8px;font-size:12.5px;color:var(--ink-soft);border-top:1px solid var(--glass-edge);padding-top:6px}
+#map{position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));width:128px;height:128px;display:none;padding:0}
+#bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));display:none;gap:6px;padding:8px;flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100vw - 16px)}
+button{font:inherit;font-size:13px;font-weight:600;border:0;border-radius:10px;padding:9px 12px;background:var(--chip);color:var(--ink);cursor:pointer}
+button[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink)}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.sp{display:flex;gap:2px;background:var(--chip);border-radius:10px;padding:2px}
+.sp button{background:transparent;padding:7px 9px}
+.sp button[aria-pressed="true"]{background:var(--chip-on)}
+#intro{position:fixed;inset:0;display:none;place-items:center;padding:16px;overflow:auto}
+#journey{position:fixed;inset:0;display:grid;place-items:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));overflow:auto}
+#jcard{max-width:580px;width:100%;padding:20px 22px;max-height:100%;overflow:auto}
+#jtop{display:flex;gap:8px 10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+#jsteps{display:flex;gap:4px;flex:1 1 140px;min-width:140px}
+#jsteps i{flex:1;height:6px;border-radius:3px;background:var(--chip)}
+#jsteps i.on{background:var(--gold)}#jsteps i.cur{background:var(--green)}
+.pill{font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:999px;background:var(--chip);color:var(--ink-soft);white-space:nowrap}
+.pill.p-on{background:#17894f;color:#fff}.pill.p-done{background:var(--gold);color:#fff}
+.badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:6px;margin:0 6px 4px 0}
+.b-rukun{background:#9a7621;color:#fff}.b-wajib{background:#17894f;color:#fff}.b-sunat{background:var(--chip);color:var(--ink)}
+#jtitle{margin:6px 0 8px;font-size:26px;letter-spacing:-.5px;line-height:1.15}
+#jbody{font-size:14.5px;line-height:1.55}
+#jbody p{margin:6px 0}
+#jbody h3{font-size:12.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);margin:16px 0 6px}
+#jbody ul,#jbody ol{padding-left:22px;margin:6px 0}#jbody li{margin:4px 0}
+.lafaz{border:1px solid var(--glass-edge);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--chip)}
+.lafaz .a{font-family:Amiri,"Noto Naskh Arabic",serif;font-size:23px;line-height:1.8;direction:rtl;text-align:right;color:var(--gold)}
+.lafaz .t{font-style:italic;font-size:13.5px;color:var(--ink-soft)}.lafaz .m{font-size:13.5px;margin-top:4px}
+.src{font-size:12px!important;color:var(--ink-soft)}.src a{color:var(--gold)}
+.act{width:100%;margin-top:14px;padding:13px;font-weight:800;background:var(--green);color:#fff}
+#jnav{display:flex;gap:8px;margin-top:18px}#jnav button{flex:1;padding:12px}
+#jnext{background:var(--chip-on);color:var(--chip-on-ink)}
+button:disabled{opacity:.4;cursor:default}
+.cut{display:flex;gap:26px;justify-content:center;margin:10px 0 4px}
+.strand{background:var(--chip);color:#3a2a1c;padding:8px 14px;border-radius:12px;transition:opacity .3s,transform .3s}
+:root[data-theme="dark"] .strand{color:#d9c3a5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .strand{color:#d9c3a5}}
+.strand.gone{opacity:.15;transform:translateY(10px) rotate(25deg);pointer-events:none}
+.cutmsg{text-align:center;font-weight:700;font-size:13.5px}
+.tl li{font-weight:700}
+#toGuide{margin-bottom:10px}
+.credit{margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--glass-edge);font-size:11.5px;line-height:1.5;color:var(--ink-soft);text-align:center}
+.credit b{color:var(--ink);font-weight:800}
+
+#jlang{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:10px;padding:8px 10px;background:var(--chip);color:var(--ink)}
+#jbody p:not(.src):not(.cutmsg),#card p:not(.credit):not(.fine),#guide{text-align:justify;text-justify:inter-word;-webkit-hyphens:auto;hyphens:auto}
+#jbody li{text-align:justify;-webkit-hyphens:auto;hyphens:auto}
+:root[lang="ar"] body{font-family:"Noto Sans Arabic",Manrope,system-ui,sans-serif}
+:root[lang="ar"] #jbody ul,:root[lang="ar"] #jbody ol{padding-left:0;padding-right:22px}
+:root[lang="ar"] #ar{text-align:center}
+:root[lang="ar"] #tr{display:none!important}
+.lafaz .t:empty,.lafaz .m:empty{display:none}
+#journey{background:linear-gradient(180deg,#e9f1ec,#f7f4ec)}
+:root[data-theme="dark"] #journey{background:linear-gradient(180deg,#0c1a14,#0b0a08)}
+:root[data-theme="light"] #jcard,:root[data-theme="light"] #card{background:rgba(253,252,249,.97)}
+:root[data-theme="dark"] #jcard,:root[data-theme="dark"] #card{background:rgba(22,20,16,.96)}
+#hint{position:fixed;left:50%;top:56%;transform:translate(-50%,-50%);display:none;flex-direction:column;align-items:center;gap:4px;pointer-events:none;z-index:4;padding:14px 22px 16px;border-radius:20px;background:rgba(12,12,12,.5);color:#fff;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);text-align:center}
+#hint .hand{font-size:56px;line-height:1.1;animation:swipe 1.6s ease-in-out infinite}
+#hint .arr{font-weight:800;font-size:20px;letter-spacing:.12em;direction:ltr}
+#hintTxt{font-weight:700;font-size:14px;max-width:220px}
+@keyframes swipe{0%,100%{transform:translateX(-38px) rotate(-12deg)}50%{transform:translateX(38px) rotate(12deg)}}
+@media (prefers-reduced-motion: reduce){#hint .hand{animation:none}}
+.themeBtn{font-size:16px;line-height:1;padding:8px 11px;min-width:40px}
+.credit-logo{display:block;margin:0 auto 10px;width:72%;max-width:230px;height:auto;background:#fff;border-radius:8px;padding:6px 10px;box-sizing:border-box}
+#card{max-width:440px;padding:22px}
+#card h1{margin:0;font-size:30px;line-height:1.1;letter-spacing:-.8px}
+#card .sub{margin:6px 0 14px;color:var(--ink-soft);font-size:15px}
+#card p{font-size:14px;line-height:1.55;margin:0 0 12px}
+#card .ar{font-family:Amiri, serif;font-size:26px;text-align:center;color:var(--gold);margin:2px 0 10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+.row span{font-size:13px;color:var(--ink-soft);min-width:70px}
+#go{width:100%;margin-top:10px;padding:14px;font-size:16px;font-weight:800;background:var(--green);color:#fff}
+.fine{font-size:11.5px!important;color:var(--ink-soft)}
+#flash{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);font-weight:800;font-size:22px;padding:12px 18px;pointer-events:none;opacity:0;transition:opacity .4s}
+@media (max-width:560px){
+  #hud{max-width:calc(100vw - 24px);right:12px;padding:10px 12px}
+  #map{top:auto;bottom:calc(118px + env(safe-area-inset-bottom,0px));width:104px;height:104px}
+  #lap{font-size:24px}
+  #ar{font-size:19px}
+}
+@media (prefers-reduced-motion: reduce){#flash{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<video id="realv" playsinline preload="auto" poster="data:image/jpeg;base64,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"></video>
+
+<div id="hud" class="glass" aria-live="polite">
+  <div id="lap"></div>
+  <div id="seg"></div>
+  <div id="guide"></div>
+  <div id="ar"></div>
+  <div id="tr"></div>
+  <div id="tip"></div>
+</div>
+<canvas id="map" class="glass" width="256" height="256" aria-label="Peta mataf"></canvas>
+<div id="flash" class="glass"></div>
+<div id="hint" aria-hidden="true"><div class="hand">👆</div><div class="arr">‹ 360° ›</div><div id="hintTxt"></div></div>
+
+<div id="bar" class="glass">
+  <button id="play" aria-pressed="false"></button>
+  <button id="mode"></button>
+  <button id="snd" aria-pressed="false"></button>
+  <div class="sp" id="speeds" role="group"></div>
+  <button id="look"></button>
+  <button id="gyro" aria-pressed="false"></button>
+  <button id="vr" style="display:none"></button>
+  <button id="restart"></button>
+  <button class="themeBtn" aria-label="Tema cerah / gelap"></button>
+  <button id="guideBtn">Panduan</button>
+  <button id="nextstep" style="display:none;background:var(--green);color:#fff"></button>
+</div>
+
+<div id="journey">
+  <div id="jcard" class="glass">
+    <p class="credit"></p>
+    <div id="jtop"><div id="jsteps"></div><span id="jstate" class="pill"></span><select id="jlang" aria-label="Bahasa / Language"><option value="bm">🇲🇾 BM</option><option value="en">🇬🇧 EN</option><option value="id">🇮🇩 ID</option><option value="ar">🇸🇦 عربي</option></select><button class="themeBtn" aria-label="Tema cerah / gelap"></button></div>
+    <div id="jbadges"></div>
+    <h2 id="jtitle"></h2>
+    <div id="jbody"></div>
+    <div id="jnav"><button id="jprev"></button><button id="jnext"></button></div>
+  </div>
+</div>
+<div id="intro">
+  <div id="card" class="glass">
+    <p class="credit"></p>
+    <button class="themeBtn" aria-label="Tema cerah / gelap" style="float:right"></button>
+    <button id="toGuide">‹ Panduan Umrah</button>
+    <h1 id="t-title"></h1>
+    <div class="sub" id="t-sub"></div>
+    <div class="ar">طَوَاف</div>
+    <p id="t-body"></p>
+    <div class="row"><span id="t-view"></span>
+      <button data-mode="real" aria-pressed="true" id="t-real"></button>
+      <button data-mode="sim" aria-pressed="false" id="t-sim"></button>
+      <button data-mode="v360" aria-pressed="false" id="t-v360"></button>
+    </div>
+    <div class="row" id="row360" style="display:none"><span id="t-v360has"></span>
+      <button data-full="0" aria-pressed="true" id="t-one"></button>
+      <button data-full="1" aria-pressed="false" id="t-full"></button>
+    </div>
+    <p class="fine" id="t-v360note" style="display:none"></p>
+    <input type="file" id="f360" accept="video/*,.mkv,.webm,.mp4,.mov" hidden>
+    <div class="row"><span id="t-lang"></span>
+      <button data-lang="bm" aria-pressed="true">🇲🇾 Bahasa Melayu</button>
+      <button data-lang="en" aria-pressed="false">🇬🇧 English</button>
+      <button data-lang="id" aria-pressed="false">🇮🇩 Bahasa Indonesia</button>
+      <button data-lang="ar" aria-pressed="false">🇸🇦 العربية</button>
+    </div>
+    <div class="row"><span id="t-who"></span>
+      <button data-sex="m" aria-pressed="true" id="t-m"></button>
+      <button data-sex="f" aria-pressed="false" id="t-f"></button>
+    </div>
+    <div class="row"><span id="t-crowd"></span>
+      <button data-crowd="0.6" aria-pressed="false" id="t-c1"></button>
+      <button data-crowd="1" aria-pressed="true" id="t-c2"></button>
+      <button data-crowd="1.6" aria-pressed="false" id="t-c3"></button>
+    </div>
+    <button id="go"></button>
+    <p class="fine" id="t-fine" style="margin-top:12px"></p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+const at=(m,x,y,z)=>{m.position.set(x,y,z);return m;};
+const TXT = {
+  bm: {
+    title:"Simulasi Tawaf 3D", sub:"Latihan visual 7 pusingan untuk jemaah umrah dan haji",
+    body:"Anda berjalan mengikut arah lawan jam dengan Kaabah di sebelah kiri, di tengah arus jemaah. Seret skrin untuk memandang sekeliling, hidupkan giroskop untuk memandang dengan menggerakkan telefon, atau masuk mod VR jika ada set kepala. Disyorkan duduk ketika menggunakan VR.",
+    lang:"Bahasa", who:"Jemaah", m:"Lelaki", f:"Perempuan", crowd:"Kesesakan", c1:"Sederhana", c2:"Sesak", c3:"Sangat sesak",
+    go:"Mula tawaf", fine:"Model anggaran untuk latihan visual, bukan rujukan hukum. Rujuk pembimbing ibadah anda untuk tatacara lengkap.",
+    view:"Paparan", real:"Rakaman sebenar", sim:"Model 3D", toSim:"Tukar ke 3D", toReal:"Tukar ke video", snd:"Bunyi", v360:"Video 360° (dari peranti)", v360has:"Video 360 mengandungi", one:"1 pusingan (diulang)", full:"7 pusingan penuh", pick:"Pilih video 360° dan mula", toV360:"Tukar ke video 360°", v360note:"Video dibuka terus dari peranti anda dan tidak dimuat naik ke mana-mana. Format terbaik ialah MP4 (H.264) atau WebM; fail MKV biasanya hanya dimainkan dalam Chrome.", fmtErr:"Pelayar ini tidak dapat memainkan format video ini. Cuba MP4 (H.264) atau guna Chrome.", vidErr:"Video tidak dapat dimainkan, beralih ke model 3D",
+    lap:"Pusingan", pre:"Sebelum mula", play:"Sambung", pause:"Jeda", look:"Lihat Kaabah", gyro:"Giroskop", vr:"Masuk VR", restart:"Mula semula",
+    newlap:n=>`Pusingan ${n} bermula`, done:"Tawaf selesai",
+    raml:"Lelaki: sunat ramal (langkah pendek dan cepat) pada pusingan 1 hingga 3 serta idtiba' (bahu kanan terbuka) dalam tawaf umrah atau qudum.",
+    flow:"Ikut arus jemaah dan jangan berhenti secara tiba-tiba.",
+    seg:{
+      pre:["Bersedia di garisan lampu hijau","Berdiri sejajar dengan Hajar Aswad (lampu hijau di dinding masjid). Niat tawaf dalam hati, dan pastikan Kaabah di sebelah kiri anda."],
+      aswad:["Hajar Aswad: istilam","Hadap Hajar Aswad, angkat tangan kanan ke arahnya dan ucapkan:"],
+      multazam:["Multazam dan Pintu Kaabah","Kawasan antara Hajar Aswad dan pintu Kaabah. Teruskan berjalan sambil berzikir dan berdoa, boleh dalam bahasa sendiri."],
+      maqam:["Maqam Ibrahim","Kubah emas di antara anda dan Kaabah menyimpan kesan tapak kaki Nabi Ibrahim. Selepas tawaf, solat sunat 2 rakaat di belakangnya jika mampu."],
+      hijr:["Hijr Ismail (Hatim)","Dinding separuh bulatan ini sebahagian daripada Kaabah. Tawaf mesti di luarnya; jangan masuk atau memotong melaluinya. Di atas bumbung ialah pancur emas Mizab ar-Rahmah."],
+      toyamani:["Menuju Rukun Yamani","Lepas Rukun Syami, teruskan zikir dan doa sambil mengikut arus."],
+      yamani:["Rukun Yamani","Sentuh dengan tangan kanan jika mudah. Jika sesak, cukup berisyarat ke arahnya sambil bertakbir, tanpa mengucup tangan."],
+      rabbana:["Rukun Yamani ke Hajar Aswad","Sunat membaca doa ini:"],
+      done:["Tawaf selesai: 7 pusingan","Istilam terakhir di Hajar Aswad. Seterusnya solat sunat tawaf 2 rakaat (di belakang Maqam Ibrahim jika mampu), minum air zamzam, kemudian sa'ie bagi umrah."]
+    }
+  },
+  en: {
+    title:"3D Tawaf Simulator", sub:"Visual practice of the 7 circuits for umrah and hajj pilgrims",
+    body:"You walk anticlockwise with the Kaaba on your left, inside the flow of pilgrims. Drag to look around, turn on the gyroscope to look by moving your phone, or enter VR if you have a headset. Sitting down is recommended in VR.",
+    lang:"Language", who:"Pilgrim", m:"Man", f:"Woman", crowd:"Crowd", c1:"Moderate", c2:"Busy", c3:"Very busy",
+    go:"Start tawaf", fine:"An approximate model for visual practice, not a ruling. Follow your ibadah guide for the full procedure.",
+    view:"View", real:"Real footage", sim:"3D model", toSim:"Switch to 3D", toReal:"Switch to video", snd:"Sound", v360:"360° video (from your device)", v360has:"The 360 video contains", one:"1 circuit (repeated)", full:"All 7 circuits", pick:"Choose a 360° video and start", toV360:"Switch to 360° video", v360note:"The video opens straight from your device and is not uploaded anywhere. MP4 (H.264) or WebM work best; MKV files usually play only in Chrome.", fmtErr:"This browser cannot play this video format. Try MP4 (H.264) or use Chrome.", vidErr:"The video could not play, switching to the 3D model",
+    lap:"Circuit", pre:"Before starting", play:"Resume", pause:"Pause", look:"Face the Kaaba", gyro:"Gyroscope", vr:"Enter VR", restart:"Restart",
+    newlap:n=>`Circuit ${n} begins`, done:"Tawaf complete",
+    raml:"Men: raml (short, brisk steps) is sunnah in circuits 1 to 3, with idtiba' (right shoulder uncovered) in the tawaf of umrah or arrival.",
+    flow:"Move with the crowd and never stop suddenly.",
+    seg:{
+      pre:["Get ready at the green light","Stand in line with the Black Stone (the green lamp on the mosque wall). Make your intention for tawaf in your heart, with the Kaaba on your left."],
+      aswad:["Black Stone: istilam","Face the Black Stone, raise your right hand towards it and say:"],
+      multazam:["Multazam and the Kaaba door","The wall between the Black Stone and the door. Keep walking with dhikr and du'a, in any language."],
+      maqam:["Maqam Ibrahim","The golden enclosure between you and the Kaaba holds the footprints of Prophet Ibrahim. After tawaf, pray 2 rak'ahs behind it if you can."],
+      hijr:["Hijr Ismail (Hatim)","This semicircular wall is part of the Kaaba. Tawaf must go around the outside; never enter or cut through it. Above is the golden spout, Mizab ar-Rahmah."],
+      toyamani:["Towards Rukn al-Yamani","After the Shami corner, continue dhikr and du'a while following the flow."],
+      yamani:["Rukn al-Yamani","Touch it with your right hand if easy. If crowded, simply gesture towards it with takbir, without kissing the hand."],
+      rabbana:["Yamani corner to the Black Stone","It is sunnah to recite:"],
+      done:["Tawaf complete: 7 circuits","Final istilam at the Black Stone. Next pray 2 rak'ahs (behind Maqam Ibrahim if possible), drink zamzam, then perform sa'i for umrah."]
+    }
+  }
+  ,id: {
+    title:"Simulasi Tawaf 3D", sub:"Latihan visual 7 putaran untuk jemaah umrah dan haji",
+    body:"Anda berjalan berlawanan arah jarum jam dengan Ka'bah di sebelah kiri, di tengah arus jemaah. Geser layar untuk melihat sekeliling, aktifkan giroskop untuk melihat dengan menggerakkan ponsel, atau masuk mode VR jika memiliki headset. Disarankan duduk saat menggunakan VR.",
+    lang:"Bahasa", who:"Jemaah", m:"Laki-laki", f:"Perempuan", crowd:"Kepadatan", c1:"Sedang", c2:"Padat", c3:"Sangat padat",
+    go:"Mulai tawaf", fine:"Model perkiraan untuk latihan visual, bukan rujukan hukum. Ikuti pembimbing ibadah Anda untuk tata cara lengkap.",
+    view:"Tampilan", real:"Rekaman asli", sim:"Model 3D", toSim:"Beralih ke 3D", toReal:"Beralih ke video", snd:"Suara", v360:"Video 360° (dari perangkat)", v360has:"Video 360 berisi", one:"1 putaran (diulang)", full:"7 putaran penuh", pick:"Pilih video 360° dan mulai", toV360:"Beralih ke video 360°", v360note:"Video dibuka langsung dari perangkat Anda dan tidak diunggah ke mana pun. Format terbaik adalah MP4 (H.264) atau WebM; file MKV biasanya hanya diputar di Chrome.", fmtErr:"Browser ini tidak dapat memutar format video ini. Coba MP4 (H.264) atau gunakan Chrome.", vidErr:"Video tidak dapat diputar, beralih ke model 3D",
+    lap:"Putaran", pre:"Sebelum mulai", play:"Lanjutkan", pause:"Jeda", look:"Hadap Ka'bah", gyro:"Giroskop", vr:"Masuk VR", restart:"Ulangi",
+    newlap:n=>`Putaran ${n} dimulai`, done:"Tawaf selesai",
+    raml:"Laki-laki: disunahkan raml (langkah pendek dan cepat) pada putaran 1 sampai 3, serta idtiba' (bahu kanan terbuka) pada tawaf umrah atau qudum.",
+    flow:"Ikuti arus jemaah dan jangan berhenti tiba-tiba.",
+    seg:{
+      pre:["Bersiap di garis lampu hijau","Berdirilah sejajar dengan Hajar Aswad (lampu hijau di dinding masjid). Niatkan tawaf dalam hati, dan pastikan Ka'bah di sebelah kiri Anda."],
+      aswad:["Hajar Aswad: istilam","Hadapkan diri ke Hajar Aswad, angkat tangan kanan ke arahnya dan ucapkan:"],
+      multazam:["Multazam dan pintu Ka'bah","Area antara Hajar Aswad dan pintu Ka'bah. Terus berjalan sambil berzikir dan berdoa, boleh dalam bahasa sendiri."],
+      maqam:["Maqam Ibrahim","Kubah emas di antara Anda dan Ka'bah menyimpan bekas telapak kaki Nabi Ibrahim. Setelah tawaf, salat sunah 2 rakaat di belakangnya jika mampu."],
+      hijr:["Hijr Ismail (Hathim)","Dinding setengah lingkaran ini bagian dari Ka'bah. Tawaf harus di luarnya; jangan masuk atau memotong melaluinya. Di atas atap terdapat talang emas Mizab ar-Rahmah."],
+      toyamani:["Menuju Rukun Yamani","Setelah Rukun Syami, lanjutkan zikir dan doa sambil mengikuti arus."],
+      yamani:["Rukun Yamani","Usap dengan tangan kanan jika mudah. Jika padat, cukup berisyarat ke arahnya sambil bertakbir, tanpa mencium tangan."],
+      rabbana:["Rukun Yamani ke Hajar Aswad","Disunahkan membaca doa ini:"],
+      done:["Tawaf selesai: 7 putaran","Istilam terakhir di Hajar Aswad. Selanjutnya salat sunah tawaf 2 rakaat (di belakang Maqam Ibrahim jika mampu), minum air zamzam, lalu sa'i untuk umrah."]
+    }
+  }
+  ,ar: {
+    title:"محاكاة الطواف ثلاثية الأبعاد", sub:"تدريب بصري على الأشواط السبعة للمعتمرين والحجاج",
+    body:"تمشي عكس اتجاه عقارب الساعة والكعبة عن يسارك وسط الطائفين. اسحب الشاشة للنظر حولك، أو فعّل الجيروسكوب لتنظر بتحريك هاتفك، أو ادخل وضع الواقع الافتراضي إن كانت لديك نظارة. يُنصح بالجلوس عند استخدام الواقع الافتراضي.",
+    lang:"اللغة", who:"المعتمر", m:"رجل", f:"امرأة", crowd:"الازدحام", c1:"متوسط", c2:"مزدحم", c3:"مزدحم جدًا",
+    go:"ابدأ الطواف", fine:"نموذج تقريبي للتدريب البصري وليس مرجعًا فقهيًا. اتبع مرشدك في العبادة للتفاصيل الكاملة.",
+    view:"العرض", real:"تصوير حقيقي", sim:"نموذج ثلاثي الأبعاد", toSim:"التبديل إلى 3D", toReal:"التبديل إلى الفيديو", snd:"الصوت", v360:"فيديو 360° (من جهازك)", v360has:"يحتوي فيديو 360 على", one:"شوط واحد (يتكرر)", full:"الأشواط السبعة كاملة", pick:"اختر فيديو 360° وابدأ", toV360:"التبديل إلى فيديو 360°", v360note:"يُفتح الفيديو مباشرة من جهازك ولا يُرفع إلى أي مكان. أفضل الصيغ MP4 (H.264) أو WebM، وملفات MKV تعمل عادةً في متصفح Chrome فقط.", fmtErr:"لا يستطيع هذا المتصفح تشغيل صيغة الفيديو هذه. جرّب MP4 (H.264) أو استخدم Chrome.", vidErr:"تعذّر تشغيل الفيديو، جارٍ التبديل إلى النموذج ثلاثي الأبعاد",
+    lap:"الشوط", pre:"قبل البدء", play:"متابعة", pause:"إيقاف مؤقت", look:"انظر إلى الكعبة", gyro:"الجيروسكوب", vr:"الواقع الافتراضي", restart:"إعادة البدء",
+    newlap:n=>`بدأ الشوط ${n}`, done:"اكتمل الطواف",
+    raml:"للرجال: يُسن الرَّمَل (الإسراع مع مقاربة الخطى) في الأشواط الثلاثة الأولى، والاضطباع (كشف الكتف الأيمن) في طواف العمرة أو القدوم.",
+    flow:"سِر مع حركة الطائفين ولا تتوقف فجأة.",
+    seg:{
+      pre:["استعد عند محاذاة الضوء الأخضر","قف بمحاذاة الحجر الأسود (المصباح الأخضر على جدار المسجد). انوِ الطواف بقلبك، واجعل الكعبة عن يسارك."],
+      aswad:["الحجر الأسود: الاستلام","استقبل الحجر الأسود، وأشر إليه بيدك اليمنى وقل:"],
+      multazam:["الملتزم وباب الكعبة","ما بين الحجر الأسود وباب الكعبة. واصل المشي مع الذكر والدعاء بأي لغة."],
+      maqam:["مقام إبراهيم","القبة الذهبية بينك وبين الكعبة فيها أثر قدمي إبراهيم عليه السلام. بعد الطواف صلِّ ركعتين خلفه إن تيسّر."],
+      hijr:["حِجر إسماعيل (الحطيم)","هذا الجدار نصف الدائري جزء من الكعبة، فيجب أن يكون الطواف من خارجه، فلا تدخله ولا تقطع من خلاله. وفي الأعلى ميزاب الرحمة الذهبي."],
+      toyamani:["نحو الركن اليماني","بعد الركن الشامي، واصل الذكر والدعاء مع السير مع الطائفين."],
+      yamani:["الركن اليماني","استلمه بيدك اليمنى إن تيسّر، وإن كان زحام فأشر إليه مكبّرًا دون تقبيل اليد."],
+      rabbana:["من الركن اليماني إلى الحجر الأسود","يُسن أن تقول:"],
+      done:["اكتمل الطواف: 7 أشواط","الاستلام الأخير عند الحجر الأسود. ثم صلِّ ركعتي الطواف (خلف المقام إن تيسّر)، واشرب من ماء زمزم، ثم اسعَ بين الصفا والمروة للعمرة."]
+    }
+  }
+};
+const AR = {
+  aswad:["بِسْمِ اللهِ وَاللهُ أَكْبَرُ","Bismillahi wallahu akbar"],
+  rabbana:["رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ","Rabbana atina fid-dunya hasanah, wa fil-akhirati hasanah, wa qina 'adhaban-nar"]
+};
+
+let lang="bm", sex="m", crowdMul=1;
+const $=id=>document.getElementById(id);
+
+/* ---------- renderer & scene ---------- */
+const canvas=$("gl");
+let renderer;
+try{ renderer=new THREE.WebGLRenderer({canvas,antialias:true}); }
+catch(e){ document.body.innerHTML='<p style="padding:24px;font-family:sans-serif">WebGL is not available on this device or browser. Open the page in Chrome or Safari with hardware acceleration on.</p>'; return; }
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.xr.enabled=true;
+
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0xd9e6ef,160,1100);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,2500);
+camera.rotation.order="YXZ";
+const rig=new THREE.Group(); rig.add(camera); scene.add(rig);
+camera.position.y=1.6;
+
+function canvasTex(w,h,draw,rep){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1]);}t.anisotropy=4;return t;}
+
+// sky dome
+const skyTex=canvasTex(16,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,"#4f8fcf");gr.addColorStop(.42,"#8dbbe4");gr.addColorStop(.5,"#d9e6ef");gr.addColorStop(1,"#d9e6ef");g.fillStyle=gr;g.fillRect(0,0,w,h);});
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(2000,32,16),new THREE.MeshBasicMaterial({map:skyTex,side:THREE.BackSide,fog:false})));
+// a few clouds
+const cloudTex=canvasTex(256,128,(g,w,h)=>{for(let i=0;i<14;i++){const x=40+Math.random()*176,y=50+Math.random()*30,r=20+Math.random()*30;const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,"rgba(255,255,255,.9)");gr.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill();}});
+for(let i=0;i<10;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:cloudTex,fog:false,depthWrite:false,opacity:.85}));const a=Math.random()*6.28;s.position.set(Math.cos(a)*1200,380+Math.random()*250,Math.sin(a)*1200);s.scale.set(500,250,1);scene.add(s);}
+
+scene.add(new THREE.HemisphereLight(0xeaf3ff,0xf2ece2,0.85));
+const sun=new THREE.DirectionalLight(0xfff4e0,0.75); sun.position.set(-60,120,50); scene.add(sun);
+
+// mataf floor (white marble)
+const tileTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle="#f6f5f1";g.fillRect(0,0,w,h);for(let i=0;i<300;i++){g.fillStyle=`rgba(180,180,175,${Math.random()*.06})`;g.fillRect(Math.random()*w,Math.random()*h,Math.random()*40,1);}g.strokeStyle="rgba(150,150,145,.35)";g.lineWidth=2;g.strokeRect(0,0,w,h);},[90,90]);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(80,96),new THREE.MeshLambertMaterial({map:tileTex}));
+floor.rotation.x=-Math.PI/2; scene.add(floor);
+const outer=new THREE.Mesh(new THREE.RingGeometry(80,1600,64),new THREE.MeshLambertMaterial({color:0xe6e2da}));
+outer.rotation.x=-Math.PI/2; outer.position.y=-.02; scene.add(outer);
+
+/* ---------- Kaaba ---------- */
+const S=11.5, H=13.1, HD=S/Math.SQRT2; // half diagonal
+const kaaba=new THREE.Group(); kaaba.rotation.y=Math.PI/4; scene.add(kaaba);
+const kiswaTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle="#0b0b0c";g.fillRect(0,0,w,h);g.strokeStyle="rgba(255,255,255,.035)";g.lineWidth=2;for(let i=-w;i<w*2;i+=22){g.beginPath();g.moveTo(i,0);g.lineTo(i+h,h);g.stroke();g.beginPath();g.moveTo(i+h,0);g.lineTo(i,h);g.stroke();}},[3,3]);
+const kiswa=new THREE.MeshLambertMaterial({map:kiswaTex});
+const body=new THREE.Mesh(new THREE.BoxGeometry(S,H,S),kiswa); body.position.y=H/2; kaaba.add(body);
+// shadharwan base
+const base=new THREE.Mesh(new THREE.BoxGeometry(S+.7,.45,S+.7),new THREE.MeshLambertMaterial({color:0xd8d5cf})); base.position.y=.22; kaaba.add(base);
+// gold band (hizam) with calligraphy-like panels
+const bandTex=canvasTex(1024,64,(g,w,h)=>{g.fillStyle="#0b0b0c";g.fillRect(0,0,w,h);g.fillStyle="#b88f2e";g.fillRect(0,3,w,4);g.fillRect(0,h-7,w,4);for(let p=0;p<4;p++){const x0=p*256+14;g.strokeStyle="#c9a23f";g.lineWidth=2;g.strokeRect(x0,12,228,40);g.fillStyle="#c9a23f";for(let k=0;k<26;k++){const x=x0+8+k*8.5;g.fillRect(x,18+Math.random()*8,2+Math.random()*3,10+Math.random()*12);if(Math.random()<.4)g.fillRect(x-2,30+Math.random()*10,8,2);}}});
+const band=new THREE.Mesh(new THREE.BoxGeometry(S+.06,1.15,S+.06),[1,1,1,1,1,1].map((_,i)=>i===2||i===3?kiswa:new THREE.MeshLambertMaterial({map:bandTex})));
+band.position.y=H*0.68; kaaba.add(band);
+// lower gold panels (smaller inscriptions below band)
+const panelMat=new THREE.MeshLambertMaterial({map:canvasTex(128,128,(g,w,h)=>{g.fillStyle="#0b0b0c";g.fillRect(0,0,w,h);g.strokeStyle="#c9a23f";g.lineWidth=5;g.strokeRect(10,10,w-20,h-20);g.fillStyle="#c9a23f";for(let k=0;k<9;k++)g.fillRect(24+k*9,40+Math.random()*20,3,30);})});
+const faces=[[1,0],[-1,0],[0,1],[0,-1]];
+faces.forEach(([fx,fz])=>{for(const off of [-3.2,3.2]){if(fx===1&&off>0)continue;const p=new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3),panelMat);p.position.set(fx*(S/2+.04)+(fz?off:0),H*0.68-1.6,fz*(S/2+.04)+(fx?off:0));p.lookAt(p.position.x+fx,p.position.y,p.position.z+fz);kaaba.add(p);}});
+// door (local +x face = NE face), near east corner (local +z)
+const goldMat=new THREE.MeshLambertMaterial({color:0xc9a23f,emissive:0x3a2a05});
+const door=new THREE.Mesh(new THREE.BoxGeometry(.18,3.1,1.9),goldMat); door.position.set(S/2+.06,2.2+1.55,2.6); kaaba.add(door);
+const doorCurtain=new THREE.Mesh(new THREE.BoxGeometry(.1,6.5,3.6),new THREE.MeshLambertMaterial({map:canvasTex(64,128,(g,w,h)=>{g.fillStyle="#0b0b0c";g.fillRect(0,0,w,h);g.fillStyle="#c9a23f";for(let y=6;y<h;y+=14){g.fillRect(6,y,w-12,2);}g.fillRect(4,0,3,h);g.fillRect(w-7,0,3,h);})}));
+doorCurtain.position.set(S/2+.03,3.4,2.6); kaaba.add(doorCurtain);
+// mizab (golden spout) on NW face (local -z) at roof
+const mizab=new THREE.Mesh(new THREE.BoxGeometry(.5,.35,2.4),goldMat); mizab.position.set(0,H-.4,-S/2-1.1); kaaba.add(mizab);
+// Hijr Ismail wall: semicircle outside local -z face
+(function(){const sh=new THREE.Shape();const ro=8.3,ri=7.4,a0=.12,a1=Math.PI-.12;sh.absarc(0,0,ro,a0,a1,false);sh.absarc(0,0,ri,a1,a0,true);
+ const g=new THREE.ExtrudeGeometry(sh,{depth:1.3,bevelEnabled:false,curveSegments:40});g.rotateX(-Math.PI/2);
+ const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0xf1efe9}));m.scale.set(.85,1,1);m.position.set(0,0,-S/2+.2);m.scale.z=1;kaaba.add(m);
+ // marble floor inside hijr
+ const fl=new THREE.Mesh(new THREE.CircleGeometry(7.4*.85,32,0,Math.PI),new THREE.MeshLambertMaterial({color:0xfbfaf7}));fl.rotation.x=-Math.PI/2;fl.position.set(0,.03,-S/2+.2);fl.scale.set(1,1,1);kaaba.add(fl);
+})();
+// Hajar Aswad silver frame at east corner (world +x)
+const stone=new THREE.Group(); stone.position.set(HD+.42,1.5,0); stone.rotation.y=Math.PI/2; scene.add(stone);
+stone.add(new THREE.Mesh(new THREE.TorusGeometry(.36,.1,10,28),new THREE.MeshPhongMaterial({color:0xd9dde2,shininess:90})));
+stone.add(new THREE.Mesh(new THREE.CircleGeometry(.28,24),new THREE.MeshLambertMaterial({color:0x2a1e1a})));
+// Rukn Yamani hint (lighter corner strip at world +z)
+const ykn=new THREE.Mesh(new THREE.BoxGeometry(.3,1.6,.3),new THREE.MeshLambertMaterial({color:0x6b6a66})); ykn.position.set(0,1.1,HD+.12); ykn.rotation.y=Math.PI/4; scene.add(ykn);
+
+/* ---------- Maqam Ibrahim (world NE) ---------- */
+const MQ={r:14.5,th:Math.PI/4}; const mq=new THREE.Group(); mq.position.set(Math.cos(MQ.th)*MQ.r,0,-Math.sin(MQ.th)*MQ.r); scene.add(mq);
+mq.add(at(new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.25,.4,8),new THREE.MeshLambertMaterial({color:0xe9e6df})),0,.2,0));
+const glass=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,1.6,8,1,true),new THREE.MeshPhongMaterial({color:0xcfe0e6,transparent:true,opacity:.35,shininess:120,side:THREE.DoubleSide}));glass.position.y=1.2;mq.add(glass);
+for(let i=0;i<8;i++){const a=i/8*Math.PI*2+Math.PI/8;const b=new THREE.Mesh(new THREE.BoxGeometry(.08,1.6,.08),goldMat);b.position.set(Math.cos(a)*.82,1.2,Math.sin(a)*.82);mq.add(b);}
+const dome=new THREE.Mesh(new THREE.SphereGeometry(.9,16,10,0,Math.PI*2,0,Math.PI/2),goldMat);dome.position.y=2.0;dome.scale.y=1.25;mq.add(dome);
+const tip=new THREE.Mesh(new THREE.ConeGeometry(.12,.6,8),goldMat);tip.position.y=3.4;mq.add(tip);
+mq.add(at(new THREE.Mesh(new THREE.CylinderGeometry(.3,.35,.5,12),goldMat),0,.65,0));
+
+/* ---------- Green lamp opposite the Black Stone ---------- */
+const lampPole=new THREE.Mesh(new THREE.BoxGeometry(.6,7,.6),new THREE.MeshLambertMaterial({color:0xeeeeea}));lampPole.position.set(79,3.5,0);scene.add(lampPole);
+const lamp=new THREE.Mesh(new THREE.BoxGeometry(.5,1.2,1.6),new THREE.MeshBasicMaterial({color:0x2fe07a}));lamp.position.set(78.6,6,0);scene.add(lamp);
+
+/* ---------- Arcades, minarets, cranes, clock tower ---------- */
+const arcTex=canvasTex(512,256,(g,w,h)=>{g.fillStyle="#f4f3ef";g.fillRect(0,0,w,h);
+  const row=(y,ah,n)=>{const cw=w/n;for(let i=0;i<n;i++){const x=i*cw+cw*.15,aw=cw*.7;g.fillStyle="#6f7680";g.beginPath();g.moveTo(x,y+ah);g.lineTo(x,y+aw/2);g.arc(x+aw/2,y+aw/2,aw/2,Math.PI,0);g.lineTo(x+aw,y+ah);g.fill();g.fillStyle="rgba(255,236,190,.5)";g.fillRect(x+aw*.2,y+ah*.6,aw*.6,ah*.25);}};
+  row(150,100,4);row(40,85,4);g.fillStyle="#e3e1db";g.fillRect(0,0,w,10);g.fillRect(0,128,w,8);
+  for(let i=0;i<w;i+=16){g.fillStyle="#d8d5ce";g.fillRect(i,0,8,6);} },[44,1]);
+const arc=new THREE.Mesh(new THREE.CylinderGeometry(84,84,26,128,1,true),new THREE.MeshLambertMaterial({map:arcTex,side:THREE.BackSide}));arc.position.y=13;scene.add(arc);
+const arcTop=new THREE.Mesh(new THREE.RingGeometry(84,104,96),new THREE.MeshLambertMaterial({color:0xefeee9,side:THREE.DoubleSide}));arcTop.rotation.x=-Math.PI/2;arcTop.position.y=26;scene.add(arcTop);
+const arc2=new THREE.Mesh(new THREE.CylinderGeometry(104,104,12,96,1,true),new THREE.MeshLambertMaterial({map:arcTex,side:THREE.BackSide}));arc2.position.y=32;scene.add(arc2);
+const minMat=new THREE.MeshLambertMaterial({color:0xf3f2ee});
+function minaret(x,z,h){const g=new THREE.Group();g.position.set(x,0,z);
+  g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(2.6,3.2,h,12),minMat),0,h/2,0));
+  for(const f of [.45,.7,.88]){const b=new THREE.Mesh(new THREE.CylinderGeometry(3.6,3.6,1.6,12),minMat);b.position.y=h*f;g.add(b);}
+  const c=new THREE.Mesh(new THREE.ConeGeometry(2.2,9,12),minMat);c.position.y=h+4.5;g.add(c);
+  const cr=new THREE.Mesh(new THREE.TorusGeometry(1,.18,6,16,Math.PI*1.4),goldMat);cr.position.y=h+11;g.add(cr);scene.add(g);}
+[[0.3,135],[0.95,140],[1.6,120],[2.5,150],[3.3,130],[4.1,138],[4.9,125],[5.7,145]].forEach(([a,r])=>minaret(Math.cos(a)*r,-Math.sin(a)*r,95+Math.random()*25));
+const craneMat=new THREE.MeshLambertMaterial({color:0xe4b23a});
+function crane(a,r,h){const g=new THREE.Group();g.position.set(Math.cos(a)*r,0,-Math.sin(a)*r);g.rotation.y=Math.random()*6.28;
+  for(let y=0;y<h;y+=6){const s=new THREE.Mesh(new THREE.BoxGeometry(2,6,2),new THREE.MeshLambertMaterial({color:0xe4b23a,wireframe:true}));s.position.y=y+3;g.add(s);}
+  const mast=new THREE.Mesh(new THREE.BoxGeometry(.5,h,.5),craneMat);mast.position.y=h/2;g.add(mast);
+  const jib=new THREE.Mesh(new THREE.BoxGeometry(60,1.4,1.4),craneMat);jib.position.set(18,h,0);g.add(jib);
+  const cab=new THREE.Mesh(new THREE.BoxGeometry(3,3,3),craneMat);cab.position.y=h-1.5;g.add(cab);
+  const cw=new THREE.Mesh(new THREE.BoxGeometry(5,3,3),new THREE.MeshLambertMaterial({color:0x777777}));cw.position.set(-10,h-1,0);g.add(cw);
+  const top=new THREE.Mesh(new THREE.ConeGeometry(1.2,10,4),craneMat);top.position.y=h+5;g.add(top);
+  const cable=new THREE.Mesh(new THREE.BoxGeometry(.08,h*.5,.08),new THREE.MeshBasicMaterial({color:0x444444}));cable.position.set(30,h*.75,0);g.add(cable);scene.add(g);}
+crane(0.7,210,150);crane(1.25,260,170);crane(2.2,230,140);crane(3.0,280,180);crane(5.3,240,160);crane(0.2,320,190);
+// clock tower to the south
+(function(){const g=new THREE.Group();g.position.set(40,0,520);
+  const m=new THREE.MeshLambertMaterial({color:0xd9d3c6});
+  g.add(at(new THREE.Mesh(new THREE.BoxGeometry(140,180,90),m),0,90,0));
+  g.add(at(new THREE.Mesh(new THREE.BoxGeometry(55,280,55),m),0,320,0));
+  const face=new THREE.Mesh(new THREE.CircleGeometry(19,40),new THREE.MeshBasicMaterial({map:canvasTex(256,256,(c,w,h)=>{c.fillStyle="#f4f1e8";c.fillRect(0,0,w,h);c.strokeStyle="#2c6b45";c.lineWidth=14;c.beginPath();c.arc(128,128,115,0,7);c.stroke();c.fillStyle="#1f1f1f";for(let i=0;i<12;i++){const a=i/12*6.28;c.fillRect(128+Math.cos(a)*95-4,128+Math.sin(a)*95-4,8,8);}c.lineWidth=8;c.strokeStyle="#1f1f1f";c.beginPath();c.moveTo(128,128);c.lineTo(128,50);c.moveTo(128,128);c.lineTo(180,140);c.stroke();})}));
+  face.position.set(0,420,-27.6);face.rotation.y=Math.PI;g.add(face);
+  g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(10,22,60,8),m),0,490,0));
+  g.add(at(new THREE.Mesh(new THREE.CylinderGeometry(1.5,3,90,8),goldMat),0,565,0));
+  scene.add(g);
+  [[-160,330,60,140],[180,360,70,170],[-260,440,80,120],[260,460,60,150]].forEach(([x,z,w,h])=>{const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),m);b.position.set(x,h/2,z);scene.add(b);});
+})();
+
+/* ---------- Crowd ---------- */
+const isSmall=matchMedia("(max-width:700px)").matches;
+let N=0, agents=[], bodyMesh=null, headMesh=null, headCover=null;
+const R_OUT=46;
+function rMin(th){let d=((th-3*Math.PI/4)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);if(d>Math.PI)d-=2*Math.PI;return 9.2+7.6*Math.exp(-(d*d)/(0.55*0.55));}
+const palettes={
+  ihram:[0xf7f7f4,0xf2f1ec,0xfbfbf8],
+  abaya:[0x151515,0x1f1f22,0x2a2a2e,0x3b3631],
+  other:[0xb8a58a,0x8c8f94,0x5a6d8a,0x6f8a6a,0xd8cdb8,0x9b7f6a]
+};
+const scarf=[0x111111,0xf0efe9,0xe6c84a,0x7ea3c9,0x9db69a,0xcdb79e,0xe2a7b1];
+const skin=[0x8d5a3b,0xb07a55,0xd2a07a,0x6b4228,0xe0b896];
+function pick(a){return a[(Math.random()*a.length)|0];}
+function buildCrowd(){
+  [bodyMesh,headMesh,headCover].forEach(m=>{if(m){scene.remove(m);m.geometry.dispose();}});
+  N=Math.round((isSmall?850:1500)*crowdMul);
+  const bg=new THREE.CylinderGeometry(.2,.29,1.42,8);bg.translate(0,.71,0);
+  const hg=new THREE.SphereGeometry(.115,8,6);
+  const cg=new THREE.SphereGeometry(.135,8,6,0,Math.PI*2,0,Math.PI*.62);
+  const mat=new THREE.MeshLambertMaterial();
+  bodyMesh=new THREE.InstancedMesh(bg,mat,N);headMesh=new THREE.InstancedMesh(hg,mat,N);headCover=new THREE.InstancedMesh(cg,mat,N);
+  [bodyMesh,headMesh,headCover].forEach(m=>{m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;scene.add(m);});
+  agents=[];const col=new THREE.Color();
+  for(let i=0;i<N;i++){
+    const th=Math.random()*Math.PI*2, rm=rMin(th);
+    const r=rm+(R_OUT-rm)*Math.pow(Math.random(),1.7);
+    const t=Math.random(); const type=t<.5?"ihram":t<.78?"abaya":"other";
+    const male=type==="ihram"?true:type==="abaya"?false:Math.random()<.4;
+    const hs=(male?1.0:.93)*(0.9+Math.random()*.16);
+    const crowdF=1-0.35*Math.exp(-(r-10)/9);
+    agents.push({th,r,off:r-rm,v:(0.75+Math.random()*.45)*crowdF,ph:Math.random()*6.28,hs});
+    bodyMesh.setColorAt(i,col.setHex(pick(palettes[type])));
+    headMesh.setColorAt(i,col.setHex(pick(skin)));
+    const covered=!male||Math.random()<.15;
+    headCover.setColorAt(i,col.setHex(male?0xf7f7f4:pick(scarf)));
+    agents[i].cover=covered;
+  }
+  bodyMesh.instanceColor.needsUpdate=true;headMesh.instanceColor.needsUpdate=true;headCover.instanceColor.needsUpdate=true;
+}
+const dummy=new THREE.Object3D(), hid=new THREE.Matrix4().makeScale(0,0,0);
+function updateCrowd(dt,t){
+  const cx=rig.position.x,cz=rig.position.z;
+  for(let i=0;i<N;i++){const a=agents[i];
+    a.th+=a.v/a.r*dt; if(a.th>Math.PI*2)a.th-=Math.PI*2;
+    const rm=rMin(a.th); a.r+= ((rm+a.off)-a.r)*Math.min(1,dt*.6);
+    // keep clear of Maqam Ibrahim
+    const dth=Math.atan2(Math.sin(a.th-MQ.th),Math.cos(a.th-MQ.th));
+    if(Math.abs(dth)<.1&&Math.abs(a.r-MQ.r)<1.9){a.r=a.r<MQ.r?MQ.r-1.9:MQ.r+1.9;}
+    let x=Math.cos(a.th)*a.r, z=-Math.sin(a.th)*a.r;
+    const dx=x-cx,dz=z-cz,d2=dx*dx+dz*dz;
+    if(d2<.85){const d=Math.sqrt(d2)||.01;x=cx+dx/d*.92;z=cz+dz/d*.92;a.r=Math.hypot(x,z);a.off=a.r-rm;}
+    const step=t*a.v*5+a.ph;
+    dummy.position.set(x+Math.sin(step*.5)*.03,Math.abs(Math.sin(step))*.035,z);
+    dummy.rotation.set(0,a.th,Math.sin(step)*.025);
+    dummy.scale.set(1,a.hs,1);dummy.updateMatrix();bodyMesh.setMatrixAt(i,dummy.matrix);
+    dummy.position.y+=1.53*a.hs;dummy.scale.set(1,1,1);dummy.updateMatrix();headMesh.setMatrixAt(i,dummy.matrix);
+    if(a.cover){dummy.position.y+=.015;dummy.updateMatrix();headCover.setMatrixAt(i,dummy.matrix);}else headCover.setMatrixAt(i,hid);
+  }
+  bodyMesh.instanceMatrix.needsUpdate=headMesh.instanceMatrix.needsUpdate=headCover.instanceMatrix.needsUpdate=true;
+}
+
+/* ---------- Pilgrim (you) ---------- */
+const R0=20, WALK=1.0, TH_START=-0.14, TOTAL=Math.PI*14;
+let th=TH_START, playing=false, speed=1, simT=0, yawOff=0.55, pitchOff=-0.05, lastLap=0, finished=false;
+function placeRig(){rig.position.set(Math.cos(th)*R0,0,-Math.sin(th)*R0);rig.rotation.y=th;}
+
+/* ---------- VR info panel ---------- */
+const pc=document.createElement("canvas");pc.width=1024;pc.height=440;const pg=pc.getContext("2d");
+const ptex=new THREE.CanvasTexture(pc);ptex.encoding=THREE.sRGBEncoding;
+const panel=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.47),new THREE.MeshBasicMaterial({map:ptex,transparent:true,depthTest:false}));
+panel.position.set(.15,.95,-1.3);panel.rotation.x=-.35;panel.renderOrder=10;panel.visible=false;rig.add(panel);
+function drawPanel(lapTxt,seg,guide,ar){pg.clearRect(0,0,1024,440);pg.fillStyle="rgba(16,14,10,.78)";pg.beginPath();pg.roundRect?pg.roundRect(0,0,1024,440,36):pg.rect(0,0,1024,440);pg.fill();
+  pg.fillStyle="#fff";pg.font="800 64px Manrope, sans-serif";pg.fillText(lapTxt,40,90);
+  pg.fillStyle="#dcb75c";pg.font="800 40px Manrope, sans-serif";pg.fillText(seg,40,150);
+  pg.fillStyle="#eee";pg.font="30px Manrope, sans-serif";wrap(guide,40,200,944,38,ar?3:6);
+  if(ar){pg.fillStyle="#dcb75c";pg.font="44px Amiri, serif";pg.textAlign="right";pg.direction="rtl";wrap(ar,984,340,944,52,2);pg.textAlign="left";pg.direction="ltr";}
+  ptex.needsUpdate=true;}
+function wrap(t,x,y,mw,lh,max){const w=t.split(" ");let line="",n=0;for(const word of w){const test=line?line+" "+word:word;if(pg.measureText(test).width>mw&&line){pg.fillText(line,x,y);y+=lh;line=word;if(++n>=max)return;}else line=test;}pg.fillText(line,x,y);}
+
+/* ---------- Real footage ---------- */
+const VIDEO_URL="tawaf_footage.mp4";
+let mode="real", realLap=1, lastVid="real", v360Full=false, v360Ready=false;
+const flatv=$("realv");flatv.crossOrigin="anonymous";let realv=flatv;
+const v360=document.createElement("video");v360.setAttribute("playsinline","");v360.playsInline=true;v360.preload="auto";v360.style.display="none";document.body.appendChild(v360);
+const tex360=new THREE.VideoTexture(v360);tex360.encoding=THREE.sRGBEncoding;
+const g360=new THREE.SphereGeometry(400,64,40);g360.scale(-1,1,1);
+const sphere=new THREE.Mesh(g360,new THREE.MeshBasicMaterial({map:tex360,fog:false}));sphere.rotation.y=-Math.PI/2;sphere.position.y=1.6;sphere.visible=false;rig.add(sphere);
+v360.addEventListener("error",()=>{if(mode==="v360"){flash(TXT[lang].fmtErr);v360Ready=false;setMode("sim");}});
+$("f360").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(v360.src)URL.revokeObjectURL(v360.src);v360.src=URL.createObjectURL(f);v360Ready=true;startTawaf("v360");});
+const vtex=new THREE.VideoTexture(flatv);vtex.encoding=THREE.sRGBEncoding;
+const vscreen=new THREE.Mesh(new THREE.PlaneGeometry(1.35,2.4),new THREE.MeshBasicMaterial({map:vtex}));
+vscreen.position.set(0,1.6,-2.2);vscreen.visible=false;rig.add(vscreen);
+function onVidEnded(e){if(mode==="sim"||e.target!==realv)return;if(mode==="v360"&&v360Full){th=TOTAL;finished=true;playing=false;buildBar();flash(TXT[lang].done);return;}if(realLap<7){realLap++;realv.currentTime=0;realv.play().catch(()=>{});}else{th=TOTAL;finished=true;playing=false;buildBar();flash(TXT[lang].done);}}
+flatv.addEventListener("ended",onVidEnded);v360.addEventListener("ended",onVidEnded);
+flatv.addEventListener("error",()=>{if(mode==="real"){flash(TXT[lang].vidErr);setMode("sim");}});
+function setMode(m){
+  const frac=th>0?(th%(Math.PI*2))/(Math.PI*2):0, fracAll=th>0?th/TOTAL:0;
+  flatv.pause();v360.pause();
+  mode=m; if(m!=="sim")lastVid=m;
+  realv=m==="v360"?v360:flatv;
+  if(m==="real"&&!flatv.src&&VIDEO_URL.indexOf("__")!==0)flatv.src=VIDEO_URL;
+  if(m!=="sim"){
+    realLap=Math.max(1,lapNum());
+    const v=realv, seek=()=>{if(v.duration)v.currentTime=(m==="v360"&&v360Full?fracAll:frac)*v.duration;};
+    v.readyState>0?seek():v.addEventListener("loadedmetadata",seek,{once:true});
+    v.playbackRate=speed<=2?speed:1;
+    if(playing&&!finished)v.play().catch(()=>{});
+  }
+  if(m==="v360"){yawOff=0;pitchOff=0;}
+  const flat=m==="real"&&!renderer.xr.isPresenting;
+  flatv.style.display=flat?"block":"none";
+  canvas.style.visibility=flat?"hidden":"visible";
+  vscreen.visible=(m==="real");sphere.visible=(m==="v360");
+  scene.children.forEach(o=>{if(o!==rig)o.visible=(m!=="v360");});
+  buildBar();
+}
+function startTawaf(m){
+  activity="tawaf";if(rig.parent!==scene)scene.add(rig);$("journey").style.display="none";th=TH_START;finished=false;lastLap=0;realLap=1;lastKey="";
+  mode=m;buildCrowd();$("intro").style.display="none";$("hud").style.display="block";$("map").style.display="block";$("bar").style.display="flex";playing=true;
+  if(m!=="sim"){th=0;realLap=1;const v=m==="v360"?v360:flatv;
+    if(m==="real"){if(VIDEO_URL.indexOf("__")===0){flash(TXT[lang].vidErr);m="sim";}else flatv.src=VIDEO_URL;}
+    v.currentTime=0;v.muted=false;v.play().catch(()=>{v.muted=true;v.play().catch(()=>{});});}
+  setMode(m);renderHud(true);if(m!=="real")showHint();
+}
+
+/* ---------- HUD ---------- */
+const SEGS=[[0,8,"aswad"],[8,40,"multazam"],[40,80,"maqam"],[80,190,"hijr"],[190,266,"toyamani"],[266,276,"yamani"],[276,360,"rabbana"]];
+let lastKey="";
+function segKey(){if(finished)return"done";if(th<0)return"pre";const d=(th%(Math.PI*2))*180/Math.PI;for(const s of SEGS)if(d>=s[0]&&d<s[1])return s[2];return"rabbana";}
+function lapNum(){return th<0?0:Math.min(7,Math.floor(th/(Math.PI*2))+1);}
+function renderHud(force){
+  const k=segKey(),L=TXT[lang],lap=lapNum();
+  const key=k+lap+lang+sex;if(key===lastKey&&!force)return;lastKey=key;
+  const lapTxt=finished?`7 / 7`:lap?`${L.lap} ${lap} / 7`:L.pre;
+  $("lap").innerHTML=finished?`${L.done} <small>7 / 7</small>`:lap?`${L.lap} ${lap} <small>/ 7</small>`:L.pre;
+  const [s,g]=L.seg[k];$("seg").textContent=s;$("guide").textContent=g;
+  const ar=AR[k];$("ar").textContent=ar?ar[0]:"";$("tr").textContent=ar?ar[1]:"";
+  $("ar").style.display=$("tr").style.display=ar?"block":"none";
+  $("tip").textContent=(sex==="m"&&lap>=1&&lap<=3&&!finished)?L.raml:L.flow;
+  drawPanel(lapTxt,s,g,ar?ar[0]:"");
+}
+function flash(t){const f=$("flash");f.textContent=t;f.style.opacity=1;clearTimeout(flash.t);flash.t=setTimeout(()=>f.style.opacity=0,1800);}
+
+// minimap
+const mc=$("map"),mg=mc.getContext("2d");
+function drawMap(){const w=256,c=w/2,sc=c/30;mg.clearRect(0,0,w,w);
+  const cs=getComputedStyle(document.documentElement);const ink=cs.getPropertyValue("--ink").trim(),gold=cs.getPropertyValue("--gold").trim(),green=cs.getPropertyValue("--green").trim();
+  mg.save();mg.translate(c,c);
+  // lane
+  mg.strokeStyle=ink;mg.globalAlpha=.15;mg.lineWidth=2;mg.beginPath();mg.arc(0,0,R0*sc,0,7);mg.stroke();mg.globalAlpha=1;
+  // kaaba
+  mg.save();mg.rotate(Math.PI/4);mg.fillStyle="#111";mg.fillRect(-S/2*sc,-S/2*sc,S*sc,S*sc);mg.restore();
+  // hijr
+  mg.strokeStyle=ink;mg.globalAlpha=.55;mg.lineWidth=3;mg.beginPath();const hx=-Math.cos(Math.PI/4)*S/2*sc,hy=-Math.sin(Math.PI/4)*S/2*sc;mg.arc(hx,hy,6.7*sc,Math.PI*.75,Math.PI*1.75);mg.stroke();mg.globalAlpha=1;
+  // black stone line
+  mg.strokeStyle=green;mg.lineWidth=3;mg.beginPath();mg.moveTo(HD*sc,0);mg.lineTo(29*sc,0);mg.stroke();
+  // lap beads
+  const lap=finished?7:lapNum();
+  for(let i=0;i<7;i++){const a=Math.PI*1.25+i*(Math.PI*.5/6);const x=Math.cos(a)*27*sc,y=Math.sin(a)*27*sc;mg.beginPath();mg.arc(x,y,9,0,7);
+    if(i<lap-(finished?0:1)){mg.fillStyle=gold;mg.fill();}else if(i===lap-1&&!finished){mg.fillStyle=green;mg.fill();}else{mg.strokeStyle=ink;mg.globalAlpha=.4;mg.lineWidth=2;mg.stroke();mg.globalAlpha=1;}}
+  // you
+  const px=Math.cos(th)*R0*sc,py=-Math.sin(th)*R0*sc;mg.fillStyle=green;mg.beginPath();mg.arc(px,py,11,0,7);mg.fill();
+  const hx2=-Math.sin(th),hy2=-Math.cos(th);mg.strokeStyle=green;mg.lineWidth=3;mg.beginPath();mg.moveTo(px,py);mg.lineTo(px+hx2*18,py+hy2*18);mg.stroke();
+  mg.restore();}
+
+/* ---------- Controls ---------- */
+const SPEEDS_SIM=[1,3,8,20],SPEEDS_REAL=[1,1.5,2];
+function buildBar(){const L=TXT[lang];
+  $("play").textContent=playing?L.pause:L.play;$("play").setAttribute("aria-pressed",String(!playing));
+  const vid=mode!=="sim";const SPEEDS=vid?SPEEDS_REAL:SPEEDS_SIM;if(!SPEEDS.includes(speed))speed=1;realv.playbackRate=vid?speed:1;
+  $("mode").textContent=vid?L.toSim:(lastVid==="v360"?L.toV360:L.toReal);$("snd").textContent=L.snd;$("snd").setAttribute("aria-pressed",String(!realv.muted));
+  $("snd").style.display=vid?"":"none";$("look").style.display=vid?"none":"";$("gyro").style.display=mode==="real"?"none":"";
+  $("look").textContent=L.look;$("gyro").textContent=L.gyro;$("vr").textContent=L.vr;$("restart").textContent=L.restart;
+  const sai=activity==="sai";if(sai){$("mode").style.display=$("snd").style.display=$("look").style.display="none";}else $("mode").style.display="";
+  $("guideBtn").textContent=JT[lang].guide;$("nextstep").textContent=JT[lang].nextStep+(LANGS[lang].dir==="rtl"?" ‹":" ›");
+  $("nextstep").style.display=((activity==="tawaf"&&finished)||(sai&&saiDone))?"":"none";
+  const sp=$("speeds");sp.innerHTML="";SPEEDS.forEach(s=>{const b=document.createElement("button");b.textContent=s+"×";b.setAttribute("aria-pressed",String(s===speed));b.onclick=()=>{speed=s;buildBar();};sp.appendChild(b);});}
+$("play").onclick=()=>{if(activity==="sai"){if(saiDone)return;playing=!playing;buildBar();return;}if(finished)return;playing=!playing;if(mode!=="sim"){playing?realv.play().catch(()=>{}):realv.pause();}buildBar();};
+$("mode").onclick=()=>{setMode(mode!=="sim"?"sim":(lastVid==="v360"&&!v360Ready?"real":lastVid));if(mode!=="real")showHint();else hideHint();};
+$("snd").onclick=()=>{realv.muted=!realv.muted;buildBar();};
+$("look").onclick=()=>{yawOff=Math.PI/2*0.92;pitchOff=0.12;};
+$("restart").onclick=()=>{if(activity==="sai"){resetSai();return;}realLap=1;if(mode!=="sim"){realv.currentTime=0;realv.play().catch(()=>{});}th=mode!=="sim"?0:TH_START;finished=false;lastLap=0;playing=true;yawOff=mode==="v360"?0:.55;pitchOff=mode==="v360"?0:-.05;buildBar();renderHud(true);};
+
+// drag look
+let drag=null;
+canvas.addEventListener("pointerdown",e=>{hideHint();drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener("pointermove",e=>{if(!drag||gyroOn)return;yawOff+=(e.clientX-drag.x)*.005;pitchOff=Math.max(-1.2,Math.min(1.2,pitchOff+(e.clientY-drag.y)*.004));drag={x:e.clientX,y:e.clientY};});
+canvas.addEventListener("pointerup",()=>drag=null);canvas.addEventListener("pointercancel",()=>drag=null);
+addEventListener("keydown",e=>{if(e.key==="ArrowLeft")yawOff+=.1;if(e.key==="ArrowRight")yawOff-=.1;if(e.key===" "){e.preventDefault();$("play").click();}});
+
+// gyroscope
+let gyroOn=false,ori=null,alpha0=null;
+const qScreen=new THREE.Quaternion(),q1=new THREE.Quaternion(-Math.sqrt(.5),0,0,Math.sqrt(.5)),zee=new THREE.Vector3(0,0,1),eul=new THREE.Euler();
+function onOri(e){ori=e;if(alpha0===null&&e.alpha!=null)alpha0=e.alpha;}
+$("gyro").onclick=async()=>{
+  if(gyroOn){gyroOn=false;removeEventListener("deviceorientation",onOri);$("gyro").setAttribute("aria-pressed","false");camera.quaternion.identity();return;}
+  try{if(typeof DeviceOrientationEvent!=="undefined"&&DeviceOrientationEvent.requestPermission){const p=await DeviceOrientationEvent.requestPermission();if(p!=="granted")return;}}catch(e){return;}
+  alpha0=null;addEventListener("deviceorientation",onOri);gyroOn=true;$("gyro").setAttribute("aria-pressed","true");};
+function applyGyro(){if(!ori||ori.alpha==null)return;const d=THREE.MathUtils.DEG2RAD;
+  const a=(ori.alpha-alpha0)*d+yawOff,b=ori.beta*d,g=ori.gamma*d,o=(screen.orientation?screen.orientation.angle:window.orientation||0)*d;
+  eul.set(b,a,-g,"YXZ");camera.quaternion.setFromEuler(eul);camera.quaternion.multiply(q1);camera.quaternion.multiply(qScreen.setFromAxisAngle(zee,-o));}
+
+// WebXR
+if(navigator.xr&&navigator.xr.isSessionSupported){navigator.xr.isSessionSupported("immersive-vr").then(ok=>{if(ok)$("vr").style.display="";}).catch(()=>{});}
+$("vr").onclick=async()=>{try{const s=await navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor"]});renderer.xr.setReferenceSpaceType("local-floor");await renderer.xr.setSession(s);panel.visible=true;playing=true;setMode(mode);if(mode!=="sim")realv.play().catch(()=>{});s.addEventListener("end",()=>{panel.visible=false;camera.position.set(0,1.6,0);setTimeout(()=>setMode(mode),50);});}catch(e){flash("VR: "+e.message);}};
+
+/* ---------- Intro ---------- */
+const LANGS={bm:{html:"ms",dir:"ltr",name:"BM"},en:{html:"en",dir:"ltr",name:"EN"},id:{html:"id",dir:"ltr",name:"ID"},ar:{html:"ar",dir:"rtl",name:"عربي"}};
+const MISC={
+ bm:{hint:"Seret skrin untuk lihat sekeliling 360°",title:"SIMULASI UMRAH: Niat hingga Tahallul V1",guideBtn:"‹ Panduan Umrah",niat:"Anda kini dalam ihram",tah:"Tahallul: bebas daripada ihram",cut3:"3 helai digunting. Rukun tahallul sempurna, dan larangan ihram terangkat.",cutN:n=>`Ketik setiap helai rambut untuk menggunting (${n} / 3).`,
+   credit:"Dibangunkan oleh<br><b>Ir. Ts. Dr. Muhammad Hafiz HASSAN</b><br>Pusat Pengajian Kejuruteraan Mekanik, Kampus Kejuruteraan Tuanku Syed Sirajuddin,<br>Universiti Sains Malaysia, Pulau Pinang"},
+ en:{hint:"Drag the screen to look around 360°",title:"UMRAH SIMULATION: Intention to Tahallul V1",guideBtn:"‹ Umrah guide",niat:"You are now in ihram",tah:"Tahallul: released from ihram",cut3:"3 hairs cut. The tahallul pillar is fulfilled and the prohibitions of ihram are lifted.",cutN:n=>`Tap each hair to cut it (${n} / 3).`,
+   credit:"Created by<br><b>Ir. Ts. Dr. Muhammad Hafiz HASSAN</b><br>School of Mechanical Engineering, Tuanku Syed Sirajuddin Engineering Campus,<br>Universiti Sains Malaysia, Pulau Pinang"},
+ id:{hint:"Geser layar untuk melihat sekeliling 360°",title:"SIMULASI UMRAH: Niat hingga Tahallul V1",guideBtn:"‹ Panduan Umrah",niat:"Anda kini dalam ihram",tah:"Tahallul: bebas dari ihram",cut3:"3 helai digunting. Rukun tahallul terpenuhi, dan larangan ihram terangkat.",cutN:n=>`Ketuk setiap helai rambut untuk menggunting (${n} / 3).`,
+   credit:"Dikembangkan oleh<br><b>Ir. Ts. Dr. Muhammad Hafiz HASSAN</b><br>School of Mechanical Engineering, Tuanku Syed Sirajuddin Engineering Campus,<br>Universiti Sains Malaysia, Pulau Pinang"},
+ ar:{hint:"اسحب الشاشة للنظر حولك 360°",title:"محاكاة العمرة: من النية إلى التحلل V1",guideBtn:"› دليل العمرة",niat:"أنت الآن في الإحرام",tah:"التحلل: خرجتَ من الإحرام",cut3:"قُصّت ثلاث شعرات. تمّ ركن التحلل وارتفعت محظورات الإحرام.",cutN:n=>`اضغط على كل شعرة لقصّها (${n} / 3).`,
+   credit:"من تطوير<br><b>Ir. Ts. Dr. Muhammad Hafiz HASSAN</b><br>كلية الهندسة الميكانيكية، حرم توانكو سيد سراج الدين للهندسة،<br>جامعة العلوم الماليزية، بولاو بينانغ"}};
+function setLang(l){lang=l;const L=LANGS[l];document.documentElement.lang=L.html;document.documentElement.dir=L.dir;
+  document.querySelectorAll("[data-lang]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.lang===l)));const sel=document.getElementById("jlang");if(sel)sel.value=l;
+  lastKey="";if(typeof lastSaiKey!=="undefined")lastSaiKey="";setIntroText();if(typeof renderJourney==="function")renderJourney();if($("bar").style.display!=="none")buildBar();}
+function setIntroText(){const L=TXT[lang];document.title=MISC[lang].title;
+  ["title","sub","body","view","real","sim","v360","v360has","one","full","v360note","lang","who","m","f","crowd","c1","c2","c3","fine"].forEach(k=>{const el=$("t-"+k);if(el)el.textContent=L[k];});$("go").textContent=mode==="v360"?L.pick:L.go;}
+document.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
+document.querySelectorAll("[data-sex]").forEach(b=>b.onclick=()=>{sex=b.dataset.sex;document.querySelectorAll("[data-sex]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));});
+document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.querySelectorAll("[data-mode]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  $("row360").style.display=$("t-v360note").style.display=mode==="v360"?"":"none";$("go").textContent=mode==="v360"?TXT[lang].pick:TXT[lang].go;});
+document.querySelectorAll("[data-full]").forEach(b=>b.onclick=()=>{v360Full=b.dataset.full==="1";document.querySelectorAll("[data-full]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));});
+document.querySelectorAll("[data-crowd]").forEach(b=>b.onclick=()=>{crowdMul=+b.dataset.crowd;document.querySelectorAll("[data-crowd]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));});
+$("go").onclick=()=>{if(mode==="v360"){$("f360").value="";$("f360").click();return;}startTawaf(mode);};
+setIntroText();buildCrowd();
+/* ---------- Umrah journey (Niat hingga Tahallul) ---------- */
+let activity="journey", jstep=0, ihram=false, cutN=0;
+const SRC_TH="https://tabunghaji.gov.my/sites/default/kah/NOTA%20KAH%201446H%20_%20M10%20(1)_0.pdf";
+const SRC_TH4="https://tabunghaji.gov.my/sites/default/kah/TH-NOTA%20KAH%201446H%20_%20M4%20.pdf";
+const SRC_MUFTI="https://muftiwp.gov.my/artikel/bayan-li-al-haj/689-bayan-li-al-haj-siri-ke-30-pengertian-tahallul";
+const LAF=(a,t,m)=>`<div class="lafaz"><div class="a" lang="ar">${a}</div><div class="t">${t}</div>${m?`<div class="m">${m}</div>`:""}</div>`;
+const NIAT_AR="نَوَيْتُ الْعُمْرَةَ وَأَحْرَمْتُ بِهَا لِلّٰهِ تَعَالَى";
+const TALBIAH_AR="لَبَّيْكَ اللّٰهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لَا شَرِيكَ لَكَ";
+const TALBIAH_TR="Labbaikallahumma labbaik, labbaika la sharika laka labbaik, innal-hamda wan-ni'mata laka wal-mulk, la sharika lak";
+const SAR={verse:["إِنَّ الصَّفَا وَالْمَرْوَةَ مِنْ شَعَائِرِ اللّٰهِ","Innas-Safa wal-Marwata min sha'a'irillah (al-Baqarah: 158)"],
+  dzikr:["اللّٰهُ أَكْبَرُ، اللّٰهُ أَكْبَرُ، اللّٰهُ أَكْبَرُ، لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ","Allahu akbar (3 kali), La ilaha illallahu wahdahu la sharika lah, lahul-mulku wa lahul-hamdu wa huwa 'ala kulli shay'in qadir"]};
+const JT={
+ bm:{prev:"Kembali",next:"Seterusnya",inI:"Dalam ihram: jaga larangan",notI:"Belum berihram",halal:"Selesai: bebas daripada ihram",guide:"Panduan",nextStep:"Langkah seterusnya",trip:"Perjalanan",
+   rukun:"RUKUN",wajib:"WAJIB",sunat:"SUNAT",
+   sai:{safa:["Di Bukit Safa","Hadap ke arah Kaabah, angkat tangan, bertakbir 3 kali, bertahlil dan berdoa. Lelaki sunat menaiki bukit."],
+        safa1:["Mula sa'ie di Bukit Safa","Niat sa'ie dalam hati. Hadap ke arah Kaabah, baca ayat ini, kemudian bertakbir 3 kali, bertahlil dan berdoa."],
+        marwah:["Di Bukit Marwah","Hadap ke arah Kaabah, angkat tangan, bertakbir 3 kali, bertahlil dan berdoa. Lelaki sunat menaiki bukit."],
+        walk:["Berjalan di Mas'a","Berzikir, berdoa dan membaca al-Quran. Pastikan sampai ke hujung Safa dan Marwah pada setiap perjalanan."],
+        green:["Kawasan lampu hijau","Lelaki: sunat berlari-lari anak di antara dua tanda lampu hijau. Wanita: teruskan berjalan seperti biasa."],
+        done:["Sa'ie selesai: 7 perjalanan","Sa'ie berakhir di Bukit Marwah. Langkah seterusnya: bercukur atau bergunting (tahallul)."]},
+   dir1:"Safa ke Marwah",dir2:"Marwah ke Safa",saiTip:"Jika sesak, elakkan daripada menyakiti orang lain.",saiDone:"Sa'ie selesai"},
+ en:{prev:"Back",next:"Next",inI:"In ihram: observe the prohibitions",notI:"Not yet in ihram",halal:"Done: released from ihram",guide:"Guide",nextStep:"Next step",trip:"Lap",
+   rukun:"PILLAR",wajib:"WAJIB",sunat:"SUNNAH",
+   sai:{safa:["On Mount Safa","Face the Kaaba, raise your hands, say takbir 3 times, the tahlil, and make du'a. Men may climb the hill (sunnah)."],
+        safa1:["Begin sa'i at Safa","Intend sa'i in your heart. Face the Kaaba, recite this verse, then takbir 3 times, the tahlil and du'a."],
+        marwah:["On Mount Marwah","Face the Kaaba, raise your hands, say takbir 3 times, the tahlil, and make du'a. Men may climb the hill (sunnah)."],
+        walk:["Walking the Mas'a","Dhikr, du'a and Quran. Make sure you reach the very end at Safa and Marwah on every lap."],
+        green:["Green light zone","Men: brisk trotting between the two green lights is sunnah. Women: keep walking normally."],
+        done:["Sa'i complete: 7 laps","Sa'i ends at Marwah. Next step: shaving or cutting the hair (tahallul)."]},
+   dir1:"Safa to Marwah",dir2:"Marwah to Safa",saiTip:"If crowded, take care not to hurt anyone.",saiDone:"Sa'i complete"}
+ ,id:{prev:"Kembali",next:"Lanjut",inI:"Dalam ihram: jaga larangan",notI:"Belum berihram",halal:"Selesai: bebas dari ihram",guide:"Panduan",nextStep:"Langkah berikutnya",trip:"Perjalanan",
+   rukun:"RUKUN",wajib:"WAJIB",sunat:"SUNAH",
+   sai:{safa:["Di Bukit Shafa","Hadap ke arah Ka'bah, angkat tangan, bertakbir 3 kali, bertahlil dan berdoa. Laki-laki disunahkan naik ke bukit."],
+        safa1:["Mulai sa'i di Bukit Shafa","Niatkan sa'i dalam hati. Hadap ke arah Ka'bah, baca ayat ini, lalu bertakbir 3 kali, bertahlil dan berdoa."],
+        marwah:["Di Bukit Marwah","Hadap ke arah Ka'bah, angkat tangan, bertakbir 3 kali, bertahlil dan berdoa. Laki-laki disunahkan naik ke bukit."],
+        walk:["Berjalan di Mas'a","Berzikir, berdoa dan membaca Al-Qur'an. Pastikan sampai ke ujung Shafa dan Marwah pada setiap perjalanan."],
+        green:["Area lampu hijau","Laki-laki: disunahkan berlari kecil di antara dua tanda lampu hijau. Perempuan: tetap berjalan seperti biasa."],
+        done:["Sa'i selesai: 7 perjalanan","Sa'i berakhir di Bukit Marwah. Langkah berikutnya: mencukur atau menggunting rambut (tahallul)."]},
+   dir1:"Shafa ke Marwah",dir2:"Marwah ke Shafa",saiTip:"Jika padat, hindari menyakiti orang lain.",saiDone:"Sa'i selesai"}
+ ,ar:{prev:"السابق",next:"التالي",inI:"في الإحرام: اجتنب المحظورات",notI:"لم تُحرم بعد",halal:"تم: تحلّلت من الإحرام",guide:"الدليل",nextStep:"الخطوة التالية",trip:"الشوط",
+   rukun:"ركن",wajib:"واجب",sunat:"سنة",
+   sai:{safa:["على الصفا","استقبل الكعبة، وارفع يديك، وكبّر ثلاثًا، وهلّل، وادعُ. ويُسن للرجال صعود الصفا."],
+        safa1:["ابدأ السعي من الصفا","انوِ السعي بقلبك، واستقبل الكعبة، واقرأ هذه الآية، ثم كبّر ثلاثًا، وهلّل، وادعُ."],
+        marwah:["على المروة","استقبل الكعبة، وارفع يديك، وكبّر ثلاثًا، وهلّل، وادعُ. ويُسن للرجال صعود المروة."],
+        walk:["المشي في المسعى","اذكر الله وادعُه واقرأ القرآن، وتأكد من بلوغ طرف الصفا والمروة في كل شوط."],
+        green:["منطقة الأضواء الخضراء","للرجال: يُسن الإسراع بين العلمين الأخضرين، أما المرأة فتمشي على عادتها."],
+        done:["اكتمل السعي: 7 أشواط","ينتهي السعي عند المروة. الخطوة التالية: الحلق أو التقصير (التحلل)."]},
+   dir1:"من الصفا إلى المروة",dir2:"من المروة إلى الصفا",saiTip:"عند الزحام احرص على ألا تؤذي أحدًا.",saiDone:"اكتمل السعي"}
+};
+const STRANDS=lbl=>`<div class="cut" id="cutzone">${[0,1,2].map(i=>`<button class="strand" data-act="cut" aria-label="${lbl} ${i+1}"><svg viewBox="0 0 30 90" width="30" height="90"><path d="M15 88 C 4 64, 26 46, 13 24 S 18 6, 15 2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>`).join("")}</div><p id="cutmsg" class="cutmsg"></p>`;
+const J={
+ bm:[
+  {b:[],t:"SIMULASI UMRAH: Niat hingga Tahallul V1",h:`<p>Langkah demi langkah mengikut nota bimbingan Lembaga Tabung Haji (mazhab Syafi'i), dengan simulasi tawaf dan sa'ie.</p>
+   <h3>5 Rukun umrah</h3><ol><li>Niat ihram umrah</li><li>Tawaf umrah</li><li>Sa'ie</li><li>Bercukur atau bergunting</li><li>Tertib pada semua rukun</li></ol>
+   <h3>2 Wajib umrah</h3><ol><li>Niat ihram umrah di miqat</li><li>Meninggalkan larangan ihram</li></ol>
+   <p>Rukun tidak boleh ditinggalkan dan tidak boleh diganti dengan dam; tanpanya umrah tidak sempurna. Jika wajib ditinggalkan, umrah tetap sah tetapi dikenakan dam.</p>
+   <p class="src">Sumber: <a href="${SRC_TH}" target="_blank" rel="noopener">Nota Kursus Asas Haji 1446H, Minggu 10: Ibadat Umrah (Tabung Haji)</a>; <a href="${SRC_MUFTI}" target="_blank" rel="noopener">Bayan Li al-Haj #30: Pengertian Tahallul (Pejabat Mufti Wilayah Persekutuan)</a>.</p>`},
+  {b:["sunat"],t:"1. Persediaan sebelum ihram",h:`<ul><li>Kerat kuku, rapikan misai dan rambut, buang bulu ketiak dan ari-ari.</li><li>Mandi sunat ihram dan ambil wuduk.</li><li>Pakai minyak rambut atau wangian pada badan sebelum berniat (tidak pada kain ihram).</li><li><b>Lelaki:</b> dua helai kain tidak berjahit dan tidak bercantum; sehelai menutup pusat hingga lutut, sehelai lagi sebagai selendang. Sunat berwarna putih.</li><li><b>Lelaki:</b> selipar atau sandal mesti menampakkan tumit dan sekurang-kurangnya hujung tiga jari kaki (Muzakarah Haji Peringkat Kebangsaan ke-39).</li><li><b>Wanita:</b> pakaian menutup aurat kecuali muka dan kedua-dua tangan hingga pergelangan; tiada pakaian khusus. Elak pakaian jarang atau menampakkan bentuk badan.</li><li>Solat sunat ihram 2 rakaat.</li></ul>`},
+  {b:["rukun","Rukun 1","wajib","Wajib 1"],t:"2. Niat ihram umrah di miqat",h:`<p>Niat ialah rukun; berniat di miqat (atau sebelum melintasinya) ialah wajib. Sunat menghadap kiblat dan dalam keadaan berwuduk.</p>
+   <h3>Miqat</h3><ul><li><b>Qarn al-Manazil</b> bagi yang datang dari arah Asia. Jika terbang terus ke Jeddah, berniat dalam pesawat sebelum melintasi miqat mengikut makluman krew dan mutawwif.</li><li><b>Bi'r Ali</b> bagi yang datang dari Madinah.</li><li>Jika sudah berada di Makkah: keluar ke Tanah Halal seperti Tan'im, Ji'ranah atau Hudaibiyyah.</li></ul>
+   <h3>Lafaz niat (hadirkan dalam hati)</h3>${LAF(NIAT_AR,"Nawaitul-'umrata wa ahramtu biha lillahi ta'ala","Sahaja aku mengerjakan umrah dan aku berihram dengannya kerana Allah Ta'ala.")}
+   <h3>Niat bersyarat (jika bimbang terhalang)</h3><p>Contoh: “Sahaja aku mengerjakan umrah dan aku berihram dengannya kerana Allah Ta'ala, sekiranya aku terhalang oleh haid, ketika itu aku menjadi halal.” Ia tidak terhad kepada haid; boleh juga kerana sakit atau halangan lain.</p>
+   <h3>Talbiah: sunat dari niat hingga mula tawaf</h3>${LAF(TALBIAH_AR,TALBIAH_TR,"HambaMu datang menyahut panggilanMu ya Allah. Tiada sekutu bagiMu. Segala puji, nikmat dan kerajaan adalah milikMu.")}
+   <button class="act" data-act="niat">Saya telah berniat ihram umrah</button>`},
+  {b:["wajib","Wajib 2"],t:"3. Larangan ihram (13 perkara)",h:`<p>Wajib dijaga dari saat berniat hingga selesai bercukur atau bergunting.</p>
+   <h3>Jenis taraffuh (berseronok / berhias)</h3><ol><li>Menutup kepala atau sebahagiannya (lelaki)</li><li>Memakai pakaian bersarung, berjahit atau bercantum (lelaki)</li><li>Menutup muka (wanita)</li><li>Memakai sarung tangan</li><li>Memakai bau-bauan pada badan atau pakaian</li><li>Memakai minyak di kepala atau janggut</li><li>Muqaddimah jima'</li><li>Bersetubuh</li><li>Berkahwin, mengahwinkan atau menerima wakil kahwin</li></ol>
+   <p><b>Hukum:</b> sengaja: berdosa dan dikenakan dam. Tidak sengaja atau jahil: tidak berdosa dan tidak dikenakan dam. Nikah dalam ihram tidak sah.</p>
+   <h3>Jenis itlaf (menghilang / merosak)</h3><ol start="10"><li>Menanggalkan rambut atau bulu</li><li>Mengerat atau memotong kuku</li><li>Memburu atau membunuh binatang buruan</li><li>Menebang atau mencabut pokok di Tanah Haram</li></ol>
+   <p><b>Hukum:</b> sengaja: berdosa dan dikenakan dam. Tidak sengaja atau jahil: tidak berdosa tetapi tetap dikenakan dam.</p>
+   <p class="src">Kesalahan berat seperti bersetubuh mempunyai hukum dam yang khusus; rujuk pembimbing ibadah anda.</p>`},
+  {b:["rukun","Rukun 2"],t:"4. Tawaf umrah",h:`<p>Mengelilingi Kaabah 7 pusingan, bermula dan berakhir di sudut Hajar Aswad.</p>
+   <h3>Syarat sah tawaf</h3><ol><li>Menutup aurat</li><li>Suci daripada hadas besar dan kecil</li><li>Suci badan, pakaian dan tempat tawaf daripada najis</li><li>Bermula dan berakhir di sudut Hajar Aswad</li><li>Baitullah di sebelah kiri dan berjalan ke hadapan</li><li>Cukup 7 pusingan dengan yakin</li><li>Dalam Masjidil Haram dan di luar Kaabah, termasuk di luar Hijr Ismail dan Syazarwan</li><li>Mengekalkan niat tawaf</li></ol>
+   <h3>Amalan sunat</h3><ul><li>Istilam ke arah Hajar Aswad sambil bertakbir; isyarat ke Rukun Yamani tanpa mengucup tapak tangan.</li><li>Lelaki: idtiba' (bahu kanan terbuka) dan berlari-lari anak (ramal) pada 3 pusingan pertama, bagi tawaf yang diikuti sa'ie.</li><li>Berzikir, berdoa, membaca al-Quran, khusyuk dan berturut-turut.</li></ul>
+   <button class="act" data-act="tawaf">Masuk simulasi tawaf</button>`},
+  {b:["sunat"],t:"5. Selepas tawaf",h:`<ul><li>Tutup semula bahu kanan (idtiba' tidak disunatkan ketika solat).</li><li>Solat sunat tawaf 2 rakaat, di belakang Maqam Ibrahim jika mampu, atau di mana-mana dalam Masjidil Haram jika sesak.</li><li>Minum air zamzam dan berdoa.</li><li>Terus ke tempat sa'ie; sunat masuk melalui pintu Safa (Bab al-Safa) dan bersa'ie sejurus selepas tawaf.</li></ul>`},
+  {b:["rukun","Rukun 3"],t:"6. Sa'ie antara Safa dan Marwah",h:`<p>Berjalan ulang-alik antara Bukit Safa dan Bukit Marwah. Safa ke Marwah dikira 1, Marwah ke Safa dikira 2, dan seterusnya.</p>
+   <h3>Syarat sah sa'ie</h3><ol><li>Dilakukan selepas tawaf umrah</li><li>Bermula dari Safa dan berakhir di Marwah</li><li>Cukup 7 kali dengan yakin</li><li>Sampai ke penghujung tempat sa'ie di kaki Safa dan Marwah pada setiap perjalanan</li><li>Dalam kawasan sa'ie (Mas'a)</li><li>Mengekalkan niat sa'ie</li></ol>
+   <h3>Amalan sunat</h3><ul><li>Berwuduk dan berturut-turut.</li><li>Di Safa dan Marwah: menghadap Kaabah, bertakbir 3 kali, bertahlil dan berdoa. Lelaki menaiki bukit.</li><li>Lelaki: berlari-lari anak di kawasan bertanda lampu hijau, dan idtiba' pada semua perjalanan.</li></ul>
+   ${LAF(SAR.dzikr[0],SAR.dzikr[1])}
+   <button class="act" data-act="sai">Masuk simulasi sa'ie</button>`},
+  {b:["rukun","Rukun 4"],t:"7. Tahallul: bercukur atau bergunting",h:`<p>Menghilangkan sekurang-kurangnya <b>3 helai rambut di kepala</b>, selepas sa'ie.</p>
+   <ul><li><b>Lelaki:</b> afdal bercukur; bergunting juga sah.</li><li><b>Wanita:</b> memadai bergunting sekadar seruas jari, walaupun di hujung rambut.</li><li>Jika tiada rambut: lalukan pisau cukur di kepala.</li></ul>
+   <p>Bagi umrah, sebaik sahaja bercukur atau bergunting, jemaah bebas daripada semua larangan ihram (Pejabat Mufti Wilayah Persekutuan).</p>
+   <h3>Cuba: gunting 3 helai rambut</h3><div class="cut" id="cutzone">${[0,1,2].map(i=>`<button class="strand" data-act="cut" aria-label="Helai ${i+1}"><svg viewBox="0 0 30 90" width="30" height="90"><path d="M15 88 C 4 64, 26 46, 13 24 S 18 6, 15 2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>`).join("")}</div><p id="cutmsg" class="cutmsg"></p>`},
+  {b:["rukun","Rukun 5"],t:"8. Tertib: umrah selesai",h:`<p>Tertib bermaksud semua rukun dibuat mengikut susunan: yang dahulu didahulukan, yang kemudian dikemudiankan.</p>
+   <ol class="tl"><li>Niat ihram umrah (di miqat)</li><li>Tawaf umrah</li><li>Sa'ie</li><li>Bercukur atau bergunting</li></ol>
+   <p>Selepas tahallul, larangan ihram terangkat. Sebelum meninggalkan Makkah (contohnya pulang ke tanah air atau ke Madinah), Tawaf Wada' adalah wajib, dan umrah mesti disempurnakan sebelum Tawaf Wada'.</p>
+   <p class="src">Simulasi ini ialah alat latihan visual. Untuk kemusykilan hukum, rujuk pembimbing ibadah bertauliah, Tabung Haji (03-6207 1919) atau Pejabat Mufti negeri anda.</p>
+   <p class="src">Sumber: <a href="${SRC_TH}" target="_blank" rel="noopener">TH Nota KAH 1446H M10: Ibadat Umrah</a>; <a href="${SRC_TH4}" target="_blank" rel="noopener">TH Nota KAH 1446H M4: Sa'ie, Bercukur dan Tertib</a>; <a href="${SRC_MUFTI}" target="_blank" rel="noopener">Mufti WP: Pengertian Tahallul</a>.</p>`}
+ ],
+ en:[
+  {b:[],t:"UMRAH SIMULATION: Intention to Tahallul V1",h:`<p>Step by step, following Lembaga Tabung Haji's course notes (Shafi'i school), with tawaf and sa'i simulations.</p>
+   <h3>5 pillars (rukun) of umrah</h3><ol><li>Intention of ihram for umrah</li><li>Tawaf of umrah</li><li>Sa'i</li><li>Shaving or cutting the hair</li><li>Correct order of all pillars</li></ol>
+   <h3>2 obligations (wajib)</h3><ol><li>Making the intention at the miqat</li><li>Avoiding the prohibitions of ihram</li></ol>
+   <p>A pillar cannot be skipped or replaced by dam; without it the umrah is incomplete. If an obligation is missed, the umrah is valid but dam is due.</p>
+   <p class="src">Sources: <a href="${SRC_TH}" target="_blank" rel="noopener">Basic Hajj Course Notes 1446H, Week 10: Umrah (Tabung Haji)</a>; <a href="${SRC_MUFTI}" target="_blank" rel="noopener">Bayan Li al-Haj #30: The Meaning of Tahallul (Federal Territory Mufti Office)</a>.</p>`},
+  {b:["sunat"],t:"1. Preparing for ihram",h:`<ul><li>Trim nails, moustache and hair; remove armpit and pubic hair.</li><li>Take the sunnah bath for ihram and make wudu'.</li><li>Use hair oil or perfume on the body before the intention (not on the ihram cloth).</li><li><b>Men:</b> two unstitched, unjoined sheets, one from navel to knee and one over the shoulders; white is sunnah.</li><li><b>Men:</b> sandals must show the heel and at least the tips of three toes (39th National Hajj Muzakarah).</li><li><b>Women:</b> clothing covering the aurah except the face and hands to the wrists; no special garment. Avoid sheer or tight clothing.</li><li>Pray 2 rak'ahs sunnah of ihram.</li></ul>`},
+  {b:["rukun","Pillar 1","wajib","Wajib 1"],t:"2. Intention of ihram at the miqat",h:`<p>The intention is a pillar; making it at (or before) the miqat is wajib. Face the qibla and be in wudu' (sunnah).</p>
+   <h3>Miqat</h3><ul><li><b>Qarn al-Manazil</b> for those coming from Asia. On a direct flight to Jeddah, make the intention in the aircraft before crossing the miqat, following the crew and mutawwif.</li><li><b>Bi'r Ali</b> for those coming from Madinah.</li><li>If already in Makkah: go out to the Tanah Halal, e.g. Tan'im, Ji'ranah or Hudaibiyyah.</li></ul>
+   <h3>Words of intention (held in the heart)</h3>${LAF(NIAT_AR,"Nawaitul-'umrata wa ahramtu biha lillahi ta'ala","I intend umrah and enter ihram for it for the sake of Allah Ta'ala.")}
+   <h3>Conditional intention (if you fear being prevented)</h3><p>Example: “I intend umrah and enter ihram for it for the sake of Allah; if I am prevented by menstruation, I am released at that point.” It is not limited to menstruation; illness or other obstacles also apply.</p>
+   <h3>Talbiyah: sunnah from the intention until tawaf begins</h3>${LAF(TALBIAH_AR,TALBIAH_TR,"Here I am, O Allah, here I am. You have no partner. All praise, blessings and dominion are Yours.")}
+   <button class="act" data-act="niat">I have made the intention of ihram</button>`},
+  {b:["wajib","Wajib 2"],t:"3. Prohibitions of ihram (13)",h:`<p>Must be observed from the intention until the hair is shaved or cut.</p>
+   <h3>Taraffuh type (comfort / adornment)</h3><ol><li>Covering the head or part of it (men)</li><li>Wearing stitched, fitted or joined clothing (men)</li><li>Covering the face (women)</li><li>Wearing gloves</li><li>Perfume on body or clothing</li><li>Oil on the head or beard</li><li>Foreplay</li><li>Intercourse</li><li>Marrying, marrying someone off, or acting as a marriage agent</li></ol>
+   <p><b>Ruling:</b> deliberate: sinful and dam is due. Unintentional or out of ignorance: no sin and no dam. A marriage contract in ihram is invalid.</p>
+   <h3>Itlaf type (removing / destroying)</h3><ol start="10"><li>Removing hair</li><li>Cutting nails</li><li>Hunting or killing game</li><li>Cutting or uprooting plants in the Haram</li></ol>
+   <p><b>Ruling:</b> deliberate: sinful and dam is due. Unintentional or out of ignorance: no sin, but dam is still due.</p>
+   <p class="src">Serious violations such as intercourse carry specific rulings; consult your ibadah guide.</p>`},
+  {b:["rukun","Pillar 2"],t:"4. Tawaf of umrah",h:`<p>Circling the Kaaba 7 times, starting and ending at the Black Stone corner.</p>
+   <h3>Conditions of a valid tawaf</h3><ol><li>Covering the aurah</li><li>Free from major and minor hadath</li><li>Body, clothing and place free of najis</li><li>Start and end at the Black Stone corner</li><li>Kaaba on your left, walking forward</li><li>Complete 7 circuits with certainty</li><li>Inside Masjid al-Haram and outside the Kaaba, including outside Hijr Ismail and the Shadharwan</li><li>Maintain the intention of tawaf</li></ol>
+   <h3>Sunnah acts</h3><ul><li>Istilam towards the Black Stone with takbir; gesture to Rukn al-Yamani without kissing the hand.</li><li>Men: idtiba' and raml in the first 3 circuits, for a tawaf followed by sa'i.</li><li>Dhikr, du'a, Quran, humility and continuity.</li></ul>
+   <button class="act" data-act="tawaf">Enter the tawaf simulation</button>`},
+  {b:["sunat"],t:"5. After tawaf",h:`<ul><li>Cover the right shoulder again (idtiba' is not sunnah in prayer).</li><li>Pray 2 rak'ahs of tawaf, behind Maqam Ibrahim if possible, or anywhere in the mosque if crowded.</li><li>Drink zamzam and make du'a.</li><li>Go to the sa'i area; it is sunnah to enter through Bab al-Safa and begin sa'i straight after tawaf.</li></ul>`},
+  {b:["rukun","Pillar 3"],t:"6. Sa'i between Safa and Marwah",h:`<p>Walking back and forth between Safa and Marwah. Safa to Marwah counts as 1, Marwah to Safa as 2, and so on.</p>
+   <h3>Conditions of a valid sa'i</h3><ol><li>Performed after the tawaf of umrah</li><li>Starts at Safa and ends at Marwah</li><li>7 laps with certainty</li><li>Reach the very end at Safa and Marwah on every lap</li><li>Within the sa'i area (Mas'a)</li><li>Maintain the intention of sa'i</li></ol>
+   <h3>Sunnah acts</h3><ul><li>Be in wudu' and keep the laps continuous.</li><li>At Safa and Marwah: face the Kaaba, takbir 3 times, tahlil and du'a. Men climb the hill.</li><li>Men: trot between the green lights, and idtiba' on all laps.</li></ul>
+   ${LAF(SAR.dzikr[0],SAR.dzikr[1])}
+   <button class="act" data-act="sai">Enter the sa'i simulation</button>`},
+  {b:["rukun","Pillar 4"],t:"7. Tahallul: shaving or cutting",h:`<p>Remove at least <b>3 hairs from the head</b>, after sa'i.</p>
+   <ul><li><b>Men:</b> shaving is better; cutting is valid.</li><li><b>Women:</b> cutting a fingertip's length is enough, even from the ends.</li><li>If bald: pass the razor over the head.</li></ul>
+   <p>For umrah, once the hair is shaved or cut, the pilgrim is released from all prohibitions of ihram (Federal Territory Mufti Office).</p>
+   <h3>Try it: cut 3 hairs</h3><div class="cut" id="cutzone">${[0,1,2].map(i=>`<button class="strand" data-act="cut" aria-label="Hair ${i+1}"><svg viewBox="0 0 30 90" width="30" height="90"><path d="M15 88 C 4 64, 26 46, 13 24 S 18 6, 15 2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>`).join("")}</div><p id="cutmsg" class="cutmsg"></p>`},
+  {b:["rukun","Pillar 5"],t:"8. Order: umrah complete",h:`<p>Tartib means every pillar is done in its set order: what comes first is done first.</p>
+   <ol class="tl"><li>Intention of ihram (at the miqat)</li><li>Tawaf of umrah</li><li>Sa'i</li><li>Shaving or cutting</li></ol>
+   <p>After tahallul the prohibitions of ihram are lifted. Before leaving Makkah (e.g. going home or to Madinah), Tawaf al-Wada' is wajib, and the umrah must be completed before it.</p>
+   <p class="src">This simulation is a visual training aid. For rulings, consult an accredited ibadah guide, Tabung Haji (+603-6207 1919) or your state Mufti office.</p>
+   <p class="src">Sources: <a href="${SRC_TH}" target="_blank" rel="noopener">TH KAH 1446H Notes, Week 10: Umrah</a>; <a href="${SRC_TH4}" target="_blank" rel="noopener">TH KAH 1446H Notes, Week 4: Sa'i, Shaving and Order</a>; <a href="${SRC_MUFTI}" target="_blank" rel="noopener">Federal Territory Mufti: Meaning of Tahallul</a>.</p>`}
+ ] ,id:[
+  {b:[],t:"SIMULASI UMRAH: Niat hingga Tahallul V1",h:`<p>Langkah demi langkah mengikuti catatan bimbingan Lembaga Tabung Haji Malaysia (mazhab Syafi'i), dengan simulasi tawaf dan sa'i.</p>
+   <h3>5 Rukun umrah</h3><ol><li>Niat ihram umrah</li><li>Tawaf umrah</li><li>Sa'i</li><li>Mencukur atau menggunting rambut</li><li>Tertib pada semua rukun</li></ol>
+   <h3>2 Wajib umrah</h3><ol><li>Niat ihram umrah di miqat</li><li>Menjauhi larangan ihram</li></ol>
+   <p>Rukun tidak boleh ditinggalkan dan tidak dapat diganti dengan dam; tanpanya umrah tidak sempurna. Jika wajib ditinggalkan, umrah tetap sah tetapi dikenakan dam.</p>
+   <p class="src">Sumber: <a href="${SRC_TH}" target="_blank" rel="noopener">Catatan Kursus Asas Haji 1446H, Minggu 10: Ibadah Umrah (Tabung Haji)</a>; <a href="${SRC_MUFTI}" target="_blank" rel="noopener">Bayan Li al-Haj #30: Pengertian Tahallul (Kantor Mufti Wilayah Persekutuan)</a>.</p>`},
+  {b:["sunat"],t:"1. Persiapan sebelum ihram",h:`<ul><li>Memotong kuku, merapikan kumis dan rambut, mencabut bulu ketiak dan mencukur bulu kemaluan.</li><li>Mandi sunah ihram dan berwudu.</li><li>Memakai minyak rambut atau wewangian di badan sebelum berniat (tidak pada kain ihram).</li><li><b>Laki-laki:</b> dua helai kain tidak berjahit dan tidak tersambung; satu menutup pusar hingga lutut, satu lagi diselendangkan. Disunahkan berwarna putih.</li><li><b>Laki-laki:</b> sandal harus memperlihatkan tumit dan sekurang-kurangnya ujung tiga jari kaki (Muzakarah Haji Nasional Malaysia ke-39).</li><li><b>Perempuan:</b> pakaian menutup aurat kecuali wajah dan kedua tangan hingga pergelangan; tidak ada pakaian khusus. Hindari pakaian tipis atau ketat.</li><li>Salat sunah ihram 2 rakaat.</li></ul>`},
+  {b:["rukun","Rukun 1","wajib","Wajib 1"],t:"2. Niat ihram umrah di miqat",h:`<p>Niat adalah rukun; berniat di miqat (atau sebelum melewatinya) adalah wajib. Disunahkan menghadap kiblat dan dalam keadaan berwudu.</p>
+   <h3>Miqat</h3><ul><li><b>Qarn al-Manazil</b> bagi yang datang dari arah Asia. Jika terbang langsung ke Jeddah, berniatlah di dalam pesawat sebelum melewati miqat sesuai pengumuman awak kabin dan pembimbing.</li><li><b>Bir Ali</b> bagi yang datang dari Madinah.</li><li>Jika sudah berada di Makkah: keluar ke Tanah Halal seperti Tan'im, Ji'ranah atau Hudaibiyah.</li></ul>
+   <h3>Lafaz niat (hadirkan dalam hati)</h3>${LAF(NIAT_AR,"Nawaitul-'umrata wa ahramtu biha lillahi ta'ala","Aku berniat umrah dan berihram dengannya karena Allah Ta'ala.")}
+   <h3>Niat bersyarat (jika khawatir terhalang)</h3><p>Contoh: “Aku berniat umrah dan berihram dengannya karena Allah Ta'ala; jika aku terhalang oleh haid, maka saat itu aku menjadi halal.” Tidak terbatas pada haid; boleh juga karena sakit atau halangan lain.</p>
+   <h3>Talbiyah: sunah sejak niat hingga mulai tawaf</h3>${LAF(TALBIAH_AR,TALBIAH_TR,"Aku penuhi panggilan-Mu ya Allah. Tiada sekutu bagi-Mu. Segala puji, nikmat dan kerajaan adalah milik-Mu.")}
+   <button class="act" data-act="niat">Saya sudah berniat ihram umrah</button>`},
+  {b:["wajib","Wajib 2"],t:"3. Larangan ihram (13 perkara)",h:`<p>Wajib dijaga sejak berniat hingga selesai mencukur atau menggunting rambut.</p>
+   <h3>Jenis taraffuh (bersenang-senang / berhias)</h3><ol><li>Menutup kepala atau sebagiannya (laki-laki)</li><li>Memakai pakaian berjahit, bersarung atau tersambung (laki-laki)</li><li>Menutup wajah (perempuan)</li><li>Memakai sarung tangan</li><li>Memakai wewangian pada badan atau pakaian</li><li>Memakai minyak di kepala atau janggut</li><li>Pendahuluan jimak</li><li>Bersetubuh</li><li>Menikah, menikahkan atau menjadi wakil nikah</li></ol>
+   <p><b>Hukum:</b> sengaja: berdosa dan dikenakan dam. Tidak sengaja atau tidak tahu: tidak berdosa dan tidak dikenakan dam. Akad nikah dalam ihram tidak sah.</p>
+   <h3>Jenis itlaf (menghilangkan / merusak)</h3><ol start="10"><li>Menghilangkan rambut atau bulu</li><li>Memotong kuku</li><li>Berburu atau membunuh binatang buruan</li><li>Menebang atau mencabut pohon di Tanah Haram</li></ol>
+   <p><b>Hukum:</b> sengaja: berdosa dan dikenakan dam. Tidak sengaja atau tidak tahu: tidak berdosa tetapi tetap dikenakan dam.</p>
+   <p class="src">Pelanggaran berat seperti bersetubuh memiliki hukum dam khusus; tanyakan kepada pembimbing ibadah Anda.</p>`},
+  {b:["rukun","Rukun 2"],t:"4. Tawaf umrah",h:`<p>Mengelilingi Ka'bah 7 putaran, dimulai dan diakhiri di sudut Hajar Aswad.</p>
+   <h3>Syarat sah tawaf</h3><ol><li>Menutup aurat</li><li>Suci dari hadas besar dan kecil</li><li>Badan, pakaian dan tempat tawaf suci dari najis</li><li>Dimulai dan diakhiri di sudut Hajar Aswad</li><li>Ka'bah di sebelah kiri dan berjalan ke depan</li><li>Genap 7 putaran dengan yakin</li><li>Di dalam Masjidil Haram dan di luar Ka'bah, termasuk di luar Hijr Ismail dan Syadzarwan</li><li>Menjaga niat tawaf</li></ol>
+   <h3>Amalan sunah</h3><ul><li>Istilam ke arah Hajar Aswad sambil bertakbir; berisyarat ke Rukun Yamani tanpa mencium telapak tangan.</li><li>Laki-laki: idtiba' (bahu kanan terbuka) dan raml pada 3 putaran pertama, untuk tawaf yang diikuti sa'i.</li><li>Berzikir, berdoa, membaca Al-Qur'an, khusyuk dan berturut-turut.</li></ul>
+   <button class="act" data-act="tawaf">Masuk simulasi tawaf</button>`},
+  {b:["sunat"],t:"5. Setelah tawaf",h:`<ul><li>Tutup kembali bahu kanan (idtiba' tidak disunahkan saat salat).</li><li>Salat sunah tawaf 2 rakaat, di belakang Maqam Ibrahim jika mampu, atau di mana saja di Masjidil Haram jika padat.</li><li>Minum air zamzam dan berdoa.</li><li>Langsung menuju tempat sa'i; disunahkan masuk melalui pintu Shafa (Bab ash-Shafa) dan bersa'i segera setelah tawaf.</li></ul>`},
+  {b:["rukun","Rukun 3"],t:"6. Sa'i antara Shafa dan Marwah",h:`<p>Berjalan bolak-balik antara Bukit Shafa dan Bukit Marwah. Shafa ke Marwah dihitung 1, Marwah ke Shafa dihitung 2, dan seterusnya.</p>
+   <h3>Syarat sah sa'i</h3><ol><li>Dilakukan setelah tawaf umrah</li><li>Dimulai dari Shafa dan diakhiri di Marwah</li><li>Genap 7 kali dengan yakin</li><li>Sampai ke ujung tempat sa'i di kaki Shafa dan Marwah pada setiap perjalanan</li><li>Di dalam area sa'i (Mas'a)</li><li>Menjaga niat sa'i</li></ol>
+   <h3>Amalan sunah</h3><ul><li>Berwudu dan berturut-turut.</li><li>Di Shafa dan Marwah: menghadap Ka'bah, bertakbir 3 kali, bertahlil dan berdoa. Laki-laki naik ke bukit.</li><li>Laki-laki: berlari kecil di area bertanda lampu hijau, dan idtiba' pada semua perjalanan.</li></ul>
+   ${LAF(SAR.dzikr[0],SAR.dzikr[1])}
+   <button class="act" data-act="sai">Masuk simulasi sa'i</button>`},
+  {b:["rukun","Rukun 4"],t:"7. Tahallul: mencukur atau menggunting",h:`<p>Menghilangkan sekurang-kurangnya <b>3 helai rambut kepala</b>, setelah sa'i.</p>
+   <ul><li><b>Laki-laki:</b> lebih utama mencukur; menggunting juga sah.</li><li><b>Perempuan:</b> cukup menggunting sepanjang satu ruas jari, walaupun di ujung rambut.</li><li>Jika tidak berambut: lewatkan pisau cukur di kepala.</li></ul>
+   <p>Untuk umrah, begitu mencukur atau menggunting rambut, jemaah bebas dari semua larangan ihram (Kantor Mufti Wilayah Persekutuan).</p>
+   <h3>Coba: gunting 3 helai rambut</h3>${STRANDS("Helai")}`},
+  {b:["rukun","Rukun 5"],t:"8. Tertib: umrah selesai",h:`<p>Tertib berarti semua rukun dikerjakan sesuai urutan: yang dahulu didahulukan, yang kemudian diakhirkan.</p>
+   <ol class="tl"><li>Niat ihram umrah (di miqat)</li><li>Tawaf umrah</li><li>Sa'i</li><li>Mencukur atau menggunting</li></ol>
+   <p>Setelah tahallul, larangan ihram terangkat. Sebelum meninggalkan Makkah (misalnya pulang ke tanah air atau ke Madinah), Tawaf Wada' wajib dilakukan, dan umrah harus disempurnakan sebelum Tawaf Wada'.</p>
+   <p class="src">Simulasi ini adalah alat latihan visual. Untuk persoalan hukum, rujuklah pembimbing ibadah resmi di negara Anda.</p>
+   <p class="src">Sumber: <a href="${SRC_TH}" target="_blank" rel="noopener">TH Catatan KAH 1446H M10: Ibadah Umrah</a>; <a href="${SRC_TH4}" target="_blank" rel="noopener">TH Catatan KAH 1446H M4: Sa'i, Bercukur dan Tertib</a>; <a href="${SRC_MUFTI}" target="_blank" rel="noopener">Mufti WP: Pengertian Tahallul</a>.</p>`}
+ ]
+ ,ar:[
+  {b:[],t:"محاكاة العمرة: من النية إلى التحلل V1",h:`<p>خطوة بخطوة وفق مذكرات التوجيه الصادرة عن هيئة صندوق الحج الماليزية (تابونغ حاجي) على المذهب الشافعي، مع محاكاة للطواف والسعي.</p>
+   <h3>أركان العمرة الخمسة</h3><ol><li>نية الإحرام بالعمرة</li><li>طواف العمرة</li><li>السعي</li><li>الحلق أو التقصير</li><li>الترتيب بين الأركان</li></ol>
+   <h3>واجبا العمرة</h3><ol><li>الإحرام من الميقات</li><li>اجتناب محظورات الإحرام</li></ol>
+   <p>الركن لا يجوز تركه ولا يُجبر بدم، ولا تتم العمرة بدونه. أما الواجب فإن تُرك صحت العمرة ولزم الدم.</p>
+   <p class="src">المصادر: <a href="${SRC_TH}" target="_blank" rel="noopener">مذكرات الدورة الأساسية للحج 1446هـ، الأسبوع 10: العمرة (تابونغ حاجي)</a>؛ <a href="${SRC_MUFTI}" target="_blank" rel="noopener">بيان لِلحج رقم 30: معنى التحلل (مكتب مفتي الأقاليم الاتحادية)</a>.</p>`},
+  {b:["sunat"],t:"1. الاستعداد قبل الإحرام",h:`<ul><li>تقليم الأظفار، وتهذيب الشارب والشعر، ونتف الإبط وحلق العانة.</li><li>الاغتسال للإحرام والوضوء.</li><li>تطييب البدن أو دهن الشعر قبل النية (لا على ثوب الإحرام).</li><li><b>الرجل:</b> إزار ورداء غير مخيطين ولا متصلين؛ الإزار من السرة إلى الركبة، والرداء على الكتفين، ويُسن أن يكونا أبيضين.</li><li><b>الرجل:</b> النعل يُظهر العقب وأطراف ثلاثة أصابع على الأقل (المذاكرة الوطنية الماليزية للحج رقم 39).</li><li><b>المرأة:</b> لباس ساتر للعورة إلا الوجه والكفين، ولا لباس مخصوص لها، وتتجنب الشفاف والضيق.</li><li>صلاة ركعتي الإحرام.</li></ul>`},
+  {b:["rukun","الركن 1","wajib","الواجب 1"],t:"2. نية الإحرام بالعمرة من الميقات",h:`<p>النية ركن، وكونها من الميقات (أو قبل مجاوزته) واجب. ويُسن استقبال القبلة والطهارة.</p>
+   <h3>الميقات</h3><ul><li><b>قرن المنازل</b> للقادمين من جهة آسيا، ومن سافر جوًا مباشرة إلى جدة أحرم في الطائرة قبل محاذاة الميقات حسب تنبيه الطاقم والمرشد.</li><li><b>بئر علي (ذو الحليفة)</b> للقادمين من المدينة.</li><li>من كان في مكة: يخرج إلى الحل كالتنعيم أو الجعرانة أو الحديبية.</li></ul>
+   <h3>لفظ النية (مع استحضارها في القلب)</h3>${LAF(NIAT_AR,"",'')}
+   <h3>الاشتراط (لمن خاف المانع)</h3><p>مثاله: «نويتُ العمرة وأحرمتُ بها لله تعالى، فإن حبسني حابس من حيض فمحلّي حيث حبستني». ولا يختص بالحيض، بل يشمل المرض وغيره من الموانع.</p>
+   <h3>التلبية: سنة من الإحرام إلى بدء الطواف</h3>${LAF(TALBIAH_AR,"",'')}
+   <button class="act" data-act="niat">نويتُ الإحرام بالعمرة</button>`},
+  {b:["wajib","الواجب 2"],t:"3. محظورات الإحرام (13)",h:`<p>يجب اجتنابها من النية حتى الحلق أو التقصير.</p>
+   <h3>محظورات الترفّه</h3><ol><li>تغطية الرأس أو بعضه (للرجل)</li><li>لبس المخيط أو المحيط (للرجل)</li><li>تغطية الوجه (للمرأة)</li><li>لبس القفازين</li><li>الطيب في البدن أو الثوب</li><li>دهن شعر الرأس أو اللحية</li><li>مقدمات الجماع</li><li>الجماع</li><li>عقد النكاح أو تولّيه أو التوكيل فيه</li></ol>
+   <p><b>الحكم:</b> العامد آثم وعليه الدم، والناسي أو الجاهل لا إثم عليه ولا دم. وعقد النكاح في الإحرام باطل.</p>
+   <h3>محظورات الإتلاف</h3><ol start="10"><li>إزالة الشعر</li><li>تقليم الأظفار</li><li>صيد البر أو قتله</li><li>قطع شجر الحرم أو قلعه</li></ol>
+   <p><b>الحكم:</b> العامد آثم وعليه الدم، والناسي أو الجاهل لا إثم عليه لكن يلزمه الدم.</p>
+   <p class="src">للمحظورات الكبرى كالجماع أحكام خاصة؛ راجع مرشدك في العبادة.</p>`},
+  {b:["rukun","الركن 2"],t:"4. طواف العمرة",h:`<p>الطواف بالكعبة سبعة أشواط، يبدأ وينتهي عند ركن الحجر الأسود.</p>
+   <h3>شروط صحة الطواف</h3><ol><li>ستر العورة</li><li>الطهارة من الحدثين</li><li>طهارة البدن والثوب والمكان من النجاسة</li><li>البدء والانتهاء عند ركن الحجر الأسود</li><li>جعل البيت عن يساره مع المشي إلى الأمام</li><li>إكمال سبعة أشواط يقينًا</li><li>أن يكون داخل المسجد الحرام وخارج الكعبة، ومن ذلك الحِجر والشاذروان</li><li>ألّا يصرفه لغيره</li></ol>
+   <h3>من سنن الطواف</h3><ul><li>استلام الحجر الأسود أو الإشارة إليه مع التكبير، والإشارة إلى الركن اليماني دون تقبيل اليد.</li><li>للرجال: الاضطباع والرمل في الأشواط الثلاثة الأولى، في طواف يعقبه سعي.</li><li>الذكر والدعاء وقراءة القرآن، والخشوع والموالاة.</li></ul>
+   <button class="act" data-act="tawaf">ادخل محاكاة الطواف</button>`},
+  {b:["sunat"],t:"5. بعد الطواف",h:`<ul><li>غطِّ كتفك الأيمن (لا يُسن الاضطباع في الصلاة).</li><li>صلِّ ركعتي الطواف خلف مقام إبراهيم إن تيسّر، وإلا ففي أي مكان من المسجد الحرام.</li><li>اشرب من ماء زمزم وادعُ.</li><li>ثم توجّه إلى المسعى؛ ويُسن الخروج من باب الصفا والمبادرة إلى السعي بعد الطواف.</li></ul>`},
+  {b:["rukun","الركن 3"],t:"6. السعي بين الصفا والمروة",h:`<p>المشي ذهابًا وإيابًا بين الصفا والمروة: من الصفا إلى المروة شوط، ومن المروة إلى الصفا شوط ثانٍ، وهكذا.</p>
+   <h3>شروط صحة السعي</h3><ol><li>أن يكون بعد طواف العمرة</li><li>البدء بالصفا والختم بالمروة</li><li>إكمال سبعة أشواط يقينًا</li><li>استيعاب المسافة بين الصفا والمروة في كل شوط</li><li>أن يكون في المسعى</li><li>ألّا يصرفه لغيره</li></ol>
+   <h3>من سنن السعي</h3><ul><li>الطهارة والموالاة.</li><li>على الصفا والمروة: استقبال الكعبة، والتكبير ثلاثًا، والتهليل، والدعاء، وصعود الرجل عليهما.</li><li>للرجال: الإسراع بين العلمين الأخضرين، والاضطباع في جميع الأشواط.</li></ul>
+   ${LAF(SAR.dzikr[0],"")}
+   <button class="act" data-act="sai">ادخل محاكاة السعي</button>`},
+  {b:["rukun","الركن 4"],t:"7. التحلل: الحلق أو التقصير",h:`<p>إزالة <b>ثلاث شعرات من شعر الرأس</b> على الأقل بعد السعي.</p>
+   <ul><li><b>الرجل:</b> الحلق أفضل، والتقصير مجزئ.</li><li><b>المرأة:</b> يكفيها التقصير قدر أنملة ولو من أطراف الشعر.</li><li>من لا شعر له: يُمِرّ الموسى على رأسه.</li></ul>
+   <p>وفي العمرة يتحلل المعتمر من جميع محظورات الإحرام بمجرد الحلق أو التقصير (مكتب مفتي الأقاليم الاتحادية).</p>
+   <h3>جرّب: قصّ ثلاث شعرات</h3>${STRANDS("شعرة")}`},
+  {b:["rukun","الركن 5"],t:"8. الترتيب: تمت العمرة",h:`<p>الترتيب أن تُؤدّى الأركان على نسقها: يُقدَّم ما حقه التقديم ويُؤخَّر ما حقه التأخير.</p>
+   <ol class="tl"><li>نية الإحرام بالعمرة (من الميقات)</li><li>طواف العمرة</li><li>السعي</li><li>الحلق أو التقصير</li></ol>
+   <p>بعد التحلل ترتفع محظورات الإحرام. ومن أراد مغادرة مكة (كالعودة إلى بلده أو السفر إلى المدينة) وجب عليه طواف الوداع، ولا بد من إتمام العمرة قبله.</p>
+   <p class="src">هذه المحاكاة أداة تدريب بصري. وللمسائل الفقهية راجع المرشد المعتمد أو جهة الإفتاء في بلدك.</p>
+   <p class="src">المصادر: <a href="${SRC_TH}" target="_blank" rel="noopener">تابونغ حاجي، مذكرات 1446هـ، الأسبوع 10: العمرة</a>؛ <a href="${SRC_TH4}" target="_blank" rel="noopener">تابونغ حاجي، مذكرات 1446هـ، الأسبوع 4: السعي والحلق والترتيب</a>؛ <a href="${SRC_MUFTI}" target="_blank" rel="noopener">مفتي الأقاليم الاتحادية: معنى التحلل</a>.</p>`}
+ ]
+};
+const BADGE={rukun:"b-rukun",wajib:"b-wajib",sunat:"b-sunat"};
+const USM_LOGO="data:image/png;base64,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";
+function setCredit(){const html=`<img class="credit-logo" src="${USM_LOGO}" alt="Universiti Sains Malaysia · APEX">`+MISC[lang].credit;document.querySelectorAll(".credit").forEach(el=>el.innerHTML=html);}
+function renderJourney(){setCredit();document.title=MISC[lang].title;
+  const L=JT[lang], st=J[lang][jstep], n=J[lang].length;
+  $("jsteps").innerHTML=Array.from({length:n},(_,i)=>`<i class="${i<jstep?"on":i===jstep?"cur":""}"></i>`).join("");
+  let bh="";for(let i=0;i<st.b.length;i++){const k=st.b[i];if(BADGE[k]){const lbl=st.b[i+1]&&!BADGE[st.b[i+1]]?st.b[++i]:L[k];bh+=`<span class="badge ${BADGE[k]}">${lbl.toUpperCase()}</span>`;}}
+  $("jbadges").innerHTML=bh;$("jtitle").textContent=st.t;$("jbody").innerHTML=st.h;
+  const pill=$("jstate");pill.textContent=cutN>=3?L.halal:ihram?L.inI:L.notI;pill.className="pill "+(ihram?"p-on":cutN>=3?"p-done":"");
+  {const r=LANGS[lang].dir==="rtl";$("jprev").textContent=r?"› "+L.prev:"‹ "+L.prev;$("jnext").textContent=r?L.next+" ‹":L.next+" ›";}
+  $("jprev").disabled=jstep===0;$("jnext").style.visibility=jstep===n-1?"hidden":"visible";
+  $("jlang").value=lang;$("toGuide").textContent=MISC[lang].guideBtn;
+  if(jstep===7){const btns=[...document.querySelectorAll(".strand")];btns.forEach((b,i)=>{if(i<cutN)b.classList.add("gone");});cutMsg();}
+  $("jcard").scrollTop=0;
+}
+function cutMsg(){const m=$("cutmsg");if(!m)return;m.textContent=cutN>=3?MISC[lang].cut3:MISC[lang].cutN(cutN);}
+function openJourney(i){hideHint();
+  if(typeof i==="number")jstep=Math.max(0,Math.min(J.bm.length-1,i));
+  playing=false;setMode("sim");activity="journey";
+  if(rig.parent!==scene)scene.add(rig);
+  ["hud","map","bar","intro"].forEach(id=>$(id).style.display="none");
+  $("journey").style.display="grid";renderJourney();
+}
+$("jprev").onclick=()=>{if(jstep>0){jstep--;renderJourney();}};
+$("jnext").onclick=()=>{if(jstep<J.bm.length-1){jstep++;renderJourney();}};
+$("jlang").onchange=e=>setLang(e.target.value);
+$("jbody").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="niat"){ihram=true;cutN=0;flash(MISC[lang].niat);renderJourney();}
+  else if(a==="tawaf"){$("journey").style.display="none";$("intro").style.display="grid";}
+  else if(a==="sai"){startSai();}
+  else if(a==="cut"&&!b.classList.contains("gone")){b.classList.add("gone");cutN++;if(cutN>=3){ihram=false;flash(MISC[lang].tah);renderJourney();}else cutMsg();}
+});
+$("toGuide").onclick=()=>openJourney(jstep);
+$("guideBtn").onclick=()=>openJourney(jstep);
+$("nextstep").onclick=()=>openJourney(activity==="sai"?7:5);
+
+/* ---------- Sa'ie scene ---------- */
+const sScene=new THREE.Scene();sScene.background=new THREE.Color(0xf2eee5);sScene.fog=new THREE.Fog(0xf2eee5,70,430);
+sScene.add(new THREE.HemisphereLight(0xffffff,0xe9e2d4,1.0));
+const SL=390,SW=44,G0=-95,G1=-45;
+(function(){
+  const ft=tileTex.clone();ft.needsUpdate=true;ft.repeat.set(11,115);
+  const fl=new THREE.Mesh(new THREE.PlaneGeometry(SW,SL+80),new THREE.MeshLambertMaterial({map:ft}));fl.rotation.x=-Math.PI/2;sScene.add(fl);
+  const at=arcTex.clone();at.needsUpdate=true;at.repeat.set(36,1);
+  for(const sx of[-1,1]){const w=new THREE.Mesh(new THREE.PlaneGeometry(SL+80,16),new THREE.MeshLambertMaterial({map:at}));w.position.set(sx*SW/2,8,0);w.rotation.y=-sx*Math.PI/2;sScene.add(w);}
+  const ce=new THREE.Mesh(new THREE.PlaneGeometry(SW,SL+80),new THREE.MeshLambertMaterial({color:0xf7f5ef}));ce.rotation.x=Math.PI/2;ce.position.y=16;sScene.add(ce);
+  const colG=new THREE.BoxGeometry(1.3,16,1.3),colM=new THREE.MeshLambertMaterial({color:0xeeebe3});
+  const nC=Math.floor((SL+60)/12)*2;const cols=new THREE.InstancedMesh(colG,colM,nC);const d=new THREE.Object3D();let k=0;
+  for(let z=-SL/2-30;z<SL/2+30&&k<nC;z+=12)for(const x of[-11,11]){d.position.set(x,8,z);d.updateMatrix();cols.setMatrixAt(k++,d.matrix);}sScene.add(cols);
+  const lampG=new THREE.BoxGeometry(3,.2,1.2),lampM=new THREE.MeshBasicMaterial({color:0xfff6dc});const nL=Math.floor((SL+60)/12)*3;const lamps=new THREE.InstancedMesh(lampG,lampM,nL);k=0;
+  for(let z=-SL/2-30;z<SL/2+30&&k<nL;z+=12)for(const x of[-17,0,17]){d.position.set(x,15.8,z+6);d.updateMatrix();lamps.setMatrixAt(k++,d.matrix);}sScene.add(lamps);
+  const div=new THREE.Mesh(new THREE.BoxGeometry(.6,1.1,SL-40),new THREE.MeshLambertMaterial({color:0xd9d2c3}));div.position.y=.55;sScene.add(div);
+  const gm=new THREE.MeshBasicMaterial({color:0x2fe07a});
+  for(let z=G0;z<=G1;z+=5){const s=new THREE.Mesh(new THREE.BoxGeometry(SW-2,.25,.7),gm);s.position.set(0,15.6,z);sScene.add(s);}
+  for(const z of[G0,G1])for(const x of[-11,11]){const c=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.2,1.5),gm);c.position.set(x,9,z);sScene.add(c);}
+  const rockM=new THREE.MeshLambertMaterial({color:0x8d7c69});
+  function hill(z0,sz,label){const g=new THREE.Group();g.position.z=z0;
+    for(let i=0;i<14;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry((1.6+Math.random()*2.6)*sz,0),rockM);r.position.set((Math.random()-.5)*14*sz,Math.random()*3*sz,(Math.random()-.5)*5*sz);r.rotation.set(Math.random()*3,Math.random()*3,0);g.add(r);}
+    const gl=new THREE.Mesh(new THREE.BoxGeometry(18*sz,2.4,.15),new THREE.MeshPhongMaterial({color:0xcfe0e6,transparent:true,opacity:.35}));gl.position.set(0,1.2,-Math.sign(z0)*4.5*sz);g.add(gl);
+    const dm=new THREE.Mesh(new THREE.SphereGeometry(12,24,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({color:0xf4f1e8,side:THREE.DoubleSide}));dm.position.y=15.9;dm.scale.y=.5;g.add(dm);
+    const c=document.createElement("canvas");c.width=512;c.height=128;const x=c.getContext("2d");x.fillStyle="#17894f";x.fillRect(0,0,512,128);x.fillStyle="#fff";x.font="800 64px Manrope, sans-serif";x.textAlign="center";x.fillText(label,256,88);
+    const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t}));sp.scale.set(8,2,1);sp.position.set(0,11,0);g.add(sp);sScene.add(g);}
+  hill(-SL/2-7,1,"AS-SAFA");hill(SL/2+7,.75,"AL-MARWAH");
+})();
+let sBody=null,sHead=null,sCover=null,sAg=[],SN=0;
+function buildSaiCrowd(){[sBody,sHead,sCover].forEach(m=>{if(m){sScene.remove(m);m.geometry.dispose();}});
+  SN=Math.round((isSmall?650:1100)*crowdMul);
+  const bg=new THREE.CylinderGeometry(.2,.29,1.42,8);bg.translate(0,.71,0);const hg=new THREE.SphereGeometry(.115,8,6);const cg=new THREE.SphereGeometry(.135,8,6,0,Math.PI*2,0,Math.PI*.62);const mat=new THREE.MeshLambertMaterial();
+  sBody=new THREE.InstancedMesh(bg,mat,SN);sHead=new THREE.InstancedMesh(hg,mat,SN);sCover=new THREE.InstancedMesh(cg,mat,SN);
+  [sBody,sHead,sCover].forEach(m=>{m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;sScene.add(m);});
+  sAg=[];const col=new THREE.Color();
+  for(let i=0;i<SN;i++){const dir=Math.random()<.5?1:-1;const t=Math.random();const type=t<.5?"ihram":t<.78?"abaya":"other";const male=type==="ihram"?true:type==="abaya"?false:Math.random()<.4;
+    sAg.push({dir,x:-dir*(1.6+Math.random()*19),z:(Math.random()-.5)*SL,v:.9+Math.random()*.5,ph:Math.random()*6.28,hs:(male?1:.93)*(.9+Math.random()*.16),cover:!male||Math.random()<.15});
+    sBody.setColorAt(i,col.setHex(pick(palettes[type])));sHead.setColorAt(i,col.setHex(pick(skin)));sCover.setColorAt(i,col.setHex(male?0xf7f7f4:pick(scarf)));}
+  sBody.instanceColor.needsUpdate=sHead.instanceColor.needsUpdate=sCover.instanceColor.needsUpdate=true;}
+function updateSaiCrowd(dt,t){const cx=rig.position.x,cz=rig.position.z;
+  for(let i=0;i<SN;i++){const a=sAg[i];const g=(a.z>G0&&a.z<G1)?1.35:1;a.z+=a.dir*a.v*g*dt;
+    if(a.z>SL/2+4){a.z=-SL/2-4;}if(a.z<-SL/2-4){a.z=SL/2+4;}
+    let x=a.x;const dx=x-cx,dz=a.z-cz;if(Math.abs(dz)<.9&&Math.abs(dx)<.9){a.x+=dx>=0?.05:-.05;x=a.x;}
+    const step=t*a.v*5+a.ph;dummy.position.set(x+Math.sin(step*.5)*.03,Math.abs(Math.sin(step))*.035,a.z);dummy.rotation.set(0,a.dir>0?Math.PI:0,Math.sin(step)*.025);
+    dummy.scale.set(1,a.hs,1);dummy.updateMatrix();sBody.setMatrixAt(i,dummy.matrix);
+    dummy.position.y+=1.53*a.hs;dummy.scale.set(1,1,1);dummy.updateMatrix();sHead.setMatrixAt(i,dummy.matrix);
+    if(a.cover){dummy.position.y+=.015;dummy.updateMatrix();sCover.setMatrixAt(i,dummy.matrix);}else sCover.setMatrixAt(i,hid);}
+  sBody.instanceMatrix.needsUpdate=sHead.instanceMatrix.needsUpdate=sCover.instanceMatrix.needsUpdate=true;}
+const SAI_WALK=1.2,PAUSE=8;
+let saiTrip=1,saiS=0,saiPause=PAUSE,saiDone=false,saiT=0,lastSaiKey="";
+function saiZ(){return saiTrip%2?-SL/2+saiS:SL/2-saiS;}
+function saiDir(){return saiTrip%2?1:-1;}
+function placeSaiRig(){const d=saiDir();rig.position.set(d>0?-6:6,0,saiZ());rig.rotation.y=d>0?Math.PI:0;if(saiPause>0&&!saiDone){/* face back toward Kaaba side roughly */}}
+function resetSai(){saiTrip=1;saiS=0;saiPause=PAUSE;saiDone=false;lastSaiKey="";yawOff=0;pitchOff=0;playing=true;buildBar();}
+function startSai(){
+  setMode("sim");activity="sai";sScene.add(rig);buildSaiCrowd();resetSai();
+  $("journey").style.display="none";$("intro").style.display="none";["hud","map"].forEach(id=>$(id).style.display="block");$("bar").style.display="flex";
+  if(!SPEEDS_SIM.includes(speed))speed=3;if(speed===1)speed=3;buildBar();showHint();
+}
+function updateSai(dt,sd){if(saiDone)return;
+  if(saiPause>0){saiPause-=dt*(playing?Math.min(speed,4):0);return;}
+  const z=saiZ();const inG=z>G0&&z<G1;let v=SAI_WALK;if(sex==="m"&&inG)v*=1.6;
+  saiS+=v*sd;
+  if(saiS>=SL){saiS=SL;if(saiTrip===7){saiDone=true;playing=false;flash(JT[lang].saiDone);buildBar();}else{saiTrip++;saiS=0;saiPause=PAUSE;flash(`${JT[lang].trip} ${saiTrip} / 7`);}}
+}
+function saiKey(){if(saiDone)return"done";if(saiPause>0)return saiTrip===1?"safa1":(saiTrip%2?"safa":"marwah");const z=saiZ();return(z>G0&&z<G1)?"green":"walk";}
+function renderSaiHud(){const L=JT[lang],k=saiKey();const key=k+saiTrip+lang+sex;if(key===lastSaiKey)return;lastSaiKey=key;lastKey="";
+  const dirT=saiTrip%2?L.dir1:L.dir2;
+  $("lap").innerHTML=saiDone?`${L.saiDone} <small>7 / 7</small>`:`${L.trip} ${saiTrip} <small>/ 7 · ${dirT}</small>`;
+  const [s,g]=L.sai[k];$("seg").textContent=s;$("guide").textContent=g;
+  let ar=null;if(k==="safa1")ar=[SAR.verse[0]+"  ·  "+SAR.dzikr[0],SAR.verse[1]+" · "+SAR.dzikr[1]];else if(k==="safa"||k==="marwah")ar=SAR.dzikr;
+  $("ar").textContent=ar?ar[0]:"";$("tr").textContent=ar?ar[1]:"";$("ar").style.display=$("tr").style.display=ar?"block":"none";
+  $("tip").textContent=L.saiTip;
+  drawPanel(saiDone?"7 / 7":`${L.trip} ${saiTrip} / 7`,s,g,ar?ar[0]:"");}
+function drawSaiMap(){const w=256;mg.clearRect(0,0,w,w);const cs=getComputedStyle(document.documentElement);const ink=cs.getPropertyValue("--ink").trim(),gold=cs.getPropertyValue("--gold").trim(),green=cs.getPropertyValue("--green").trim();
+  const x0=34,x1=222,y=150,X=z=>x0+(z+SL/2)/SL*(x1-x0);
+  mg.strokeStyle=ink;mg.globalAlpha=.25;mg.lineWidth=14;mg.lineCap="round";mg.beginPath();mg.moveTo(x0,y);mg.lineTo(x1,y);mg.stroke();mg.globalAlpha=1;
+  mg.strokeStyle=green;mg.lineWidth=14;mg.lineCap="butt";mg.beginPath();mg.moveTo(X(G0),y);mg.lineTo(X(G1),y);mg.stroke();
+  mg.fillStyle="#8d7c69";mg.beginPath();mg.arc(x0,y,14,0,7);mg.fill();mg.beginPath();mg.arc(x1,y,11,0,7);mg.fill();
+  mg.fillStyle=ink;mg.font="700 22px Manrope, sans-serif";mg.textAlign="center";mg.fillText("Safa",x0+6,y+46);mg.fillText("Marwah",x1-14,y+46);
+  for(let i=0;i<7;i++){const bx=56+i*24,by=70;mg.beginPath();mg.arc(bx,by,9,0,7);if(i<saiTrip-1||saiDone){mg.fillStyle=gold;mg.fill();}else if(i===saiTrip-1){mg.fillStyle=green;mg.fill();}else{mg.strokeStyle=ink;mg.globalAlpha=.4;mg.lineWidth=2;mg.stroke();mg.globalAlpha=1;}}
+  const px=X(saiZ());mg.fillStyle=green;mg.beginPath();mg.arc(px,y,11,0,7);mg.fill();mg.strokeStyle="#fff";mg.lineWidth=3;mg.stroke();
+  mg.fillStyle=green;mg.beginPath();const d=saiDir();mg.moveTo(px+d*24,y);mg.lineTo(px+d*12,y-8);mg.lineTo(px+d*12,y+8);mg.fill();}
+
+/* ---------- 360° look hint ---------- */
+function showHint(){if(gyroOn||renderer.xr.isPresenting)return;$("hintTxt").textContent=MISC[lang].hint;$("hint").style.display="flex";clearTimeout(showHint.t);showHint.t=setTimeout(hideHint,7000);}
+function hideHint(){$("hint").style.display="none";}
+
+/* ---------- Light / dark theme ---------- */
+function applyTheme(t){document.documentElement.setAttribute("data-theme",t);
+  document.querySelectorAll(".themeBtn").forEach(b=>{b.textContent=t==="dark"?"☀️":"🌙";b.title=t==="dark"?"Cerah / Light":"Gelap / Dark";});
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content",t==="dark"?"#0f3d2e":"#17894f");
+  try{localStorage.setItem("su-theme",t);}catch(e){}}
+(function(){let t=null;try{t=localStorage.getItem("su-theme");}catch(e){}
+  if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";applyTheme(t);})();
+document.querySelectorAll(".themeBtn").forEach(b=>b.onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"));
+
+renderJourney();
+
+/* ---------- Loop ---------- */
+const clock=new THREE.Clock();
+placeRig();
+renderer.setAnimationLoop(()=>{
+  const dt=Math.min(clock.getDelta(),.1);
+  const simDt=dt*(playing?speed:0);
+  if(activity==="sai"){updateSai(dt,simDt);saiT+=simDt||dt*.15;updateSaiCrowd(simDt||dt*.15,saiT);placeSaiRig();
+    if(!renderer.xr.isPresenting){if(gyroOn)applyGyro();else camera.rotation.set(pitchOff,yawOff,0);camera.position.y=1.6+Math.abs(Math.sin(saiT*5))*.02;}
+    renderSaiHud();drawSaiMap();renderer.render(sScene,camera);return;}
+  if(mode!=="sim"){
+    if(!finished&&realv.duration){const f=Math.min(1,realv.currentTime/realv.duration);th=(mode==="v360"&&v360Full)?TOTAL*f:(realLap-1)*Math.PI*2+Math.PI*2*f;}
+    const lp=lapNum();if(lp!==lastLap&&lp>0&&!finished){flash(TXT[lang].newlap(lp));lastLap=lp;}
+  } else if(playing&&!finished){
+    const ramlF=(sex==="m"&&th>=0&&th<Math.PI*6)?1.25:1;
+    th+=WALK*ramlF*simDt/R0;
+    if(th>=TOTAL){th=TOTAL;finished=true;playing=false;buildBar();flash(TXT[lang].done);}
+    const lp=lapNum();if(lp!==lastLap&&lp>0&&!finished){flash(TXT[lang].newlap(lp));lastLap=lp;}
+  }
+  const realFlat=mode==="real"&&!renderer.xr.isPresenting;
+  simT+=simDt||dt*.15;
+  if(!realFlat&&mode!=="v360")updateCrowd(mode==="real"?dt:(simDt||dt*.15),simT);
+  placeRig();
+  if(!renderer.xr.isPresenting){if(gyroOn)applyGyro();else{camera.rotation.set(pitchOff,yawOff,0);}camera.position.y=1.6+Math.abs(Math.sin(simT*5))*.02;}
+  renderHud();drawMap();
+  if(!realFlat)renderer.render(scene,camera);
+});
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+})();
+</script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
+</body>
+</html>
