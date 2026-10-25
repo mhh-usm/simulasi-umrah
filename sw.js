@@ -1,4 +1,4 @@
-const CACHE="simulasi-umrah-v1";
+const CACHE="simulasi-umrah-v2-8";
 const CORE=["./","index.html","manifest.json","icon-192.png","icon-512.png","privacy.html",
  "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.all(CORE.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()));});
