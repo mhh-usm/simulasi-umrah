@@ -206,7 +206,8 @@ img,svg,video,canvas{max-width:100%}
 .qnum{color:var(--gold);font-size:.8em;white-space:nowrap}
 .qtr{font-size:14px;line-height:1.6;color:var(--ink-soft);margin:6px 0 0;text-align:left!important}
 .mname{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
-.mcount{margin-top:8px;font-size:13px;padding:8px 12px}
+.mcount{margin-top:8px;font-size:13px;padding:8px 12px}.mplay{margin-top:8px;font-size:13px;padding:8px 12px;background:#17894f!important;color:#fff!important}
+.qsur{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px}.qsur .pname{grid-column:1}.qsur .pmeta{grid-column:1;margin:0}.qsur button{grid-column:2;grid-row:1/4}.qsel{grid-column:1;font-size:12.5px;display:flex;gap:6px;align-items:center;color:var(--ink-soft)}.qsar{font-family:"Amiri Quran","Amiri",serif;color:var(--gold);margin-left:6px}
 .mdone{opacity:.55}.mdone .mcount{background:#17894f;color:#fff}
 #zback{margin-bottom:6px}
 .themeBtn{font-size:16px;line-height:1;padding:8px 11px;min-width:40px}
@@ -250,6 +251,8 @@ img,svg,video,canvas{max-width:100%}
   <button id="play" aria-pressed="false"></button>
   <button id="mode"></button>
   <button id="panoBtn" aria-pressed="false"></button>
+  <button id="vbtn" aria-pressed="true"></button>
+  <button id="qbtn" aria-pressed="false"></button>
   <button id="snd" aria-pressed="false"></button>
   <div class="sp" id="speeds" role="group"></div>
   <button id="look"></button>
@@ -1348,7 +1351,7 @@ function setMode(m){
   scene.children.forEach(o=>{if(o!==rig)o.visible=(m!=="v360");});
   applyPano();buildBar();
 }
-function startTawaf(m){
+function startTawaf(m){vLap=-1;vTrip=-1;
   activity="tawaf";if(rig.parent!==scene)scene.add(rig);$("journey").style.display="none";th=TH_START;finished=false;lastLap=0;realLap=1;lastKey="";
   mode=m;buildCrowd();$("intro").style.display="none";$("hud").style.display="block";$("map").style.display="block";$("bar").style.display="flex";playing=true;
   if(m!=="sim"){th=0;realLap=1;const v=m==="v360"?v360:flatv;
@@ -1362,6 +1365,50 @@ const SEGS=[[0,8,"aswad"],[8,40,"multazam"],[40,80,"maqam"],[80,190,"hijr"],[190
 let lastKey="";
 function segKey(){if(finished)return"done";if(th<0)return"pre";const d=(th%(Math.PI*2))*180/Math.PI;for(const s of SEGS)if(d>=s[0]&&d<s[1])return s[2];return"rabbana";}
 function lapNum(){return th<0?0:Math.min(7,Math.floor(th/(Math.PI*2))+1);}
+/* ---------- V2: Audio bacaan al-Quran (surah pendek) ---------- */
+const SURAH_L=[[18,"Al-Kahf","الكهف"],[32,"As-Sajdah","السجدة"],[56,"Al-Waqi'ah","الواقعة"],[67,"Al-Mulk","الملك"]];
+const SURAH=[[1,"Al-Fatihah","الفاتحة"],[103,"Al-'Asr","العصر"],[106,"Quraisy","قريش"],[107,"Al-Ma'un","الماعون"],[108,"Al-Kauthar","الكوثر"],[109,"Al-Kafirun","الكافرون"],[110,"An-Nasr","النصر"],[112,"Al-Ikhlas","الإخلاص"],[113,"Al-Falaq","الفلق"],[114,"An-Nas","الناس"]];
+const QTX={bm:{tab:"🎧 Surah",gS:"Surah pendek",gL:"Surah pilihan",sel:"Semasa tawaf & sa'ie",selInfo:"Tandakan surah yang mahu dimainkan oleh butang 📿 Murattal semasa tawaf dan sa'ie.",big:"fail besar, perlukan internet",info:"Dengar bacaan surah-surah pendek. Boleh dimainkan berterusan semasa tawaf dan sa'ie; audio berhenti seketika apabila panduan suara dibaca.",all:"▶ Main semua",stop:"⏹ Henti",play:"▶ Dengar",bar:"📿 Murattal",trk:"📿 Mainkan bacaan surah semasa tawaf & sa'ie",na:"Audio tidak tersedia di sini; buka versi GitHub."},
+ en:{tab:"🎧 Surahs",gS:"Short surahs",gL:"Selected surahs",sel:"During tawaf & sa'ie",selInfo:"Tick the surahs that the 📿 Recitation button plays during tawaf and sa'ie.",big:"large file, needs internet",info:"Listen to short surah recitations. They can play continuously during tawaf and sa'ie; audio pauses while voice guidance is spoken.",all:"▶ Play all",stop:"⏹ Stop",play:"▶ Listen",bar:"📿 Recitation",trk:"📿 Play surah recitation during tawaf & sa'ie",na:"Audio is not available here; open the GitHub version."}};
+const SURAH_ALL=SURAH.concat(SURAH_L);
+function qSel(){try{const v=JSON.parse(localStorage.getItem("su-qsel"));if(Array.isArray(v)&&v.length)return v;}catch(e){}return SURAH.map(x=>x[0]);}
+function qSetSel(a){try{localStorage.setItem("su-qsel",JSON.stringify(a));}catch(e){}}
+function qt(){return QTX[lang==="en"||lang==="ar"?"en":"bm"];}
+function qSrc(n){return (window.AUD_DATA&&AUD_DATA[n])||("audio/"+String(n).padStart(3,"0")+".mp3");}
+const qa=new Audio();qa.preload="none";let qList=[],qIdx=0,qOn=false,qLoop=false,qHeld=false,qCb=null;
+function qPlay(list,loop,cb){qList=list;qIdx=0;qOn=true;qLoop=!!loop;qCb=cb||null;qGo();}
+function qGo(){if(!qOn)return;if(qIdx>=qList.length){if(qLoop)qIdx=0;else{qOn=false;qUI();return;}}qa.src=qSrc(qList[qIdx]);qa.volume=1;if(!qHeld)qa.play().catch(()=>{});qUI();}
+qa.onended=()=>{const n=qList[qIdx];if(qCb)qCb(n);qIdx++;qGo();};
+qa.onerror=()=>{if(qOn){const o=document.getElementById("qmsg");if(o)o.textContent=qt().na;qOn=false;qUI();}};
+function qStop(){qOn=false;qHeld=false;try{qa.pause();}catch(e){}qUI();}
+function qHold(h){qHeld=h;if(!qOn)return;try{if(h)qa.pause();else qa.play().catch(()=>{});}catch(e){}}
+function qUnlock(){try{const s=qa.src;qa.src=qSrc(112);qa.muted=true;qa.play().then(()=>{qa.pause();qa.muted=false;qa.currentTime=0;}).catch(()=>{qa.muted=false;});}catch(e){}}
+function qUI(){document.querySelectorAll("[data-q]").forEach(b=>{const on=qOn&&qList[qIdx]===+b.dataset.q&&qList.length===1;b.textContent=on?qt().stop:qt().play;b.setAttribute("aria-pressed",on);});
+  const a=document.getElementById("qall");if(a)a.textContent=(qOn&&qList.length>1)?qt().stop:qt().all;const qb=document.getElementById("qbtn");if(qb){qb.setAttribute("aria-pressed",qOn&&qLoop);}}
+function qToggleOne(n,cb){if(qOn&&qList.length===1&&qList[0]===n){qStop();return;}qPlay([n],false,cb);}
+
+/* ---------- V2: Bacaan suara tawaf & sa'ie (Web Speech) ---------- */
+const VO={get on(){try{return localStorage.getItem("su-voice")!=="0";}catch(e){return true;}},set on(v){try{localStorage.setItem("su-voice",v?"1":"0");}catch(e){}}};
+const VLANG={bm:"ms-MY",en:"en-US",id:"id-ID",ar:"ar-SA"};
+const VTX={bm:{on:"🔊 Bacaan",off:"🔇 Bacaan",tawafStart:"Tawaf bermula",saiStart:"Sa'ie bermula"},en:{on:"🔊 Readings",off:"🔇 Readings",tawafStart:"Tawaf begins",saiStart:"Sa'ie begins"},id:{on:"🔊 Bacaan",off:"🔇 Bacaan",tawafStart:"Tawaf dimulai",saiStart:"Sa'i dimulai"},ar:{on:"🔊 الأذكار",off:"🔇 الأذكار",tawafStart:"بدء الطواف",saiStart:"بدء السعي"}};
+function vPick(code){try{const vs=speechSynthesis.getVoices(),b=code.slice(0,2).toLowerCase();return vs.find(v=>v.lang.replace("_","-")===code)||vs.find(v=>v.lang.toLowerCase().startsWith(b))||(b==="ms"?vs.find(v=>v.lang.toLowerCase().startsWith("id")):null);}catch(e){return null;}}
+let vTok=0;
+function vSpeak(parts,force){if(!window.speechSynthesis||(!VO.on&&!force))return;try{speechSynthesis.cancel();const tok=++vTok,ps=parts.filter(p=>p&&p.t);if(ps.length)qHold(true);
+  ps.forEach((p,i)=>{const code=p.ar?"ar-SA":(VLANG[lang]||"ms-MY"),u=new SpeechSynthesisUtterance(p.t);u.lang=code;const v=vPick(code);if(v)u.voice=v;u.rate=p.ar?0.8:0.95;
+    if(i===ps.length-1)u.onend=u.onerror=()=>{if(tok===vTok)qHold(false);};speechSynthesis.speak(u);});
+  setTimeout(()=>{if(tok===vTok&&qHeld)qHold(false);},40000);}catch(e){qHold(false);}}
+function vStop(){try{speechSynthesis.cancel();}catch(e){}}
+function vTawaf(k,head,force){const L=TXT[lang]||TXT.bm,sg=L.seg&&L.seg[k];if(!sg)return;const ar=AR[k];vSpeak([{t:head},{t:sg[0]+". "+sg[1]},ar&&{t:ar[0],ar:1}],force);}
+function vSai(k,head,force){const L=JT[lang]||JT.bm,sg=L.sai&&L.sai[k];if(!sg)return;let ar=null;if(k==="safa1")ar=SAR.verse[0]+"، "+SAR.dzikr[0];else if(k==="safa"||k==="marwah")ar=SAR.dzikr[0];vSpeak([{t:head},{t:sg[0]+". "+sg[1]},ar&&{t:ar,ar:1}],force);}
+function segOfDeg(dg){const s=SEGS.find(([a,b])=>dg>=a&&dg<b);return s?s[2]:"rabbana";}
+function saiKeyT(t,leg){if(t<0.06||t>0.94){const atSafa=t<0.5;return atSafa?(leg===0?"safa1":"safa"):"marwah";}return(t>0.26&&t<0.38)?"green":"walk";}
+document.addEventListener("click",function vUnlock(){try{const u=new SpeechSynthesisUtterance(" ");u.volume=0;speechSynthesis.speak(u);}catch(e){}document.removeEventListener("click",vUnlock,true);},true);
+let vLap=-1,vTrip=-1;
+const VTEST={bm:{btn:"🔈 Uji suara",say:"Ujian suara. Bismillah.",ok:"Suara Bahasa Melayu",ar:"Suara Arab",none:"tiada (guna suara lain)",unsup:"Pelayar ini tidak menyokong suara. Buka pautan di Chrome (Android) atau Safari (iPhone), bukan di dalam aplikasi lain.",chk:"Jika tiada bunyi: matikan mod senyap, naikkan volume media."},
+ en:{btn:"🔈 Test voice",say:"Voice test. Bismillah.",ok:"Local voice",ar:"Arabic voice",none:"none (fallback voice used)",unsup:"This browser does not support speech. Open the link in Chrome (Android) or Safari (iPhone), not inside another app.",chk:"If silent: turn off silent mode and raise media volume."}};
+function vTest(out){const T=VTEST[lang==="en"||lang==="ar"?"en":"bm"];if(!("speechSynthesis" in window)||typeof SpeechSynthesisUtterance==="undefined"){if(out)out.textContent="⛔ "+T.unsup;return;}
+  const go=()=>{const loc=vPick(VLANG[lang]||"ms-MY"),ar=vPick("ar-SA");if(out)out.textContent=`${T.ok}: ${loc?loc.name:T.none} · ${T.ar}: ${ar?ar.name:T.none}. ${T.chk}`;vSpeak([{t:T.say},{t:"بِسْمِ اللهِ وَاللهُ أَكْبَرُ",ar:1}],true);};
+  if(speechSynthesis.getVoices().length)go();else{speechSynthesis.onvoiceschanged=()=>{speechSynthesis.onvoiceschanged=null;go();};setTimeout(go,800);}}
 function renderHud(force){
   const k=segKey(),L=TXT[lang],lap=lapNum();
   const key=k+lap+lang+sex;if(key===lastKey&&!force)return;lastKey=key;
@@ -1372,6 +1419,7 @@ function renderHud(force){
   $("ar").style.display=$("tr").style.display=ar?"block":"none";
   $("tip").textContent=(sex==="m"&&lap>=1&&lap<=3&&!finished)?L.raml:L.flow;
   drawPanel(lapTxt,s,g,ar?ar[0]:"");
+  if(!force&&playing&&mode==="sim"&&activity!=="sai"){const head=(lap&&lap!==vLap)?(lap===1?VTX[lang].tawafStart+". ":"")+L.lap+" "+lap:"";vLap=lap;vTawaf(k,head);}
 }
 function flash(t){const f=$("flash");f.textContent=t;f.style.opacity=1;clearTimeout(flash.t);flash.t=setTimeout(()=>f.style.opacity=0,1800);}
 
@@ -1408,6 +1456,7 @@ function buildBar(){const L=TXT[lang];
   $("look").textContent=L.look;$("gyro").textContent=L.gyro;$("vr").textContent=L.vr;$("restart").textContent=L.restart;
   const sai=activity==="sai";if(sai){$("mode").style.display=$("snd").style.display=$("look").style.display="none";}else $("mode").style.display="";
   $("mode").style.display="none";$("gyro").style.display="none";
+  {const vb=$("vbtn"),VT=VTX[lang]||VTX.bm;vb.textContent=VO.on?VT.on:VT.off;vb.setAttribute("aria-pressed",VO.on);vb.style.display=mode==="sim"?"":"none";const qb=$("qbtn");qb.textContent=qt().bar;qb.style.display=mode==="sim"?"":"none";qb.setAttribute("aria-pressed",qOn&&qLoop);}
   $("guideBtn").textContent=JT[lang].guide;$("nextstep").textContent=JT[lang].nextStep+(LANGS[lang].dir==="rtl"?" ‹":" ›");
   $("nextstep").style.display=((activity==="tawaf"&&finished)||(sai&&saiDone))?"":"none";
   const sp=$("speeds");sp.innerHTML="";SPEEDS.forEach(s=>{const b=document.createElement("button");b.textContent=s+"×";b.setAttribute("aria-pressed",String(s===speed));b.onclick=()=>{speed=s;buildBar();};sp.appendChild(b);});}
@@ -1415,6 +1464,8 @@ $("play").onclick=()=>{if(activity==="sai"){if(saiDone)return;playing=!playing;b
 $("mode").onclick=()=>{setMode(mode!=="sim"?"sim":(lastVid==="v360"&&!v360Ready?"real":lastVid));if(mode!=="real")showHint();else hideHint();};
 $("snd").onclick=()=>{realv.muted=!realv.muted;buildBar();};
 $("panoBtn").onclick=()=>{pano=!pano;applyPano();buildBar();};
+$("qbtn").onclick=()=>{if(qOn&&qLoop)qStop();else qPlay(qSel(),true);buildBar();};
+$("vbtn").onclick=()=>{VO.on=!VO.on;if(!VO.on)vStop();else{vTest(null);lastKey="";lastSaiKey="";vLap=-1;vTrip=-1;}buildBar();if(VO.on&&!("speechSynthesis" in window))flash(VTEST[lang==="en"?"en":"bm"].unsup);};
 $("look").onclick=()=>{yawOff=Math.PI/2*0.92;pitchOff=0.12;};
 $("restart").onclick=()=>{if(activity==="sai"){resetSai();return;}realLap=1;if(mode!=="sim"){realv.currentTime=0;realv.play().catch(()=>{});}th=mode!=="sim"?0:TH_START;finished=false;lastLap=0;playing=true;yawOff=mode==="v360"?0:.55;pitchOff=mode==="v360"?0:-.05;buildBar();renderHud(true);};
 
@@ -1705,7 +1756,7 @@ $("jbody").addEventListener("click",e=>{const b=e.target.closest("[data-act]");i
   else if(a==="cut"&&!b.classList.contains("gone")){b.classList.add("gone");cutN++;if(cutN>=3){ihram=false;flash(MISC[lang].tah);renderJourney();}else cutMsg();}
 });
 $("toGuide").onclick=()=>openJourney(jstep);
-$("guideBtn").onclick=()=>openJourney(jstep);
+$("guideBtn").onclick=()=>{qStop();vStop();openJourney(jstep);};
 $("nextstep").onclick=()=>openJourney(activity==="sai"?7:5);
 
 /* ---------- Sa'ie scene ---------- */
@@ -1762,7 +1813,7 @@ function saiZ(){return saiTrip%2?-SL/2+saiS:SL/2-saiS;}
 function saiDir(){return saiTrip%2?1:-1;}
 function placeSaiRig(){const d=saiDir();rig.position.set(d>0?-6:6,0,saiZ());rig.rotation.y=d>0?Math.PI:0;if(saiPause>0&&!saiDone){/* face back toward Kaaba side roughly */}}
 function resetSai(){saiTrip=1;saiS=0;saiPause=PAUSE;saiDone=false;lastSaiKey="";yawOff=0;pitchOff=0;playing=true;buildBar();}
-function startSai(){
+function startSai(){vLap=-1;vTrip=-1;
   activity="sai";setMode("sim");sScene.add(rig);buildSaiCrowd();resetSai();applyPano();
   $("journey").style.display="none";$("intro").style.display="none";["hud","map"].forEach(id=>$(id).style.display="block");$("bar").style.display="flex";
   if(!SPEEDS_SIM.includes(speed))speed=3;if(speed===1)speed=3;buildBar();showHint();
@@ -1781,7 +1832,8 @@ function renderSaiHud(){const L=JT[lang],k=saiKey();const key=k+saiTrip+lang+sex
   let ar=null;if(k==="safa1")ar=[SAR.verse[0]+"  ·  "+SAR.dzikr[0],SAR.verse[1]+" · "+SAR.dzikr[1]];else if(k==="safa"||k==="marwah")ar=SAR.dzikr;
   $("ar").textContent=ar?ar[0]:"";$("tr").textContent=ar?ar[1]:"";$("ar").style.display=$("tr").style.display=ar?"block":"none";
   $("tip").textContent=L.saiTip;
-  drawPanel(saiDone?"7 / 7":`${L.trip} ${saiTrip} / 7`,s,g,ar?ar[0]:"");}
+  drawPanel(saiDone?"7 / 7":`${L.trip} ${saiTrip} / 7`,s,g,ar?ar[0]:"");
+  if(playing){const head=(saiTrip!==vTrip&&!saiDone)?(saiTrip===1?VTX[lang].saiStart+". ":"")+L.trip+" "+saiTrip:"";vTrip=saiTrip;vSai(k,head);}}
 function drawSaiMap(){const w=256;mg.clearRect(0,0,w,w);const cs=getComputedStyle(document.documentElement);const ink=cs.getPropertyValue("--ink").trim(),gold=cs.getPropertyValue("--gold").trim(),green=cs.getPropertyValue("--green").trim();
   const x0=34,x1=222,y=150,X=z=>x0+(z+SL/2)/SL*(x1-x0);
   mg.strokeStyle=ink;mg.globalAlpha=.25;mg.lineWidth=14;mg.lineCap="round";mg.beginPath();mg.moveTo(x0,y);mg.lineTo(x1,y);mg.stroke();mg.globalAlpha=1;
@@ -2010,20 +2062,25 @@ function rl(){return RT[lang]?lang:"bm";}
 function ayaNum(n){return "﴿"+String(n).replace(/\d/g,d=>"٠١٢٣٤٥٦٧٨٩"[d])+"﴾";}
 function rSize(){let s=18;try{s=+localStorage.getItem("su-rsize")||26;}catch(e){} return s;}
 function setRSize(d){const s=Math.max(18,Math.min(44,rSize()+d));try{localStorage.setItem("su-rsize",s);}catch(e){} document.documentElement.style.setProperty("--qsize",s+"px");}
+const MSUR={"Al Fatihah (1-7)":1,"Al Ikhlas (1-4)":112,"Al Falaq (1-5)":113,"An Nas (1-6)":114};
 function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
   const trLang=l==="id"?"id":"ms";
   $("rhead").innerHTML=`<button id="rback">${T.back}</button>
    <h2 class="ztitle">${T.title}</h2><p class="zsub">${T.sub}</p>
-   <div class="ztabs rtabs">${["yasin","mathurat"].map((v,i)=>`<button data-rv="${v}" aria-pressed="${rview===v}">${T.tabs[i]}</button>`).join("")}</div>
+   <div class="ztabs rtabs">${["yasin","mathurat","audio"].map((v,i)=>`<button data-rv="${v}" aria-pressed="${rview===v}">${i<2?T.tabs[i]:qt().tab}</button>`).join("")}</div>
    <div class="rtools"><button id="rminus" aria-label="Kecilkan">A−</button><button id="rplus" aria-label="Besarkan">A+</button><label class="rtr"><input type="checkbox" id="rtrc" ${rtr?"checked":""}> ${T.tr}</label></div>`;
   let h="";
   if(rview==="yasin"){
     h+=`<div class="zinfo"><p>${T.yasinInfo}</p></div><p class="qbasm">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</p>`;
     h+=RD.yasin.ar.map((a,i)=>`<div class="qaya"><p class="qar" dir="rtl" lang="ar">${a} <span class="qnum">${ayaNum(i+1)}</span></p>${rtr?`<p class="qtr"><b>${i+1}.</b> ${RD.yasin[trLang][i]}</p>`:""}</div>`).join("");
+  }else if(rview==="audio"){const Q=qt();
+    h+=`<div class="zinfo"><p>${Q.info}</p></div><div class="pbtns"><button id="qall" class="act">${(qOn&&qList.length>1)?Q.stop:Q.all}</button></div><p class="src" id="qmsg"></p>`;
+    const sel=qSel(),row=([n,nm,ar],big)=>`<div class="place qsur"><div class="pname">${nm} <span class="qsar" lang="ar">${ar}</span></div><p class="pmeta">Surah ${n}${big?" · "+Q.big:""}</p><label class="qsel"><input type="checkbox" data-qs="${n}" ${sel.includes(n)?"checked":""}> ${Q.sel}</label><button data-q="${n}">${Q.play}</button></div>`;
+    h+=`<p class="src">${Q.selInfo}</p><h3 class="zh3">${Q.gS}</h3>`+SURAH.map(x=>row(x,false)).join("")+`<h3 class="zh3">${Q.gL}</h3>`+SURAH_L.map(x=>row(x,true)).join("");
   }else{
     h+=`<div class="zinfo"><p>${T.mInfo}</p></div><div class="ztabs rtime"><button data-rt="1" aria-pressed="${rtime===1}">${T.pagi}</button><button data-rt="2" aria-pressed="${rtime===2}">${T.petang}</button></div>`;
     RD.mathurat.forEach((m,i)=>{if(!(m.t===3||m.t===rtime))return;const k=rtime+"-"+i,c=rcount[k]||0,ok=c>=m.x;
-      h+=`<div class="qaya mitem${ok?" mdone":""}" data-k="${k}" data-x="${m.x}">${m.n?`<div class="mname">${m.n}</div>`:""}<p class="qar" dir="rtl" lang="ar">${m.a.replace(/([٠-٩]+)/g," ﴿$1﴾ ")}</p>${rtr&&m.m?`<p class="qtr">${m.m}</p>`:""}<button class="mcount">${ok?"✓ "+T.done:"×"+m.x+" · "+c+"/"+m.x+" · "+T.tap}</button></div>`;});
+      h+=`<div class="qaya mitem${ok?" mdone":""}" data-k="${k}" data-x="${m.x}">${m.n?`<div class="mname">${m.n}</div>`:""}<p class="qar" dir="rtl" lang="ar">${m.a.replace(/([٠-٩]+)/g," ﴿$1﴾ ")}</p>${rtr&&m.m?`<p class="qtr">${m.m}</p>`:""}${MSUR[m.n]?`<button data-q="${MSUR[m.n]}" data-qk="${k}" class="mplay">${qt().play}</button> `:""}<button class="mcount">${ok?"✓ "+T.done:"×"+m.x+" · "+c+"/"+m.x+" · "+T.tap}</button></div>`;});
     h+=`<button id="rreset" class="zreset">${T.reset}</button>`;
   }
   h+=`<p class="src">${T.src}</p>`;
@@ -2034,7 +2091,11 @@ function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
   if($("rreset"))$("rreset").onclick=()=>{rcount={};renderReader();};
   $("rminus").onclick=()=>setRSize(-2);$("rplus").onclick=()=>setRSize(2);
   $("rtrc").onchange=e=>{rtr=e.target.checked;const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;};
-  $("rback").onclick=()=>{$("reader").style.display="none";openJourney(jstep);};
+  $("rback").onclick=()=>{qStop();$("reader").style.display="none";openJourney(jstep);};
+  document.querySelectorAll("#rbody [data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.qk;qToggleOne(+b.dataset.q,k?(()=>{const it=document.querySelector(`.mitem[data-k="${k}"]`);const x=it?+it.dataset.x:1;rcount[k]=Math.min(x,(rcount[k]||0)+1);const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;}):null);});
+  document.querySelectorAll("[data-qs]").forEach(c=>c.onchange=()=>{const a=[...document.querySelectorAll("[data-qs]")].filter(x=>x.checked).map(x=>+x.dataset.qs);qSetSel(a);});
+  const qa1=document.getElementById("qall");if(qa1)qa1.onclick=()=>{if(qOn&&qList.length>1)qStop();else qPlay(qSel(),false);};
+  qUI();
 }
 function openReader(){hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","intro","journey","ziarah","trk"].forEach(id=>$(id).style.display="none");$("reader").style.display="grid";setRSize(0);renderReader();$("rcard").scrollTop=0;}
 
@@ -2100,7 +2161,7 @@ function fmtT(ms){const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(
 function fmtD(m){return m>=1000?(m/1000).toFixed(2)+" km":Math.round(m)+" m";}
 function segTime(s,i){const st=s.segT[i]||0;if(i===s.seg&&s.run&&!s.paused)return st+Date.now()-s.segRun;return st;}
 function setSeg(n){if(!TS||n===TS.seg)return;const now=Date.now();if(!TS.paused){TS.segT[TS.seg]+=now-TS.segRun;TS.segRun=now;}
-  if(n>=2&&TS.laps<7)TS.laps=7;if(n>=3&&TS.legs<7)TS.legs=7;TS.seg=n;TS.zt=0;navigator.vibrate&&navigator.vibrate([150,80,150]);say(KT[kl()].saySeg[n]);tsave();}
+  if(n>=2&&TS.laps<7)TS.laps=7;if(n>=3&&TS.legs<7)TS.legs=7;TS.seg=n;TS.zt=0;navigator.vibrate&&navigator.vibrate([150,80,150]);say(KT[kl()].saySeg[n]);if(TS.q){if(n===1||n===2){if(!(qOn&&qLoop))qPlay(qSel(),true);}else qStop();}tsave();}
 /* automatic stage detection */
 function autoStage(p,dt){const z=zone(p),s=TS;s.zone=z;
   if(z===s.zlast)s.zt+=dt;else{s.zt=dt;s.zlast=z;}
@@ -2108,11 +2169,22 @@ function autoStage(p,dt){const z=zone(p),s=TS;s.zone=z;
   if(s.seg<=1&&z==="masa"&&s.zt>=60)setSeg(2);
   if(s.seg===2&&z!=="masa"&&s.zt>=120)setSeg(3);
   if(s.seg===3&&z==="out"&&s.zt>=60)setSeg(4);
+  if(s.seg===1&&z==="mataf"){const P=xy(p),dg=(Math.atan2(P[1],P[0])*180/Math.PI+360)%360,k=segOfDeg(dg);
+    if(k===s.vkc)s.vkcn=(s.vkcn||0)+1;else{s.vkc=k;s.vkcn=1;}
+    if(s.vkcn===2&&k!==s.vk){if(k==="aswad"){s.vlap=(s.vlap||0)+1;}const n=s.vlap||0;s.vk=k;
+      if(s.v&&n<=7)vTawaf(k,k==="aswad"&&n?(n===1?VTX[lang].tawafStart+". ":"")+(TXT[lang]||TXT.bm).lap+" "+n:"",true);}}
+  if(s.seg===2&&z==="masa"){const A=xy(SAFA),B=xy(MARWAH),P=xy(p),dx=B[0]-A[0],dy=B[1]-A[1];let t=((P[0]-A[0])*dx+(P[1]-A[1])*dy)/(dx*dx+dy*dy);t=Math.max(0,Math.min(1,t));
+    const end=t<0.08?"S":t>0.92?"M":null;if(end&&end!==s.vend){if(s.vend)s.legs=Math.min(7,(s.legs||0)+1);s.vend=end;}
+    const k=end?(end==="S"?((s.legs||0)===0?"safa1":"safa"):"marwah"):((t>0.26&&t<0.38)?"green":"walk");
+    if(k===s.vkc)s.vkcn=(s.vkcn||0)+1;else{s.vkc=k;s.vkcn=1;}
+    if(s.vkcn===2&&k!==s.vk){s.vk=k;const n=(s.legs||0)+1;if(s.v&&n<=7)vSai(k,end?(n===1?VTX[lang].saiStart+". ":"")+(JT[lang]||JT.bm).trip+" "+n:"",true);}}
   if(s.seg===1&&z==="mataf"){const a=Math.atan2(xy(p)[1],xy(p)[0]);if(s.ang!=null){let d=a-s.ang;if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;if(Math.abs(d)<Math.PI/2)s.rot+=d;}s.ang=a;}
   if(s.seg>=3&&s.home&&hav(p,s.home)<=50&&s.zt>=20&&z==="out"&&!s.done)tFinish(true);}
 function pracStage(){const s=TS,T=KT[kl()],i=s.seg,g=s.gd[i]||0;
-  if(i===1){const n=Math.min(7,Math.floor(g/lapM(s)));if(n>s.laps){s.laps=n;navigator.vibrate&&navigator.vibrate(120);if(n<7)say(T.sayLap.replace("{n}",n));}}
-  if(i===2){const n=Math.min(7,Math.floor(g/SAI_M));if(n>s.legs){s.legs=n;navigator.vibrate&&navigator.vibrate(120);if(n<7)say(T.sayLeg.replace("{n}",n));}}
+  if(i===1){const n=Math.min(7,Math.floor(g/lapM(s)));if(n>s.laps){s.laps=n;navigator.vibrate&&navigator.vibrate(120);}
+    if(n<7){const k=n!==s.vn?"aswad":segOfDeg(((g%lapM(s))/lapM(s))*360);if(k!==s.vk||n!==s.vn){const head=(n!==s.vn)?(n===0?VTX[lang].tawafStart+". ":"")+(TXT[lang]||TXT.bm).lap+" "+(n+1):"";s.vk=k;s.vn=n;if(s.v)vTawaf(k,head,true);}}}
+  if(i===2){const n=Math.min(7,Math.floor(g/SAI_M));if(n>s.legs){s.legs=n;navigator.vibrate&&navigator.vibrate(120);}
+    if(n<7){const fr=(g%SAI_M)/SAI_M,t=n%2===0?fr:1-fr,k=saiKeyT(fr<0.06?(n%2===0?0:1):t,n);if(k!==s.vk||n!==s.vn){const head=(n!==s.vn)?(n===0?VTX[lang].saiStart+". ":"")+(JT[lang]||JT.bm).trip+" "+(n+1):"";s.vk=k;s.vn=n;if(s.v)vSai(k,head,true);}}}
   if(i===3){if(segTime(s,3)>=60000)setSeg(4);return;}
   if(g>=tgt(s,i)){if(i===4)tFinish(true);else setSeg(i+1);}}
 /* GPS */
@@ -2149,11 +2221,12 @@ function pocketOff(){$("kpocket").style.display="none";renderTrk();}
   document.addEventListener("pointerdown",e=>{if(o()&&o().style.display==="flex"&&o().contains(e.target)){e.preventDefault();o().classList.add("hold");t=setTimeout(()=>{o().classList.remove("hold");pocketOff();},2000);}},true);
   ["pointerup","pointercancel","pointerleave"].forEach(ev=>document.addEventListener(ev,()=>{clearTimeout(t);o()&&o().classList.remove("hold");},true));})();
 /* actions */
-function tStart(){const o=tprof(),hs=readHotel(),pr={h:Math.max(120,Math.min(210,+$("th").value||165)),g:$("tg").value,f:+$("tf").value,m:o.m,hd:o.hd,v:$("tv").checked?1:0,hid:hs.hid,hn:hs.hn,hm:hs.hm};try{localStorage.setItem("su-trk-prof",JSON.stringify(pr));}catch(e){}
-  const now=Date.now();TS={mode:pr.m===1?"prac":"real",hd:pr.hd,hm:pr.hm,hname:pr.hid==="x"?pr.hn:(hotelAt(pr.hid)||[""])[0],v:pr.v,id:now,start:now,h:pr.h,g:pr.g,floor:pr.f,seg:0,segT:[0,0,0,0,0],segRun:now,run:now,acc:0,paused:false,done:false,laps:0,legs:0,gd:[0,0,0,0,0],pts:[],sens:0,gaps:0,hid:0,home:null,zone:null,zlast:null,zt:0,rot:0,ang:null,lt:0};
+function tStart(){const o=tprof(),hs=readHotel(),pr={h:Math.max(120,Math.min(210,+$("th").value||165)),g:$("tg").value,f:+$("tf").value,m:o.m,hd:o.hd,v:$("tv").checked?1:0,q:($("tq")&&$("tq").checked)?1:0,hid:hs.hid,hn:hs.hn,hm:hs.hm};try{localStorage.setItem("su-trk-prof",JSON.stringify(pr));}catch(e){}
+  const now=Date.now();if(pr.q)qUnlock();
+  TS={q:pr.q,mode:pr.m===1?"prac":"real",hd:pr.hd,hm:pr.hm,hname:pr.hid==="x"?pr.hn:(hotelAt(pr.hid)||[""])[0],v:pr.v,id:now,start:now,h:pr.h,g:pr.g,floor:pr.f,seg:0,segT:[0,0,0,0,0],segRun:now,run:now,acc:0,paused:false,done:false,laps:0,legs:0,gd:[0,0,0,0,0],pts:[],sens:0,gaps:0,hid:0,home:null,zone:null,zlast:null,zt:0,rot:0,ang:null,lt:0};
   tlast=null;tsave();gpsOn();lockOn();motionOn();tRun();renderTrk();pocketOn();say(KT[kl()].sayStart);}
 function tPause(){if(!TS)return;const now=Date.now();if(TS.paused){TS.paused=false;TS.run=now;TS.segRun=now;tlast=null;gpsOn();lockOn();}else{TS.acc+=now-TS.run;TS.segT[TS.seg]+=now-TS.segRun;TS.paused=true;gpsOff();lockOff();}tsave();renderTrk();}
-function tFinish(auto){if(!TS||TS.done)return;const now=Date.now();if(!TS.paused){TS.acc+=now-TS.run;TS.segT[TS.seg]+=now-TS.segRun;}
+function tFinish(auto){if(!TS||TS.done)return;qStop();const now=Date.now();if(!TS.paused){TS.acc+=now-TS.run;TS.segT[TS.seg]+=now-TS.segRun;}
   if(TS.seg>=2&&TS.laps<7)TS.laps=7;if(TS.seg>=3&&TS.legs<7)TS.legs=7;
   TS.paused=true;TS.done=true;TS.end=now;TS.autoEnd=!!auto;gpsOff();lockOff();motionOff();clearInterval(ttick);
   const H=thist();H.unshift(TS);hsave(H);try{localStorage.removeItem("su-trk-cur");}catch(e){}
@@ -2200,8 +2273,8 @@ function getLoc(){const T=KT[kl()];if(!navigator.geolocation){tloc={err:1};rende
    e=>{tloc={err:1};renderTrk();},{enableHighAccuracy:true,timeout:20000,maximumAge:0});}
 /* ---------- V2: Peta sebenar (Leaflet + OpenStreetMap) ---------- */
 const SEGC=["#2f7de1","#c9a227","#17894f","#c0392b","#8e44ad"];let liveMap=null,liveLine=null,liveDot=null,liveN=0;
-function mkMap(el){if(typeof L==="undefined"||!el)return null;el.innerHTML="";el.classList.add("on");
-  const m=L.map(el,{zoomControl:true,attributionControl:true,scrollWheelZoom:false,tap:true});
+function mkMap(el){if(typeof L==="undefined"||!el)return null;if(el._lmap){try{el._lmap.remove();}catch(e){}el._lmap=null;}el.innerHTML="";el.classList.add("on");
+  const m=el._lmap=L.map(el,{zoomControl:true,attributionControl:true,scrollWheelZoom:false,tap:true});
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(m);
   setTimeout(()=>m.invalidateSize(),150);return m;}
 function drawRoute(m,pts){if(!m)return;const all=[];let cur=null,seg=-1;
@@ -2234,6 +2307,8 @@ function renderTrk(){const T=KT[kl()];setCredit();
     <label>${T.g}<select id="tg"><option value="L"${pr.g==="L"?" selected":""}>${T.L}</option><option value="P"${pr.g==="P"?" selected":""}>${T.P}</option></select></label></div>
     <label class="kfl">${T.fl}<select id="tf">${T.floors.map((f,j)=>`<option value="${j}"${pr.f===j?" selected":""}>${f}</option>`).join("")}</select></label>
     <label class="rtr kvo"><input type="checkbox" id="tv" ${pr.v?"checked":""}> ${T.voice}</label>
+    <label class="rtr kvo"><input type="checkbox" id="tq" ${pr.q?"checked":""}> ${qt().trk}</label>
+    <div class="pbtns"><button id="kvtest">${VTEST[kl()].btn}</button></div><p class="src" id="kvout"></p>
     <button id="kstart" class="act kbig">${T.start}</button>
     <h3 class="zh3">${T.hist}</h3>`+(H.length?H.map((s,i)=>`<details class="place khist"><summary><b>${new Date(s.start).toLocaleDateString()}</b> · ${fmtD(totDist(s))} · ${mainSteps(s).toLocaleString()} ${T.steps.toLowerCase()} · ${fmtT(s.acc)}</summary>${sumHTML(s,T,false)}<div class="pbtns"><button data-ksh="${i}">${T.share}</button><button data-kdel="${i}">${T.del}</button></div></details>`).join("")+`<button id="kdelall" class="zreset">${T.delAll}</button>`:`<p class="src">${T.none}</p>`)+`<p class="src">${T.note}</p>`;
   }else if(TS.done){h+=sumHTML(TS,T,true)+`<div class="pbtns"><button id="kshare" class="act">${T.share}</button><button id="knew">${T.newS}</button></div><p class="src">${T.note}</p>`;}
@@ -2248,7 +2323,7 @@ function renderTrk(){const T=KT[kl()];setCredit();
   $("kbody").innerHTML=h;
   const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f;};
   on("kback",()=>{$("trk").style.display="none";openJourney(jstep);});
-  on("kstart",tStart);on("kloc",getLoc);
+  on("kstart",tStart);on("kloc",getLoc);on("kvtest",()=>vTest(document.getElementById("kvout")));
   const hs=document.getElementById("thot");if(hs)hs.onchange=()=>{const o=tprof();o.hid=hs.value;const h=hotelAt(hs.value);if(h)o.hm=h[1];try{localStorage.setItem("su-trk-prof",JSON.stringify(o));}catch(e){}renderTrk();};
   ["thn","thm"].forEach(id=>{const e=document.getElementById(id);if(e)e.onchange=()=>initLocMap();if(e)e.oninput=()=>{saveHotel();const g=document.getElementById("thgm");if(g&&id==="thn")g.href=gmDir(e.value);};});
   on("thdet",()=>{const go=()=>{if(!tloc||!tloc.lat)return;const d=hav([tloc.lat,tloc.lon],KAABA),w=Math.max(50,Math.round((d-130)*1.3/10)*10);const e=document.getElementById("thm");if(e){e.value=w;saveHotel();}};if(tloc&&tloc.lat)go();else{getLoc();setTimeout(go,4000);}});
