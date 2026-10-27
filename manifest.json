@@ -1,7 +1,7 @@
 {
   "name": "SIMULASI UMRAH: Niat hingga Tahallul V2",
   "short_name": "Simulasi Umrah V2",
-  "description": "Panduan umrah langkah demi langkah dengan simulasi 3D tawaf dan sa'ie.",
+  "description": "Panduan umrah langkah demi langkah dengan simulasi 3D tawaf dan sa'ie, penjejak umrah (masa, jarak, langkah), ziarah Makkah dan bacaan Jumaat.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -29,6 +29,46 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "id": "./",
+  "shortcuts": [
+    {
+      "name": "Penjejak Umrah",
+      "short_name": "Penjejak",
+      "description": "Masa, jarak & langkah",
+      "url": "./?open=trk",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Bacaan Jumaat: Yasin & al-Ma'thurat",
+      "short_name": "Bacaan Jumaat",
+      "url": "./?open=reader",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Ziarah & Panduan Makkah",
+      "short_name": "Ziarah",
+      "url": "./?open=ziarah",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

@@ -153,6 +153,9 @@ button:disabled{opacity:.4;cursor:default}
 #zopen{margin-top:10px;background:var(--gold);color:#fff}
 #ropen{margin-top:8px;background:#17894f;color:#fff}
 #kopen{margin-top:8px;background:#2f7de1;color:#fff}
+#instBtn{margin-top:8px;background:#1d1d1f;color:#fff}:root[data-theme="dark"] #instBtn{background:#f3efe6;color:#1d1d1f}
+#suBanner{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:10002;background:#0f3d2e;color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:520px;margin:0 auto}
+#suBanner p{margin:0 0 10px;font-size:14px;line-height:1.5}#suBanner div{display:flex;gap:8px;justify-content:flex-end}#suBanner button{background:#fff;color:#0f3d2e;font-weight:800}#suBanner .b2{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
 #trk{position:fixed;inset:0;display:grid;place-items:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));overflow:auto;background:linear-gradient(180deg,#e9f1ec,#f7f4ec)}
 :root[data-theme="dark"] #trk{background:linear-gradient(180deg,#0c1a14,#0b0a08)}
 #kcard{max-width:580px;width:100%;padding:20px 22px;max-height:100%;overflow:auto}
@@ -207,7 +210,7 @@ img,svg,video,canvas{max-width:100%}
 .qtr{font-size:14px;line-height:1.6;color:var(--ink-soft);margin:6px 0 0;text-align:left!important}
 .mname{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
 .mcount{margin-top:8px;font-size:13px;padding:8px 12px}.mplay{margin-top:8px;font-size:13px;padding:8px 12px;background:#17894f!important;color:#fff!important}
-.qsur{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px}.qsur .pname{grid-column:1}.qsur .pmeta{grid-column:1;margin:0}.qsur button{grid-column:2;grid-row:1/4}.qsel{grid-column:1;font-size:12.5px;display:flex;gap:6px;align-items:center;color:var(--ink-soft)}.qsar{font-family:"Amiri Quran","Amiri",serif;color:var(--gold);margin-left:6px}
+.qsur{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px}.qsur .pname{grid-column:1}.qsur .pmeta{grid-column:1;margin:0}.qsur .qb2{grid-column:2;grid-row:1/4;display:flex;flex-direction:column;gap:6px}.qdl{font-size:12px!important;padding:6px 10px!important}.qsel{grid-column:1;font-size:12.5px;display:flex;gap:6px;align-items:center;color:var(--ink-soft)}.qsar{font-family:"Amiri Quran","Amiri",serif;color:var(--gold);margin-left:6px}
 .mdone{opacity:.55}.mdone .mcount{background:#17894f;color:#fff}
 #zback{margin-bottom:6px}
 .themeBtn{font-size:16px;line-height:1;padding:8px 11px;min-width:40px}
@@ -253,6 +256,7 @@ img,svg,video,canvas{max-width:100%}
   <button id="panoBtn" aria-pressed="false"></button>
   <button id="vbtn" aria-pressed="true"></button>
   <button id="qbtn" aria-pressed="false"></button>
+  <button id="miniBtn"></button>
   <button id="snd" aria-pressed="false"></button>
   <div class="sp" id="speeds" role="group"></div>
   <button id="look"></button>
@@ -275,6 +279,7 @@ img,svg,video,canvas{max-width:100%}
     <button id="zopen" class="act"></button>
     <button id="ropen" class="act"></button>
     <button id="kopen" class="act"></button>
+    <button id="instBtn" class="act" style="display:none"></button>
   </div>
 </div>
 <div id="ziarah" style="display:none">
@@ -1365,20 +1370,45 @@ const SEGS=[[0,8,"aswad"],[8,40,"multazam"],[40,80,"maqam"],[80,190,"hijr"],[190
 let lastKey="";
 function segKey(){if(finished)return"done";if(th<0)return"pre";const d=(th%(Math.PI*2))*180/Math.PI;for(const s of SEGS)if(d>=s[0]&&d<s[1])return s[2];return"rabbana";}
 function lapNum(){return th<0?0:Math.min(7,Math.floor(th/(Math.PI*2))+1);}
+/* ---------- V2: IndexedDB (rekod penjejak & audio luar talian) ---------- */
+const IDB={p:null,
+ open(){if(this.p)return this.p;this.p=new Promise((res,rej)=>{if(!window.indexedDB)return rej("noidb");const r=indexedDB.open("simulasi-umrah",1);
+   r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("kv"))d.createObjectStore("kv");if(!d.objectStoreNames.contains("audio"))d.createObjectStore("audio");};
+   r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return this.p;},
+ tx(st,mode,fn){return this.open().then(d=>new Promise((res,rej)=>{const t=d.transaction(st,mode),q=fn(t.objectStore(st));t.oncomplete=()=>res(q?q.result:undefined);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error);}));},
+ get(st,k){return this.tx(st,"readonly",s=>s.get(k));},put(st,k,v){return this.tx(st,"readwrite",s=>s.put(v,k));},
+ del(st,k){return this.tx(st,"readwrite",s=>s.delete(k));},keys(st){return this.tx(st,"readonly",s=>s.getAllKeys());}};
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist().catch(()=>{});}catch(e){}
+
 /* ---------- V2: Audio bacaan al-Quran (surah pendek) ---------- */
 const SURAH_L=[[18,"Al-Kahf","الكهف"],[32,"As-Sajdah","السجدة"],[56,"Al-Waqi'ah","الواقعة"],[67,"Al-Mulk","الملك"]];
 const SURAH=[[1,"Al-Fatihah","الفاتحة"],[103,"Al-'Asr","العصر"],[106,"Quraisy","قريش"],[107,"Al-Ma'un","الماعون"],[108,"Al-Kauthar","الكوثر"],[109,"Al-Kafirun","الكافرون"],[110,"An-Nasr","النصر"],[112,"Al-Ikhlas","الإخلاص"],[113,"Al-Falaq","الفلق"],[114,"An-Nas","الناس"]];
-const QTX={bm:{tab:"🎧 Surah",gS:"Surah pendek",gL:"Surah pilihan",sel:"Semasa tawaf & sa'ie",selInfo:"Tandakan surah yang mahu dimainkan oleh butang 📿 Murattal semasa tawaf dan sa'ie.",big:"fail besar, perlukan internet",info:"Dengar bacaan surah-surah pendek. Boleh dimainkan berterusan semasa tawaf dan sa'ie; audio berhenti seketika apabila panduan suara dibaca.",all:"▶ Main semua",stop:"⏹ Henti",play:"▶ Dengar",bar:"📿 Murattal",trk:"📿 Mainkan bacaan surah semasa tawaf & sa'ie",na:"Audio tidak tersedia di sini; buka versi GitHub."},
- en:{tab:"🎧 Surahs",gS:"Short surahs",gL:"Selected surahs",sel:"During tawaf & sa'ie",selInfo:"Tick the surahs that the 📿 Recitation button plays during tawaf and sa'ie.",big:"large file, needs internet",info:"Listen to short surah recitations. They can play continuously during tawaf and sa'ie; audio pauses while voice guidance is spoken.",all:"▶ Play all",stop:"⏹ Stop",play:"▶ Listen",bar:"📿 Recitation",trk:"📿 Play surah recitation during tawaf & sa'ie",na:"Audio is not available here; open the GitHub version."}};
+const QTX={bm:{tab:"🎧 Surah",qari:"Qari",dl:"⬇️ Simpan",saved:"✓ Luar talian",dlAll:"⬇️ Simpan semua yang ditanda (untuk luar talian)",dlErr:"Muat turun gagal. Periksa internet; jika masih gagal, pelayan audio mungkin tidak membenarkan simpanan luar talian, jadi audio akan distrim apabila ada internet.",credit:"Audio distrim dari MP3Quran.net, yang membenarkan pelawat dan pembangun menggunakan bahan dan pautannya (mp3quran.net/eng/privacy). Rakaman ialah hasil kerja qari masing-masing.",gS:"Surah pendek",gL:"Surah pilihan",sel:"Semasa tawaf & sa'ie",selInfo:"Tandakan surah yang mahu dimainkan oleh butang 📿 Murattal semasa tawaf dan sa'ie.",big:"surah panjang",info:"Dengar bacaan surah-surah pendek. Boleh dimainkan berterusan semasa tawaf dan sa'ie; audio berhenti seketika apabila panduan suara dibaca.",all:"▶ Main semua",stop:"⏹ Henti",play:"▶ Dengar",bar:"📿 Murattal",trk:"📿 Mainkan bacaan surah semasa tawaf & sa'ie",na:"Audio tidak dapat dimainkan. Periksa sambungan internet, atau simpan surah untuk luar talian."},
+ en:{tab:"🎧 Surahs",qari:"Reciter",dl:"⬇️ Save",saved:"✓ Offline",dlAll:"⬇️ Save all ticked (for offline)",dlErr:"Download failed. Check your internet; if it still fails, the audio server may not allow offline saving, so audio will stream when online.",credit:"Audio is streamed from MP3Quran.net, which allows visitors and developers to use its material and links (mp3quran.net/eng/privacy). Recordings remain the work of the respective reciters.",gS:"Short surahs",gL:"Selected surahs",sel:"During tawaf & sa'ie",selInfo:"Tick the surahs that the 📿 Recitation button plays during tawaf and sa'ie.",big:"long surah",info:"Listen to short surah recitations. They can play continuously during tawaf and sa'ie; audio pauses while voice guidance is spoken.",all:"▶ Play all",stop:"⏹ Stop",play:"▶ Listen",bar:"📿 Recitation",trk:"📿 Play surah recitation during tawaf & sa'ie",na:"Audio is not available here; open the GitHub version."}};
 const SURAH_ALL=SURAH.concat(SURAH_L);
 function qSel(){try{const v=JSON.parse(localStorage.getItem("su-qsel"));if(Array.isArray(v)&&v.length)return v;}catch(e){}return SURAH.map(x=>x[0]);}
 function qSetSel(a){try{localStorage.setItem("su-qsel",JSON.stringify(a));}catch(e){}}
 function qt(){return QTX[lang==="en"||lang==="ar"?"en":"bm"];}
-function qSrc(n){return (window.AUD_DATA&&AUD_DATA[n])||("audio/"+String(n).padStart(3,"0")+".mp3");}
+/* bacaan dari MP3Quran.net (strim, tidak disimpan dalam pakej aplikasi) */
+const QARI=[{id:"afs",n:"Mishary Rashid Alafasy",s:"https://server8.mp3quran.net/afs/"},{id:"s_gmd",n:"Saad Al-Ghamdi",s:"https://server7.mp3quran.net/s_gmd/"},
+ {id:"sds",n:"Abdul Rahman Al-Sudais",s:"https://server11.mp3quran.net/sds/"},{id:"yasser",n:"Yasser Al-Dosari",s:"https://server11.mp3quran.net/yasser/"},
+ {id:"ajm",n:"Ahmad Al-Ajmi",s:"https://server10.mp3quran.net/ajm/"},{id:"mhsny",n:"Mohammad Al-Muhaisni",s:"https://server11.mp3quran.net/mhsny/"}];
+function qQari(){let id=null;try{id=localStorage.getItem("su-qari");}catch(e){}return QARI.find(x=>x.id===id)||QARI[0];}
+function qUrl(n,r){r=r||qQari();return r.s+String(n).padStart(3,"0")+".mp3";}
+const qOffKeys=new Set(),qBlobUrls={};
+IDB.keys("audio").then(ks=>{(ks||[]).forEach(k=>qOffKeys.add(k));}).catch(()=>{});
+function qKey(n){return qQari().id+"/"+n;}
+function qResolve(n){const k=qKey(n);if(qBlobUrls[k])return Promise.resolve(qBlobUrls[k]);
+  return IDB.get("audio",k).then(b=>{if(b){qBlobUrls[k]=URL.createObjectURL(b);return qBlobUrls[k];}return qUrl(n);}).catch(()=>qUrl(n));}
+function qSrc(n){return qUrl(n);}
+function qDownload(n){const k=qKey(n);return fetch(qUrl(n),{mode:"cors"}).then(r=>{if(!r.ok)throw new Error("http");return r.blob();})
+  .then(b=>IDB.put("audio",k,b)).then(()=>{qOffKeys.add(k);});}
+function qRemoveOff(n){const k=qKey(n);if(qBlobUrls[k]){URL.revokeObjectURL(qBlobUrls[k]);delete qBlobUrls[k];}return IDB.del("audio",k).then(()=>qOffKeys.delete(k));}
+
 /* player: HTML audio for files, Web Audio for embedded data (works where media URLs are blocked) */
 const qa=new Audio();qa.preload="none";let qList=[],qIdx=0,qOn=false,qLoop=false,qHeld=false,qCb=null,qGen=0;
 let qCtx=null,qNode=null,qBufs={},qStartAt=0,qOff=0,qWA=false;
-function qUseWA(n){return !!(window.AUD_DATA&&AUD_DATA[n]);}
+function qUseWA(n){return false;}
 function qCtxInit(){try{if(!qCtx){const C=window.AudioContext||window.webkitAudioContext;if(C)qCtx=new C();}if(qCtx&&qCtx.state==="suspended")qCtx.resume();}catch(e){}}
 function qBuf(n){if(qBufs[n])return Promise.resolve(qBufs[n]);const b=atob(AUD_DATA[n].split(",")[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
   return new Promise((res,rej)=>qCtx.decodeAudioData(u.buffer,x=>{qBufs[n]=x;res(x);},rej));}
@@ -1391,10 +1421,13 @@ function qPlay(list,loop,cb){qCtxInit();qStop(true);qList=list.slice();qIdx=0;qO
 function qGo(){if(!qOn)return;if(qIdx>=qList.length){if(qLoop&&qList.length)qIdx=0;else{qOn=false;qUI();return;}}
   const n=qList[qIdx];qGen++;qOff=0;qWA=qUseWA(n);
   if(qWA&&qCtx){try{qa.pause();}catch(e){}if(!qHeld)qWAStart();}
-  else{qWAStop();qa.src=qSrc(n);qa.volume=1;if(!qHeld)qa.play().catch(e=>{if(e&&e.name==="NotAllowedError")return;qFail();});}
+  else{qWAStop();const k=qKey(n),g=qGen,go=u=>{if(g!==qGen||!qOn)return;qa.src=u;qa.volume=1;if(!qHeld)qa.play().catch(e=>{if(e&&e.name==="NotAllowedError")return;qErr();});};
+    if(qOffKeys.has(k))qResolve(n).then(go);else go(qUrl(n));}
   qUI();}
 qa.onended=()=>{if(!qWA)qEnded();};
-qa.onerror=()=>{if(qOn&&!qWA)qFail();};
+let qErrN=0;function qErr(){qErrN++;if(qErrN>=3||qList.length<=1){qErrN=0;qFail();}else{qIdx++;qGo();}}
+qa.addEventListener("playing",()=>{qErrN=0;});
+qa.onerror=()=>{if(qOn&&!qWA)qErr();};
 function qStop(silent){qOn=false;qHeld=false;qGen++;qWAStop();qOff=0;try{qa.pause();}catch(e){}if(!silent)qUI();}
 function qHold(h){if(h===qHeld)return;qHeld=h;if(!qOn)return;
   if(qWA){if(h){if(qNode&&qCtx){qOff+=qCtx.currentTime-qStartAt;qWAStop();}}else qWAStart();}
@@ -1473,7 +1506,7 @@ function buildBar(){const L=TXT[lang];
   $("look").textContent=L.look;$("gyro").textContent=L.gyro;$("vr").textContent=L.vr;$("restart").textContent=L.restart;
   const sai=activity==="sai";if(sai){$("mode").style.display=$("snd").style.display=$("look").style.display="none";}else $("mode").style.display="";
   $("mode").style.display="none";$("gyro").style.display="none";
-  {const vb=$("vbtn"),VT=VTX[lang]||VTX.bm;vb.textContent=VO.on?VT.on:VT.off;vb.setAttribute("aria-pressed",VO.on);vb.style.display=mode==="sim"?"":"none";const qb=$("qbtn");qb.textContent=qt().bar;qb.style.display=mode==="sim"?"":"none";qb.setAttribute("aria-pressed",qOn&&qLoop);}
+  {const vb=$("vbtn"),VT=VTX[lang]||VTX.bm;vb.textContent=VO.on?VT.on:VT.off;vb.setAttribute("aria-pressed",VO.on);vb.style.display=mode==="sim"?"":"none";const qb=$("qbtn");qb.textContent=qt().bar;qb.style.display=mode==="sim"?"":"none";qb.setAttribute("aria-pressed",qOn&&qLoop);const mb=$("miniBtn");mb.textContent=mt().btn;mb.style.display=mode==="sim"?"":"none";}
   $("guideBtn").textContent=JT[lang].guide;$("nextstep").textContent=JT[lang].nextStep+(LANGS[lang].dir==="rtl"?" ‹":" ›");
   $("nextstep").style.display=((activity==="tawaf"&&finished)||(sai&&saiDone))?"":"none";
   const sp=$("speeds");sp.innerHTML="";SPEEDS.forEach(s=>{const b=document.createElement("button");b.textContent=s+"×";b.setAttribute("aria-pressed",String(s===speed));b.onclick=()=>{speed=s;buildBar();};sp.appendChild(b);});}
@@ -1481,6 +1514,7 @@ $("play").onclick=()=>{if(activity==="sai"){if(saiDone)return;playing=!playing;b
 $("mode").onclick=()=>{setMode(mode!=="sim"?"sim":(lastVid==="v360"&&!v360Ready?"real":lastVid));if(mode!=="real")showHint();else hideHint();};
 $("snd").onclick=()=>{realv.muted=!realv.muted;buildBar();};
 $("panoBtn").onclick=()=>{pano=!pano;applyPano();buildBar();};
+$("miniBtn").onclick=miniOpen;
 $("qbtn").onclick=()=>{if(qOn&&qLoop)qStop();else{qPlay(qSel(),true);flash("📿 "+(SURAH_ALL.find(x=>x[0]===qList[0])||["",""])[1]);}buildBar();};
 $("vbtn").onclick=()=>{VO.on=!VO.on;if(!VO.on)vStop();else{vTest(null);lastKey="";lastSaiKey="";vLap=-1;vTrip=-1;}buildBar();if(VO.on&&!("speechSynthesis" in window))flash(VTEST[lang==="en"?"en":"bm"].unsup);};
 $("look").onclick=()=>{yawOff=Math.PI/2*0.92;pitchOff=0.12;};
@@ -2091,8 +2125,9 @@ function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
     h+=`<div class="zinfo"><p>${T.yasinInfo}</p></div><p class="qbasm">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</p>`;
     h+=RD.yasin.ar.map((a,i)=>`<div class="qaya"><p class="qar" dir="rtl" lang="ar">${a} <span class="qnum">${ayaNum(i+1)}</span></p>${rtr?`<p class="qtr"><b>${i+1}.</b> ${RD.yasin[trLang][i]}</p>`:""}</div>`).join("");
   }else if(rview==="audio"){const Q=qt();
-    h+=`<div class="zinfo"><p>${Q.info}</p></div><div class="pbtns"><button id="qall" class="act">${(qOn&&qList.length>1)?Q.stop:Q.all}</button></div><p class="src" id="qmsg"></p>`;
-    const sel=qSel(),row=([n,nm,ar],big)=>`<div class="place qsur"><div class="pname">${nm} <span class="qsar" lang="ar">${ar}</span></div><p class="pmeta">Surah ${n}${big?" · "+Q.big:""}</p><label class="qsel"><input type="checkbox" data-qs="${n}" ${sel.includes(n)?"checked":""}> ${Q.sel}</label><button data-q="${n}">${Q.play}</button></div>`;
+    h+=`<div class="zinfo"><p>${Q.info}</p></div><label class="kfl">${Q.qari}<select id="qari">${QARI.map(r=>`<option value="${r.id}"${r.id===qQari().id?" selected":""}>${r.n}</option>`).join("")}</select></label>
+    <div class="pbtns"><button id="qall" class="act">${(qOn&&qList.length>1)?Q.stop:Q.all}</button><button id="qdlall">${Q.dlAll}</button></div><p class="src" id="qmsg"></p><p class="src">${Q.credit}</p>`;
+    const sel=qSel(),row=([n,nm,ar],big)=>`<div class="place qsur"><div class="pname">${nm} <span class="qsar" lang="ar">${ar}</span></div><p class="pmeta">Surah ${n}${big?" · "+Q.big:""}</p><label class="qsel"><input type="checkbox" data-qs="${n}" ${sel.includes(n)?"checked":""}> ${Q.sel}</label><div class="qb2"><button data-q="${n}">${Q.play}</button><button class="qdl" data-qd="${n}">${qOffKeys.has(qKey(n))?Q.saved:Q.dl}</button></div></div>`;
     h+=`<p class="src">${Q.selInfo}</p><h3 class="zh3">${Q.gS}</h3>`+SURAH.map(x=>row(x,false)).join("")+`<h3 class="zh3">${Q.gL}</h3>`+SURAH_L.map(x=>row(x,true)).join("");
   }else{
     h+=`<div class="zinfo"><p>${T.mInfo}</p></div><div class="ztabs rtime"><button data-rt="1" aria-pressed="${rtime===1}">${T.pagi}</button><button data-rt="2" aria-pressed="${rtime===2}">${T.petang}</button></div>`;
@@ -2111,9 +2146,15 @@ function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
   $("rback").onclick=()=>{qStop();$("reader").style.display="none";openJourney(jstep);};
   document.querySelectorAll("#rbody [data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.qk;qToggleOne(+b.dataset.q,k?(()=>{const it=document.querySelector(`.mitem[data-k="${k}"]`);const x=it?+it.dataset.x:1;rcount[k]=Math.min(x,(rcount[k]||0)+1);const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;}):null);});
   document.querySelectorAll("[data-qs]").forEach(c=>c.onchange=()=>{const a=[...document.querySelectorAll("[data-qs]")].filter(x=>x.checked).map(x=>+x.dataset.qs);qSetSel(a);});
+  const qs=document.getElementById("qari");if(qs)qs.onchange=()=>{try{localStorage.setItem("su-qari",qs.value);}catch(e){}qStop();renderReaderKeep();};
+  document.querySelectorAll("[data-qd]").forEach(b=>b.onclick=()=>{const n=+b.dataset.qd;if(qOffKeys.has(qKey(n))){qRemoveOff(n).then(renderReaderKeep);return;}
+    b.textContent="⏳";b.disabled=true;qDownload(n).then(renderReaderKeep).catch(()=>{const o=document.getElementById("qmsg");if(o)o.textContent=qt().dlErr;b.disabled=false;b.textContent=qt().dl;});});
+  const da=document.getElementById("qdlall");if(da)da.onclick=async()=>{da.disabled=true;const sel=qSel();let k=0;for(const n of sel){if(qOffKeys.has(qKey(n))){k++;continue;}da.textContent=`⏳ ${k}/${sel.length}`;
+    try{await qDownload(n);k++;}catch(e){const o=document.getElementById("qmsg");if(o)o.textContent=qt().dlErr;break;}}renderReaderKeep();};
   const qa1=document.getElementById("qall");if(qa1)qa1.onclick=()=>{if(qOn&&qList.length>1)qStop();else qPlay(qSel(),false);};
   qUI();
 }
+function renderReaderKeep(){const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;}
 function openReader(){hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","intro","journey","ziarah","trk"].forEach(id=>$(id).style.display="none");$("reader").style.display="grid";setRSize(0);renderReader();$("rcard").scrollTop=0;}
 
 /* ---------- V2: Penjejak Umrah AUTOMATIK (jarak, langkah, masa) ---------- */
@@ -2156,8 +2197,12 @@ function hotelAt(id){const [g,i]=String(id).split(".");const G=HOTELS.find(x=>x[
 function kl(){return lang==="en"||lang==="ar"?"en":"bm";}
 function tprof(){try{return Object.assign({h:165,g:"L",f:0,m:1,hd:1,v:1,hid:"abraj.4",hn:"",hm:150},JSON.parse(localStorage.getItem("su-trk-prof"))||{});}catch(e){return {h:165,g:"L",f:0};}}
 function tsave(){try{localStorage.setItem("su-trk-cur",JSON.stringify(TS));}catch(e){}}
-function thist(){try{return JSON.parse(localStorage.getItem("su-trk-hist"))||[];}catch(e){return [];}}
-function hsave(H){try{localStorage.setItem("su-trk-hist",JSON.stringify(H.slice(0,20)));}catch(e){}}
+let HIST=null;
+function thist(){if(HIST)return HIST;try{return JSON.parse(localStorage.getItem("su-trk-hist"))||[];}catch(e){return [];}}
+function hsave(H){HIST=H.slice(0,50);IDB.put("kv","hist",HIST).then(()=>{try{localStorage.removeItem("su-trk-hist");}catch(e){}})
+  .catch(()=>{try{localStorage.setItem("su-trk-hist",JSON.stringify(HIST.slice(0,20)));}catch(e){}});}
+IDB.get("kv","hist").then(v=>{if(Array.isArray(v))HIST=v;else{const old=thist();HIST=old;if(old.length)hsave(old);}
+  if($("trk")&&$("trk").style.display!=="none"&&!TS)renderTrk();}).catch(()=>{});
 function hav(a,b){const R=6371000,r=Math.PI/180,dLa=(b[0]-a[0])*r,dLo=(b[1]-a[1])*r,x=Math.sin(dLa/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
 function xy(p){const r=Math.PI/180;return [(p[1]-KAABA[1])*r*6371000*Math.cos(KAABA[0]*r),(p[0]-KAABA[0])*r*6371000];}
 function distSeg(p,a,b){const P=xy(p),A=xy(a),B=xy(b),dx=B[0]-A[0],dy=B[1]-A[1];let t=((P[0]-A[0])*dx+(P[1]-A[1])*dy)/(dx*dx+dy*dy);t=Math.max(0,Math.min(1,t));return Math.hypot(P[0]-A[0]-t*dx,P[1]-A[1]-t*dy);}
@@ -2241,9 +2286,9 @@ function pocketOff(){$("kpocket").style.display="none";renderTrk();}
 function tStart(){const o=tprof(),hs=readHotel(),pr={h:Math.max(120,Math.min(210,+$("th").value||165)),g:$("tg").value,f:+$("tf").value,m:o.m,hd:o.hd,v:$("tv").checked?1:0,q:($("tq")&&$("tq").checked)?1:0,hid:hs.hid,hn:hs.hn,hm:hs.hm};try{localStorage.setItem("su-trk-prof",JSON.stringify(pr));}catch(e){}
   const now=Date.now();if(pr.q)qUnlock();
   TS={q:pr.q,mode:pr.m===1?"prac":"real",hd:pr.hd,hm:pr.hm,hname:pr.hid==="x"?pr.hn:(hotelAt(pr.hid)||[""])[0],v:pr.v,id:now,start:now,h:pr.h,g:pr.g,floor:pr.f,seg:0,segT:[0,0,0,0,0],segRun:now,run:now,acc:0,paused:false,done:false,laps:0,legs:0,gd:[0,0,0,0,0],pts:[],sens:0,gaps:0,hid:0,home:null,zone:null,zlast:null,zt:0,rot:0,ang:null,lt:0};
-  tlast=null;tsave();gpsOn();lockOn();motionOn();tRun();renderTrk();pocketOn();say(KT[kl()].sayStart);}
+  tlast=null;tsave();gpsOn();lockOn();motionOn();tRun();renderTrk();pocketOn();say(KT[kl()].sayStart);miniPrep();}
 function tPause(){if(!TS)return;const now=Date.now();if(TS.paused){TS.paused=false;TS.run=now;TS.segRun=now;tlast=null;gpsOn();lockOn();}else{TS.acc+=now-TS.run;TS.segT[TS.seg]+=now-TS.segRun;TS.paused=true;gpsOff();lockOff();}tsave();renderTrk();}
-function tFinish(auto){if(!TS||TS.done)return;qStop();const now=Date.now();if(!TS.paused){TS.acc+=now-TS.run;TS.segT[TS.seg]+=now-TS.segRun;}
+function tFinish(auto){if(!TS||TS.done)return;qStop();miniStop();const now=Date.now();if(!TS.paused){TS.acc+=now-TS.run;TS.segT[TS.seg]+=now-TS.segRun;}
   if(TS.seg>=2&&TS.laps<7)TS.laps=7;if(TS.seg>=3&&TS.legs<7)TS.legs=7;
   TS.paused=true;TS.done=true;TS.end=now;TS.autoEnd=!!auto;gpsOff();lockOff();motionOff();clearInterval(ttick);
   const H=thist();H.unshift(TS);hsave(H);try{localStorage.removeItem("su-trk-cur");}catch(e){}
@@ -2336,7 +2381,7 @@ function renderTrk(){const T=KT[kl()];setCredit();
     <div class="kmap kmapL" id="kmapL"></div>
     <p class="src" id="kGps"></p>${TS.gaps?`<p class="src">${T.gap} (×${TS.gaps})</p>`:""}
     <button id="kpk" class="act kbig">${T.pocket}</button>
-    <div class="pbtns kctl"><button id="kpause">${TS.paused?T.resume:T.pause}</button><button id="kfin">${T.finish}</button></div>`;}
+    <div class="pbtns kctl"><button id="kmini">${mt().btn}</button><button id="kpause">${TS.paused?T.resume:T.pause}</button><button id="kfin">${T.finish}</button></div>`;}
   $("kbody").innerHTML=h;
   const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f;};
   on("kback",()=>{$("trk").style.display="none";openJourney(jstep);});
@@ -2344,7 +2389,7 @@ function renderTrk(){const T=KT[kl()];setCredit();
   const hs=document.getElementById("thot");if(hs)hs.onchange=()=>{const o=tprof();o.hid=hs.value;const h=hotelAt(hs.value);if(h)o.hm=h[1];try{localStorage.setItem("su-trk-prof",JSON.stringify(o));}catch(e){}renderTrk();};
   ["thn","thm"].forEach(id=>{const e=document.getElementById(id);if(e)e.onchange=()=>initLocMap();if(e)e.oninput=()=>{saveHotel();const g=document.getElementById("thgm");if(g&&id==="thn")g.href=gmDir(e.value);};});
   on("thdet",()=>{const go=()=>{if(!tloc||!tloc.lat)return;const d=hav([tloc.lat,tloc.lon],KAABA),w=Math.max(50,Math.round((d-130)*1.3/10)*10);const e=document.getElementById("thm");if(e){e.value=w;saveHotel();}};if(tloc&&tloc.lat)go();else{getLoc();setTimeout(go,4000);}});
-  document.querySelectorAll("[data-km]").forEach(b=>b.onclick=()=>{const o=tprof();o.m=+b.dataset.km;o.h=+$("th").value||o.h;o.g=$("tg").value;o.f=+$("tf").value;Object.assign(o,readHotel());try{localStorage.setItem("su-trk-prof",JSON.stringify(o));}catch(e){}renderTrk();});on("kpause",tPause);on("kpk",pocketOn);
+  document.querySelectorAll("[data-km]").forEach(b=>b.onclick=()=>{const o=tprof();o.m=+b.dataset.km;o.h=+$("th").value||o.h;o.g=$("tg").value;o.f=+$("tf").value;Object.assign(o,readHotel());try{localStorage.setItem("su-trk-prof",JSON.stringify(o));}catch(e){}renderTrk();});on("kpause",tPause);on("kpk",pocketOn);on("kmini",miniOpen);
   const fb=document.getElementById("kfin");if(fb)fb.onclick=()=>twice("fin",fb,()=>tFinish(false));
   document.querySelectorAll("[data-kseg]").forEach(b=>b.onclick=()=>{setSeg(+b.dataset.kseg);renderTrk();});
   const sel=(id,f)=>{const e=document.getElementById(id);if(e)e.onchange=ev=>{f(+ev.target.value);tEdit();};};
@@ -2361,6 +2406,41 @@ hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","i
   if(!TS){try{const c=JSON.parse(localStorage.getItem("su-trk-cur"));if(c&&!c.done){TS=c;if(!TS.paused){gpsOn();lockOn();motionOn();}tRun();}}catch(e){}}
   else if(!TS.done&&!TS.paused){gpsOn();lockOn();}
   renderTrk();$("kcard").scrollTop=0;}
+
+/* ---------- V2: Skrin mini (Picture-in-Picture) & kawalan media ---------- */
+const MINI={cv:null,vid:null,t:null,ms:0};
+const MTX={bm:{btn:"🗗 Skrin mini",un:"Skrin mini tidak disokong di sini. Gunakan Chrome (Android) atau Safari (iPhone), di luar aplikasi lain.",idle:"Simulasi Umrah V2",ready:"Sedia"},
+ en:{btn:"🗗 Mini screen",un:"Mini screen is not supported here. Use Chrome (Android) or Safari (iPhone), outside other apps.",idle:"Umrah Simulation V2",ready:"Ready"}};
+function mt(){return MTX[lang==="en"||lang==="ar"?"en":"bm"];}
+function miniInfo(){
+  if(typeof TS!=="undefined"&&TS&&!TS.done){const T=KT[kl()],s=TS.seg;let lap="";
+    if(s===1)lap=` · ${Math.min(7,TS.mode==="prac"?TS.laps+1:Math.max(1,TS.vlap||1))}/7`;if(s===2)lap=` · ${Math.min(7,(TS.legs||0)+1)}/7`;
+    const g=TS.paused?"⏸":(tgps.s==="ok"?"🛰 ±"+tgps.acc+" m":tgps.s==="err"?"⛔ GPS":"🛰 …");
+    return {h:T.seg[s].replace(/^\S+\s/,"")+lap,a:fmtT(elapsed(TS)),b:fmtD(totDist(TS)),c:mainSteps(TS).toLocaleString()+" "+T.steps.toLowerCase(),d:g};}
+  const hud=$("hud");if(hud&&hud.style.display!=="none"){const L=(hud.innerText||"").split("\n").map(x=>x.trim()).filter(Boolean);return {h:L[0]||"",a:L[1]||"",b:"",c:"",d:mt().idle};}
+  return {h:mt().idle,a:mt().ready,b:"",c:"",d:""};}
+function miniFit(x,t,max){while(x.measureText(t).width>max&&t.length>3)t=t.slice(0,-2);return t;}
+function miniDraw(){const c=MINI.cv;if(!c)return;const x=c.getContext("2d"),i=miniInfo(),W=c.width;
+  x.fillStyle="#0f3d2e";x.fillRect(0,0,W,c.height);x.fillStyle="#c9a227";x.fillRect(0,0,W,8);
+  x.fillStyle="#f1d46b";x.font="bold 34px sans-serif";x.fillText(miniFit(x,i.h,W-48),24,62);
+  x.fillStyle="#ffffff";x.font="bold 76px sans-serif";x.fillText(miniFit(x,i.a,W-48),24,158);
+  x.font="bold 42px sans-serif";x.fillText(i.b,24,226);x.fillText(i.c,W/2,226);
+  x.fillStyle="#cfe3d6";x.font="28px sans-serif";x.fillText(miniFit(x,i.d,W-48),24,300);x.fillText("🕋",W-64,300);
+  const now=Date.now();if("mediaSession" in navigator&&now-MINI.ms>5000&&window.MediaMetadata){MINI.ms=now;try{navigator.mediaSession.metadata=new MediaMetadata({title:i.h,artist:[i.a,i.b,i.c].filter(Boolean).join(" · "),album:"Simulasi Umrah V2",artwork:[{src:"icon-192.png",sizes:"192x192",type:"image/png"},{src:"icon-512.png",sizes:"512x512",type:"image/png"}]});}catch(e){}}}
+function miniPrep(){if(MINI.vid)return MINI.vid.play().catch(()=>{});const c=document.createElement("canvas");c.width=640;c.height=340;MINI.cv=c;miniDraw();
+  const v=document.createElement("video");v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.setAttribute("autopictureinpicture","");try{v.autoPictureInPicture=true;}catch(e){}
+  v.style.cssText="position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1";document.body.appendChild(v);MINI.vid=v;
+  try{v.srcObject=c.captureStream?c.captureStream(2):null;}catch(e){}
+  clearInterval(MINI.t);MINI.t=setInterval(miniDraw,1000);return v.play().catch(()=>{});}
+async function miniOpen(){try{if(document.pictureInPictureElement){await document.exitPictureInPicture();return;}
+  if(!(HTMLCanvasElement.prototype.captureStream)){flash(mt().un);return;}
+  const p=miniPrep();const v=MINI.vid;
+  if(v.requestPictureInPicture&&document.pictureInPictureEnabled){await p;await v.requestPictureInPicture();}
+  else if(v.webkitSupportsPresentationMode&&v.webkitSupportsPresentationMode("picture-in-picture")){v.webkitSetPresentationMode("picture-in-picture");}
+  else flash(mt().un);}catch(e){flash(mt().un);}}
+function miniStop(){clearInterval(MINI.t);MINI.t=null;try{if(document.pictureInPictureElement)document.exitPictureInPicture();}catch(e){}
+  if(MINI.vid){try{MINI.vid.pause();MINI.vid.srcObject=null;MINI.vid.remove();}catch(e){}}MINI.vid=null;MINI.cv=null;}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&MINI.vid&&!document.pictureInPictureElement&&MINI.vid.requestPictureInPicture){MINI.vid.requestPictureInPicture().catch(()=>{});}});
 
 function openZiarah(){hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","intro","journey"].forEach(id=>$(id).style.display="none");$("ziarah").style.display="grid";renderZiarah();$("zcard").scrollTop=0;}
 
@@ -2407,8 +2487,28 @@ renderer.setAnimationLoop(()=>{
   if(!realFlat)renderer.render(scene,camera);
 });
 addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+setTimeout(()=>{try{const op=new URLSearchParams(location.search).get("open");if(op==="trk")openTrk();else if(op==="reader")openReader();else if(op==="ziarah")openZiarah();}catch(e){}},500);
 })();
 </script>
-<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
+<script>
+(function(){
+const ms=()=>!(document.documentElement.lang||"ms").startsWith("en");
+const T=()=>ms()?{inst:"📲 Pasang aplikasi",ios:"Untuk memasang di iPhone: tekan ••• atau butang Kongsi (petak dengan anak panah ke atas), pilih “Tambah ke Skrin Utama”, kemudian Tambah.",upd:"🔄 Versi baharu aplikasi tersedia.",reload:"Muat semula",close:"Tutup"}
+ :{inst:"📲 Install app",ios:"To install on iPhone: tap ••• or the Share button (square with an up arrow), choose “Add to Home Screen”, then Add.",upd:"🔄 A new version of the app is available.",reload:"Reload",close:"Close"};
+let dp=null;const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const sa=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+function show(){const b=document.getElementById("instBtn");if(!b)return;b.textContent=T().inst;b.style.display=(!sa()&&(dp||ios))?"":"none";}
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;show();});
+addEventListener("appinstalled",()=>{dp=null;show();});
+function banner(msg,btn,fn){let d=document.getElementById("suBanner");if(d)d.remove();d=document.createElement("div");d.id="suBanner";d.innerHTML='<p></p><div><button class="b1"></button><button class="b2"></button></div>';
+ d.querySelector("p").textContent=msg;const b1=d.querySelector(".b1");if(btn){b1.textContent=btn;b1.onclick=fn;}else b1.remove();const b2=d.querySelector(".b2");b2.textContent=T().close;b2.onclick=()=>d.remove();document.body.appendChild(d);}
+addEventListener("load",()=>{const b=document.getElementById("instBtn");
+ if(b)b.onclick=async()=>{if(dp){dp.prompt();try{await dp.userChoice;}catch(e){}dp=null;show();}else banner(T().ios);};
+ show();setInterval(show,4000);
+ if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register("sw.js").catch(()=>{});
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)banner(T().upd,T().reload,()=>location.reload());});}});
+})();
+</script>
+
 </body>
 </html>

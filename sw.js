@@ -1,4 +1,4 @@
-const CACHE="simulasi-umrah-v2-18";
+const CACHE="simulasi-umrah-v2-19";
 const CORE=["./","index.html","manifest.json","icon-192.png","icon-512.png","privacy.html",
  "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>Promise.all(CORE.map(u=>c.add(new Request(u,{cache:"reload"})).catch(()=>{})))).then(()=>self.skipWaiting()));});
@@ -6,7 +6,7 @@ self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.
 self.addEventListener("fetch",e=>{
   const r=e.request; if(r.method!=="GET")return;
   if(r.headers.has("range")||r.url.endsWith(".mp4"))return; // video streams from network
-  if(r.url.includes("tile.openstreetmap.org")||r.url.includes("google.com/maps"))return; // map tiles: network only, never cached
+  if(r.url.includes("tile.openstreetmap.org")||r.url.includes("google.com/maps")||r.url.includes("mp3quran.net"))return; // map tiles: network only, never cached
   const page=r.mode==="navigate"||/\/(index\.html|privacy\.html|manifest\.json)?(\?.*)?$/.test(new URL(r.url).pathname);
   if(page){ // network first: always show the newest version when online, cached copy when offline
     e.respondWith(fetch(r,{cache:"no-cache"}).then(res=>{if(res&&res.ok){const cp=res.clone();caches.open(CACHE).then(c=>c.put(r,cp));}return res;})
