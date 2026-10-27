@@ -7,7 +7,7 @@
 <title>SIMULASI UMRAH: Niat hingga Tahallul V2</title>
 <meta name="apple-mobile-web-app-title" content="Simulasi Umrah V2"><meta name="application-name" content="Simulasi Umrah V2">
 <link rel="manifest" href="manifest.json">
-<script>try{var r=document.documentElement,p=localStorage.getItem("su-theme-pick"),f=+localStorage.getItem("su-fs");r.setAttribute("data-theme",p==="light"||p==="dark"?p:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));if(f>1&&f<2)r.style.setProperty("--fs",f);}catch(e){}</script>
+<script>try{var r=document.documentElement,p=localStorage.getItem("su-theme-pick"),f=+localStorage.getItem("su-fs");r.setAttribute("data-theme",p==="light"||p==="dark"?p:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));if(f>1&&f<2)r.style.setProperty("--fs",f);if(localStorage.getItem("su-contrast")==="1")r.setAttribute("data-contrast","high");}catch(e){}</script>
 <meta name="theme-color" content="#0f3d2e">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -158,8 +158,8 @@ button:disabled{opacity:.4;cursor:default}
 .zoff{margin:6px 0 0;padding-left:20px;font-size:calc(14.5px*var(--fs));line-height:1.7}
 .zreset{margin-top:10px;font-size:calc(13.5px*var(--fs))}
 #zopen{margin-top:10px;background:var(--gold);color:#fff}
-#ropen{margin-top:8px;background:#17894f;color:#fff}
-#kopen{margin-top:8px;background:#2f7de1;color:#fff}
+#ropen{margin-top:8px;background:#157f49;color:#fff}
+#kopen{margin-top:8px;background:#1f6fd1;color:#fff}
 #instBtn{margin-top:8px;background:#1d1d1f;color:#fff}:root[data-theme="dark"] #instBtn{background:#f3efe6;color:#1d1d1f}
 #suBanner{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:10002;background:#0f3d2e;color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:520px;margin:0 auto}
 #suBanner p{margin:0 0 10px;font-size:calc(15.5px*var(--fs));line-height:1.5}#suBanner div{display:flex;gap:8px;justify-content:flex-end}#suBanner button{background:#fff;color:#0f3d2e;font-weight:800}#suBanner .b2{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
@@ -264,6 +264,20 @@ button,select,.pmap{min-height:44px}
 .tset summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:6px;font-weight:700;font-size:calc(14.5px*var(--fs));color:var(--ink-soft)}
 .tset[open] summary{color:var(--ink)}
 h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
+/* mod luar (kontras tinggi) untuk cahaya matahari: panel padu, teks hitam/putih tulen */
+:root[data-contrast="high"]{--glass:#fff;--glass-edge:rgba(0,0,0,.6);--ink:#000;--ink-soft:#2a2620;--gold:#6b4f0f;--green:#0b6b3a;--chip:rgba(0,0,0,.09);--chip-on:#000;--chip-on-ink:#fff}
+:root[data-contrast="high"][data-theme="dark"]{--glass:#000;--glass-edge:rgba(255,255,255,.65);--ink:#fff;--ink-soft:#ece5d4;--gold:#ffd36b;--green:#5ff0a0;--chip:rgba(255,255,255,.16);--chip-on:#fff;--chip-on-ink:#000}
+:root[data-contrast="high"] .glass,:root[data-contrast="high"] #more{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--glass)!important;border:2px solid var(--glass-edge)}
+:root[data-contrast="high"] #jcard,:root[data-contrast="high"] #zcard,:root[data-contrast="high"] #rcard,:root[data-contrast="high"] #kcard,:root[data-contrast="high"] #card,
+:root[data-contrast="high"] #journey,:root[data-contrast="high"] #ziarah,:root[data-contrast="high"] #reader,:root[data-contrast="high"] #trk{background:var(--glass)!important}
+:root[data-contrast="high"] button:not([aria-pressed="true"]):not(.act):not(#go):not(.strand):not([data-js]){box-shadow:inset 0 0 0 1.5px var(--glass-edge)}
+:root[data-contrast="high"] #jsteps button::before{background:rgba(127,127,127,.45)}:root[data-contrast="high"] #jsteps button.on::before{background:var(--gold)}:root[data-contrast="high"] #jsteps button.cur::before{background:var(--green)}
+:root[data-contrast="high"] .place,:root[data-contrast="high"] .lafaz,:root[data-contrast="high"] .zinfo,:root[data-contrast="high"] .tset{border:1.5px solid var(--glass-edge)}
+:root[data-contrast="high"] .b-rukun{background:var(--gold);color:var(--glass)}:root[data-contrast="high"] .b-wajib,:root[data-contrast="high"] .pill.p-on{background:var(--green);color:var(--glass)}
+:root[data-contrast="high"] .src a,:root[data-contrast="high"] .zsrc a{text-decoration:underline}
+:root[data-contrast="high"] .act,:root[data-contrast="high"] #go,:root[data-contrast="high"] #zopen,:root[data-contrast="high"] .pill.p-done,:root[data-contrast="high"] .pchk[aria-pressed="true"],:root[data-contrast="high"] #nextstep{color:var(--glass)!important}
+:root[data-contrast="high"][data-theme="dark"] #ropen{background:var(--green)}:root[data-contrast="high"][data-theme="dark"] #kopen{background:#8ec5ff}
+#more .hcBtn::after{content:"  " attr(title);font-size:14px}
 /* telefon: teks rata kiri (justify + hyphen menghasilkan jarak besar dalam BM/ID) */
 @media (max-width:600px){
  #jbody p:not(.src):not(.cutmsg),#card p:not(.credit):not(.fine),#guide,#jbody li,.zinfo p,.pdesc{text-align:start;-webkit-hyphens:manual;hyphens:manual}
@@ -304,13 +318,14 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
     <button id="vr" style="display:none"></button>
     <button id="restart"></button>
     <button class="themeBtn" aria-label="Tema cerah / gelap"></button>
+    <button class="hcBtn" aria-pressed="false" title="Mod luar / Outdoor" aria-label="Mod luar, kontras tinggi / Outdoor, high contrast">◐</button>
   </div>
 </div>
 
 <div id="journey">
   <div id="jcard" class="glass">
     <p class="credit"></p>
-    <div id="jtop"><div id="jsteps"></div><span id="jstate" class="pill"></span><select id="jlang" aria-label="Bahasa / Language"><option value="bm">🇲🇾 BM</option><option value="en">🇬🇧 EN</option><option value="id">🇮🇩 ID</option><option value="ar">🇸🇦 عربي</option></select><button class="themeBtn" aria-label="Tema cerah / gelap"></button><span class="fsz" role="group" aria-label="Saiz teks / Text size"><button id="fsDn" aria-label="Teks lebih kecil / Smaller text">A−</button><button id="fsUp" aria-label="Teks lebih besar / Larger text">A+</button></span></div>
+    <div id="jtop"><div id="jsteps"></div><span id="jstate" class="pill"></span><select id="jlang" aria-label="Bahasa / Language"><option value="bm">🇲🇾 BM</option><option value="en">🇬🇧 EN</option><option value="id">🇮🇩 ID</option><option value="ar">🇸🇦 عربي</option></select><button class="themeBtn" aria-label="Tema cerah / gelap"></button><span class="fsz" role="group" aria-label="Saiz teks / Text size"><button id="fsDn" aria-label="Teks lebih kecil / Smaller text">A−</button><button id="fsUp" aria-label="Teks lebih besar / Larger text">A+</button></span><button class="hcBtn" aria-pressed="false" title="Mod luar / Outdoor" aria-label="Mod luar, kontras tinggi / Outdoor, high contrast">◐</button></div>
     <div id="jbadges"></div>
     <h2 id="jtitle"></h2>
     <div id="jbody"></div>
@@ -2565,6 +2580,11 @@ function applyTheme(t,pick){document.documentElement.setAttribute("data-theme",t
   sys();const f=()=>{let p=null;try{p=localStorage.getItem("su-theme-pick");}catch(e){}if(!p)sys();};
   if(mq.addEventListener)mq.addEventListener("change",f);else if(mq.addListener)mq.addListener(f);})();
 document.querySelectorAll(".themeBtn").forEach(b=>b.onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark",true));
+/* mod luar: kontras tinggi (disimpan dalam peranti) */
+function hcGet(){try{return localStorage.getItem("su-contrast")==="1";}catch(e){return document.documentElement.getAttribute("data-contrast")==="high";}}
+function hcSet(on){const r=document.documentElement;if(on)r.setAttribute("data-contrast","high");else r.removeAttribute("data-contrast");
+  document.querySelectorAll(".hcBtn").forEach(b=>b.setAttribute("aria-pressed",String(on)));try{localStorage.setItem("su-contrast",on?"1":"0");}catch(e){}}
+hcSet(hcGet());document.querySelectorAll(".hcBtn").forEach(b=>b.onclick=()=>hcSet(!hcGet()));
 /* saiz teks A− / A+ (disimpan dalam peranti) */
 const FS=[1,1.15,1.3,1.45];
 function fsGet(){let v=1;try{v=+localStorage.getItem("su-fs")||1;}catch(e){}return FS.includes(v)?v:1;}
