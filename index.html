@@ -253,6 +253,7 @@ button,select,.pmap{min-height:44px}
 .kchkl .st{font-size:calc(18px*var(--fs));line-height:1.2}
 .kchkl li.err b{color:#d9443a}.kchkl li.warn b{color:var(--gold)}
 #kchkb{width:100%;margin-top:4px;font-weight:800}
+#flash{z-index:30;max-width:min(440px,calc(100vw - 32px));text-align:center}
 /* telefon: teks rata kiri (justify + hyphen menghasilkan jarak besar dalam BM/ID) */
 @media (max-width:600px){
  #jbody p:not(.src):not(.cutmsg),#card p:not(.credit):not(.fine),#guide,#jbody li,.zinfo p,.pdesc{text-align:start;-webkit-hyphens:manual;hyphens:manual}
@@ -272,7 +273,7 @@ button,select,.pmap{min-height:44px}
   <div id="tip"></div>
 </div>
 <canvas id="map" class="glass" width="256" height="256" aria-label="Peta mataf"></canvas>
-<div id="flash" class="glass"></div>
+<div id="flash" class="glass" role="status" aria-live="polite"></div>
 <div id="hint" aria-hidden="true"><div class="hand">👆</div><div class="arr">‹ 360° ›</div><div id="hintTxt"></div></div>
 
 <div id="bar" class="glass">
@@ -1493,7 +1494,8 @@ function renderHud(force){
   drawPanel(lapTxt,s,g,ar?ar[0]:"");
   if(!force&&playing&&mode==="sim"&&activity!=="sai"){const head=(lap&&lap!==vLap)?(lap===1?VTX[lang].tawafStart+". ":"")+L.lap+" "+lap:"";vLap=lap;vTawaf(k,head);}
 }
-function flash(t){const f=$("flash");f.textContent=t;f.style.opacity=1;clearTimeout(flash.t);flash.t=setTimeout(()=>f.style.opacity=0,1800);}
+/* mesej kekal 3–6 saat ikut panjang teks, supaya sempat dibaca sambil berjalan */
+function flash(t){const f=$("flash");f.textContent=t;f.style.opacity=1;clearTimeout(flash.t);flash.t=setTimeout(()=>f.style.opacity=0,Math.min(6000,Math.max(3000,1200+String(t).length*70)));}
 
 // minimap
 const mc=$("map"),mg=mc.getContext("2d");
@@ -1838,7 +1840,7 @@ $("jbody").addEventListener("click",e=>{const b=e.target.closest("[data-act]");i
   if(a==="niat"){ihram=true;cutN=0;flash(MISC[lang].niat);renderJourney();}
   else if(a==="tawaf"){$("journey").style.display="none";$("intro").style.display="grid";}
   else if(a==="sai"){startSai();}
-  else if(a==="cut"&&!b.classList.contains("gone")){b.classList.add("gone");cutN++;if(cutN>=3){ihram=false;flash(MISC[lang].tah);renderJourney();}else cutMsg();}
+  else if(a==="cut"&&!b.classList.contains("gone")){b.classList.add("gone");cutN++;try{navigator.vibrate&&navigator.vibrate(cutN>=3?[60,80,60,80,240]:40);}catch(e){}if(cutN>=3){ihram=false;flash(MISC[lang].tah);renderJourney();}else cutMsg();}
 });
 $("toGuide").onclick=()=>openJourney(jstep);
 $("guideBtn").onclick=()=>{qStop();vStop();openJourney(jstep);};
@@ -2268,19 +2270,20 @@ function autoStage(p,dt){const z=zone(p),s=TS;s.zone=z;
   if(s.seg===1&&z==="mataf"){const P=xy(p),dg=(Math.atan2(P[1],P[0])*180/Math.PI+360)%360,k=segOfDeg(dg);
     if(k===s.vkc)s.vkcn=(s.vkcn||0)+1;else{s.vkc=k;s.vkcn=1;}
     if(s.vkcn===2&&k!==s.vk){if(k==="aswad"){s.vlap=(s.vlap||0)+1;}const n=s.vlap||0;s.vk=k;
+      if(k==="aswad"&&n)lapBuzz(n);
       if(s.v&&n<=7)vTawaf(k,k==="aswad"&&n?(n===1?VTX[lang].tawafStart+". ":"")+(TXT[lang]||TXT.bm).lap+" "+n:"",true);}}
   if(s.seg===2&&z==="masa"){const A=xy(SAFA),B=xy(MARWAH),P=xy(p),dx=B[0]-A[0],dy=B[1]-A[1];let t=((P[0]-A[0])*dx+(P[1]-A[1])*dy)/(dx*dx+dy*dy);t=Math.max(0,Math.min(1,t));
     const end=t<0.08?"S":t>0.92?"M":null;if(end&&end!==s.vend){if(s.vend)s.legs=Math.min(7,(s.legs||0)+1);s.vend=end;}
     const k=end?(end==="S"?((s.legs||0)===0?"safa1":"safa"):"marwah"):((t>0.26&&t<0.38)?"green":"walk");
     if(k===s.vkc)s.vkcn=(s.vkcn||0)+1;else{s.vkc=k;s.vkcn=1;}
-    if(s.vkcn===2&&k!==s.vk){s.vk=k;const n=(s.legs||0)+1;if(s.v&&n<=7)vSai(k,end?(n===1?VTX[lang].saiStart+". ":"")+(JT[lang]||JT.bm).trip+" "+n:"",true);}}
+    if(s.vkcn===2&&k!==s.vk){s.vk=k;const n=(s.legs||0)+1;if(end)lapBuzz(n);if(s.v&&n<=7)vSai(k,end?(n===1?VTX[lang].saiStart+". ":"")+(JT[lang]||JT.bm).trip+" "+n:"",true);}}
   if(s.seg===1&&z==="mataf"){const a=Math.atan2(xy(p)[1],xy(p)[0]);if(s.ang!=null){let d=a-s.ang;if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;if(Math.abs(d)<Math.PI/2)s.rot+=d;}s.ang=a;}
   if(s.seg>=3&&s.home&&hav(p,s.home)<=50&&s.zt>=20&&z==="out"&&!s.done)tFinish(true);}
 function pracStage(){const s=TS,T=KT[kl()],i=s.seg,g=s.gd[i]||0;
-  if(i===1){const n=Math.min(7,Math.floor(g/lapM(s)));if(n>s.laps){s.laps=n;navigator.vibrate&&navigator.vibrate(120);}
-    if(n<7){const k=n!==s.vn?"aswad":segOfDeg(((g%lapM(s))/lapM(s))*360);if(k!==s.vk||n!==s.vn){const head=(n!==s.vn)?(n===0?VTX[lang].tawafStart+". ":"")+(TXT[lang]||TXT.bm).lap+" "+(n+1):"";s.vk=k;s.vn=n;if(s.v)vTawaf(k,head,true);}}}
-  if(i===2){const n=Math.min(7,Math.floor(g/SAI_M));if(n>s.legs){s.legs=n;navigator.vibrate&&navigator.vibrate(120);}
-    if(n<7){const fr=(g%SAI_M)/SAI_M,t=n%2===0?fr:1-fr,k=saiKeyT(fr<0.06?(n%2===0?0:1):t,n);if(k!==s.vk||n!==s.vn){const head=(n!==s.vn)?(n===0?VTX[lang].saiStart+". ":"")+(JT[lang]||JT.bm).trip+" "+(n+1):"";s.vk=k;s.vn=n;if(s.v)vSai(k,head,true);}}}
+  if(i===1){const n=Math.min(7,Math.floor(g/lapM(s)));if(n>s.laps){s.laps=n;if(n>=7)lapBuzz(8);}
+    if(n<7){const k=n!==s.vn?"aswad":segOfDeg(((g%lapM(s))/lapM(s))*360);if(k!==s.vk||n!==s.vn){if(n!==s.vn)lapBuzz(n+1);const head=(n!==s.vn)?(n===0?VTX[lang].tawafStart+". ":"")+(TXT[lang]||TXT.bm).lap+" "+(n+1):"";s.vk=k;s.vn=n;if(s.v)vTawaf(k,head,true);}}}
+  if(i===2){const n=Math.min(7,Math.floor(g/SAI_M));if(n>s.legs){s.legs=n;if(n>=7)lapBuzz(8);}
+    if(n<7){const fr=(g%SAI_M)/SAI_M,t=n%2===0?fr:1-fr,k=saiKeyT(fr<0.06?(n%2===0?0:1):t,n);if(k!==s.vk||n!==s.vn){if(n!==s.vn)lapBuzz(n+1);const head=(n!==s.vn)?(n===0?VTX[lang].saiStart+". ":"")+(JT[lang]||JT.bm).trip+" "+(n+1):"";s.vk=k;s.vn=n;if(s.v)vSai(k,head,true);}}}
   if(i===3){if(segTime(s,3)>=60000)setSeg(4);return;}
   if(g>=tgt(s,i)){if(i===4)tFinish(true);else setSeg(i+1);}}
 /* GPS */
@@ -2316,6 +2319,8 @@ function pocketOff(){$("kpocket").style.display="none";renderTrk();}
 (function(){let t=null;const o=()=>$("kpocket");
   document.addEventListener("pointerdown",e=>{if(o()&&o().style.display==="flex"&&o().contains(e.target)){e.preventDefault();o().classList.add("hold");t=setTimeout(()=>{o().classList.remove("hold");pocketOff();},2000);}},true);
   ["pointerup","pointercancel","pointerleave"].forEach(ev=>document.addEventListener(ev,()=>{clearTimeout(t);o()&&o().classList.remove("hold");},true));})();
+/* getaran: bilangan getaran = nombor pusingan/perjalanan yang bermula (boleh dikira dalam poket); 8 = selesai */
+function lapBuzz(n){try{if(!navigator.vibrate||n<1)return;if(n>=8){navigator.vibrate([500,150,500]);return;}const p=[];for(let i=0;i<n;i++)p.push(160,160);p.pop();navigator.vibrate(p);}catch(e){}}
 /* actions */
 function tStart(){const o=tprof(),hs=readHotel(),pr={h:Math.max(120,Math.min(210,+$("th").value||165)),g:$("tg").value,f:+$("tf").value,m:o.m,hd:o.hd,v:$("tv").checked?1:0,q:($("tq")&&$("tq").checked)?1:0,hid:hs.hid,hn:hs.hn,hm:hs.hm};try{localStorage.setItem("su-trk-prof",JSON.stringify(pr));}catch(e){}
   const now=Date.now();if(pr.q)qUnlock();
