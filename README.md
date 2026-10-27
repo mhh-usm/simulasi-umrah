@@ -31,6 +31,16 @@ python -m http.server 8000      # or: npx serve .
 # open http://localhost:8000/
 ```
 
+## Test
+
+Automated browser tests drive headless Chrome at phone size. They need Node 22+ and Chrome or Edge.
+
+```sh
+node tests/run-all.js
+```
+
+See [HANDOFF.md](HANDOFF.md) §5 for details.
+
 ## Deploy
 
 GitHub Pages serves the repository root (Settings → Pages → Deploy from a branch).

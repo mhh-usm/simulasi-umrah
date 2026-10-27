@@ -12,7 +12,7 @@ This is for whoever picks up the code next. It covers:
 ## 1. Current state
 
 - **`main`** still holds the original upload.
-- **`poji`** has 11 commits on top of `main` (listed below): UX improvements and bug fixes, all tested in headless Chrome but not yet on real phones.
+- **`poji`** has 12 commits on top of `main` (listed below): UX improvements, bug fixes, docs and an automated test suite. Everything is tested in headless Chrome but not yet on real phones.
 - **GitHub Pages is temporarily serving `poji`** at https://mhh-usm.github.io/simulasi-umrah/ so it can be tested on phones.
 
 **To release:**
@@ -32,7 +32,8 @@ This is for whoever picks up the code next. It covers:
 | `9f3fd2f` | Outdoor high-contrast mode (◐) |
 | `f73b9d9` | Bottom tab bar: Panduan · Penjejak · Bacaan · Ziarah |
 | `0650c0f` | Back steps through the guide instead of closing the app; the mini screen closes when you return to the app |
-| *(this commit)* | README and this handoff |
+| `b4032c4` | README and this handoff |
+| *(latest)* | Automated tests in `tests/` |
 
 ## 2. Architecture
 
@@ -142,7 +143,18 @@ The last full run passed all suites with no page errors.
 | Back-button scenarios, including every history entry added during a tap | 22 |
 | Mini screen (simulated and real picture-in-picture) | 16 |
 
-The test scripts were run from a temporary folder and are **not in this repo**. Adding them under `tests/` would make future checks repeatable.
+**The tests are in [tests/](tests/).**
+
+```sh
+node tests/run-all.js            # all files, about 6 minutes; exit code 1 if anything fails
+node tests/run-all.js back       # only files whose name contains "back"
+node tests/core.test.js          # one file, with PASS/FAIL detail
+```
+
+- **Requirements:** Node 22 or newer (it uses the built-in `fetch` and `WebSocket`) and Chrome or Edge. The browser is found automatically, or set `CHROME=/path/to/chrome`.
+- **Screenshots** go to the system temp folder under `simulasi-umrah-tests/`, or to `OUT=…`.
+- **How it works:** [tests/harness.js](tests/harness.js) serves the repo on a random localhost port and drives headless Chrome at phone size. Each `*.test.js` contains only its checks, and the harness adds a "no page errors" check to each file.
+- **The headless browser is slow,** because it draws the 3D scene in software. Use generous waits, and run checks before taking screenshots: each screenshot takes about a second.
 
 **Not covered by headless testing:**
 - real GPS and motion sensors;
