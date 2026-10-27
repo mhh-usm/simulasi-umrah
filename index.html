@@ -246,6 +246,13 @@ button,select,.pmap{min-height:44px}
 .fsz{display:flex;gap:4px}.fsz button{font-weight:800;min-width:44px;padding:8px 10px}
 /* kredit ringkas selain di halaman pembuka */
 .credit.mini{margin:0 0 10px;padding-bottom:8px;font-size:calc(12.5px*var(--fs))}
+/* semakan telefon sebelum mula penjejak */
+.kchkl{list-style:none;padding:0;margin:8px 0}
+.kchkl li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--glass-edge);font-size:calc(14px*var(--fs));line-height:1.45}
+.kchkl li:last-child{border-bottom:0}
+.kchkl .st{font-size:calc(18px*var(--fs));line-height:1.2}
+.kchkl li.err b{color:#d9443a}.kchkl li.warn b{color:var(--gold)}
+#kchkb{width:100%;margin-top:4px;font-weight:800}
 /* telefon: teks rata kiri (justify + hyphen menghasilkan jarak besar dalam BM/ID) */
 @media (max-width:600px){
  #jbody p:not(.src):not(.cutmsg),#card p:not(.credit):not(.fine),#guide,#jbody li,.zinfo p,.pdesc{text-align:start;-webkit-hyphens:manual;hyphens:manual}
@@ -2388,6 +2395,43 @@ let leafP=null;
 function loadLeaflet(){if(typeof L!=="undefined")return Promise.resolve();if(!leafP)leafP=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="leaflet.js";sc.onload=ok;sc.onerror=()=>{leafP=null;no();};document.head.appendChild(sc);});return leafP;}
 function trkMaps(){if(typeof L==="undefined"){loadLeaflet().then(()=>{if($("trk").style.display!=="none")trkMaps();}).catch(()=>{});return;}
   if(!TS)initLocMap();else if(TS.done)initSumMap("kmapS",TS);else initLiveMap();}
+/* ---------- Semakan telefon sebelum mula: GPS, sensor gerakan, skrin hidup, bateri ---------- */
+const KCHK={bm:{title:"✅ Semakan telefon sebelum mula",intro:"Pastikan semua hijau supaya rakaman tidak terputus semasa ibadah.",btn:"🔍 Semak & benarkan",ask:"Belum disemak: tekan Semak & benarkan.",
+  gps:"Lokasi (GPS)",gpsOk:"Dibenarkan.",gpsWait:"Mencari isyarat GPS…",gpsWeak:"Dibenarkan, tetapi belum dapat isyarat. Cuba dekat tingkap atau di luar bangunan.",gpsErr:"Disekat. Buka Tetapan telefon › Aplikasi › pelayar anda › Kebenaran › Lokasi, pilih Benarkan, kemudian semak semula.",gpsNo:"Telefon atau pelayar ini tidak menyokong lokasi.",
+  mot:"Sensor gerakan (kiraan langkah)",motOk:"Berfungsi.",motNo:"Tiada isyarat sensor. Langkah akan dianggar daripada jarak.",motErr:"Disekat. Langkah akan dianggar daripada jarak.",
+  wl:"Skrin kekal hidup",wlOk:"Disokong.",wlNo:"Tidak disokong di sini. Tetapkan Tamat masa skrin telefon kepada 10 minit atau lebih sebelum mula, kerana GPS berhenti apabila skrin mati.",
+  bat:"Bateri",chg:"sedang dicas",batLow:n=>`${n}%. Cas dahulu atau bawa power bank: skrin kekal hidup sepanjang rakaman.`},
+ en:{title:"✅ Phone check before starting",intro:"Make sure everything is green so recording does not stop during worship.",btn:"🔍 Check & allow",ask:"Not checked yet: tap Check & allow.",
+  gps:"Location (GPS)",gpsOk:"Allowed.",gpsWait:"Looking for GPS signal…",gpsWeak:"Allowed, but no signal yet. Try near a window or outdoors.",gpsErr:"Blocked. Open phone Settings › Apps › your browser › Permissions › Location, choose Allow, then check again.",gpsNo:"This phone or browser does not support location.",
+  mot:"Motion sensor (step count)",motOk:"Working.",motNo:"No sensor signal. Steps will be estimated from distance.",motErr:"Blocked. Steps will be estimated from distance.",
+  wl:"Screen stays on",wlOk:"Supported.",wlNo:"Not supported here. Set your phone's screen timeout to 10 minutes or more before starting, because GPS stops when the screen turns off.",
+  bat:"Battery",chg:"charging",batLow:n=>`${n}%. Charge first or bring a power bank: the screen stays on for the whole recording.`}};
+let tchk={perm:null,mot:null,wl:null,bat:null};
+function gpsSt(){if(!navigator.geolocation||tchk.perm==="denied")return "err";if(tloc&&tloc.lat)return "ok";if(tloc&&tloc.wait)return "wait";
+  if(tloc&&tloc.err)return tchk.perm==="granted"?"weak":"err";return tchk.perm==="granted"?"ok":null;}
+function chkMot(){return new Promise(res=>{let done=false;const end=ok=>{if(done)return;done=true;window.removeEventListener("devicemotion",f);res(ok);};
+  const f=e=>{const a=e.accelerationIncludingGravity;if(a&&a.x!=null)end(true);};window.addEventListener("devicemotion",f);setTimeout(()=>end(false),2000);});}
+function chkHTML(){const C=KCHK[kl()],g=gpsSt(),b=tchk.bat;
+  const row=(st,name,msg)=>`<li class="${st||"unk"}"><span class="st" aria-hidden="true">${{ok:"✅",warn:"⚠️",err:"⛔",wait:"⏳"}[st]||"⚪"}</span><span><b>${name}</b><br>${msg}</span></li>`;
+  let h=row(g==="weak"?"warn":g,C.gps,{ok:C.gpsOk,wait:C.gpsWait,weak:C.gpsWeak,err:navigator.geolocation?C.gpsErr:C.gpsNo}[g]||C.ask);
+  h+=row(tchk.mot,C.mot,{ok:C.motOk,warn:C.motNo,err:C.motErr}[tchk.mot]||C.ask);
+  h+=row(tchk.wl,C.wl,{ok:C.wlOk,warn:C.wlNo}[tchk.wl]||C.ask);
+  if(b){const n=Math.round(b.level*100),low=n<30&&!b.charging;h+=row(low?"warn":"ok",C.bat,low?C.batLow(n):n+"%"+(b.charging?" · "+C.chg:""));}
+  return `<ul class="kchkl">${h}</ul>`;}
+function chkUpd(){const e=document.getElementById("kchkv");if(e)e.innerHTML=chkHTML();}
+/* semakan senyap semasa penjejak dibuka (tanpa meminta kebenaran) */
+function chkPassive(){tchk.wl="wakeLock" in navigator?"ok":"warn";
+  try{navigator.permissions&&navigator.permissions.query({name:"geolocation"}).then(r=>{const m=()=>{tchk.perm=r.state;chkUpd();};m();r.onchange=m;}).catch(()=>{});}catch(e){}
+  if(typeof DeviceMotionEvent==="undefined")tchk.mot="warn";
+  else if(typeof DeviceMotionEvent.requestPermission!=="function"&&tchk.mot!=="ok")chkMot().then(ok=>{tchk.mot=ok?"ok":"warn";chkUpd();});
+  try{if(navigator.getBattery&&!tchk.bat)navigator.getBattery().then(b=>{tchk.bat=b;b.onlevelchange=b.onchargingchange=chkUpd;chkUpd();}).catch(()=>{});}catch(e){}
+  chkUpd();}
+/* butang: minta semua kebenaran dalam satu ketikan (iPhone: sensor gerakan mesti diminta dahulu) */
+async function chkRun(){const btn=document.getElementById("kchkb");if(btn)btn.disabled=true;
+  if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){try{tchk.mot=await DeviceMotionEvent.requestPermission()==="granted"?null:"err";}catch(e){tchk.mot="err";}}
+  if(typeof DeviceMotionEvent==="undefined")tchk.mot="warn";else if(tchk.mot!=="err")chkMot().then(ok=>{tchk.mot=ok?"ok":"warn";chkUpd();});
+  if("wakeLock" in navigator){try{const l=await navigator.wakeLock.request("screen");tchk.wl="ok";l.release().catch(()=>{});}catch(e){tchk.wl="warn";}}else tchk.wl="warn";
+  chkUpd();getLoc();setTimeout(()=>{const b=document.getElementById("kchkb");if(b)b.disabled=false;},2500);}
 function renderTrk(){const T=KT[kl()];setCredit();
   let h=`<button id="kback">${T.back}</button><h2 class="ztitle">${T.title}</h2><p class="zsub">${T.sub}</p>`;
   if(!TS){const pr=tprof(),H=thist();
@@ -2402,6 +2446,7 @@ function renderTrk(){const T=KT[kl()];setCredit();
     <label class="rtr kvo"><input type="checkbox" id="tv" ${pr.v?"checked":""}> ${T.voice}</label>
     <label class="rtr kvo"><input type="checkbox" id="tq" ${pr.q?"checked":""}> ${qt().trk}</label>
     <div class="pbtns"><button id="kvtest">${VTEST[kl()].btn}</button></div><p class="src" id="kvout"></p>
+    <div class="place kchk"><div class="pname">${KCHK[kl()].title}</div><p class="pmeta">${KCHK[kl()].intro}</p><div id="kchkv">${chkHTML()}</div><button id="kchkb">${KCHK[kl()].btn}</button></div>
     <button id="kstart" class="act kbig">${T.start}</button>
     <h3 class="zh3">${T.hist}</h3>`+(H.length?H.map((s,i)=>`<details class="place khist"><summary><b>${new Date(s.start).toLocaleDateString()}</b> · ${fmtD(totDist(s))} · ${mainSteps(s).toLocaleString()} ${T.steps.toLowerCase()} · ${fmtT(s.acc)}</summary>${sumHTML(s,T,false)}<div class="pbtns"><button data-ksh="${i}">${T.share}</button><button data-kdel="${i}">${T.del}</button></div></details>`).join("")+`<button id="kdelall" class="zreset">${T.delAll}</button>`:`<p class="src">${T.none}</p>`)+`<p class="src">${T.note}</p>`;
   }else if(TS.done){h+=sumHTML(TS,T,true)+`<div class="pbtns"><button id="kshare" class="act">${T.share}</button><button id="knew">${T.newS}</button></div><p class="src">${T.note}</p>`;}
@@ -2416,7 +2461,7 @@ function renderTrk(){const T=KT[kl()];setCredit();
   $("kbody").innerHTML=h;
   const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f;};
   on("kback",()=>{$("trk").style.display="none";openJourney(jstep);});
-  on("kstart",tStart);on("kloc",getLoc);on("kvtest",()=>vTest(document.getElementById("kvout")));
+  on("kstart",()=>{const b=document.getElementById("kstart");if(gpsSt()==="err")twice("start",b,tStart);else tStart();});on("kchkb",chkRun);on("kloc",getLoc);on("kvtest",()=>vTest(document.getElementById("kvout")));
   const hs=document.getElementById("thot");if(hs)hs.onchange=()=>{const o=tprof();o.hid=hs.value;const h=hotelAt(hs.value);if(h)o.hm=h[1];try{localStorage.setItem("su-trk-prof",JSON.stringify(o));}catch(e){}renderTrk();};
   ["thn","thm"].forEach(id=>{const e=document.getElementById(id);if(e)e.onchange=()=>initLocMap();if(e)e.oninput=()=>{saveHotel();const g=document.getElementById("thgm");if(g&&id==="thn")g.href=gmDir(e.value);};});
   on("thdet",()=>{const go=()=>{if(!tloc||!tloc.lat)return;const d=hav([tloc.lat,tloc.lon],KAABA),w=Math.max(50,Math.round((d-130)*1.3/10)*10);const e=document.getElementById("thm");if(e){e.value=w;saveHotel();}};if(tloc&&tloc.lat)go();else{getLoc();setTimeout(go,4000);}});
@@ -2436,7 +2481,7 @@ function openTrk(){loadLeaflet().catch(()=>{});try{navigator.permissions&&naviga
 hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","intro","journey","ziarah","reader"].forEach(id=>$(id).style.display="none");$("trk").style.display="grid";
   if(!TS){try{const c=JSON.parse(localStorage.getItem("su-trk-cur"));if(c&&!c.done){TS=c;if(!TS.paused){gpsOn();lockOn();motionOn();}tRun();}}catch(e){}}
   else if(!TS.done&&!TS.paused){gpsOn();lockOn();}
-  renderTrk();$("kcard").scrollTop=0;}
+  renderTrk();if(!TS)chkPassive();$("kcard").scrollTop=0;}
 
 /* ---------- V2: Skrin mini (Picture-in-Picture) & kawalan media ---------- */
 const MINI={cv:null,vid:null,t:null,ms:0};
