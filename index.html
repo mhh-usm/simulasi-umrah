@@ -278,6 +278,19 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
 :root[data-contrast="high"] .act,:root[data-contrast="high"] #go,:root[data-contrast="high"] #zopen,:root[data-contrast="high"] .pill.p-done,:root[data-contrast="high"] .pchk[aria-pressed="true"],:root[data-contrast="high"] #nextstep{color:var(--glass)!important}
 :root[data-contrast="high"][data-theme="dark"] #ropen{background:var(--green)}:root[data-contrast="high"][data-theme="dark"] #kopen{background:#8ec5ff}
 #more .hcBtn::after{content:"  " attr(title);font-size:14px}
+/* bar tab bawah: Panduan · Penjejak · Bacaan · Ziarah */
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:none;justify-content:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:var(--glass);border-top:1px solid var(--glass-edge);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#tabs.on{display:flex}
+#tabs button{flex:1;min-width:0;max-width:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:transparent;padding:6px 2px;min-height:58px;border-radius:12px;font-size:calc(12.5px*var(--fsh));font-weight:700;color:var(--ink-soft);box-shadow:none!important}
+#tabs .ti{font-size:22px;line-height:1}#tabs .tl{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tabs button[aria-current="page"]{background:var(--chip);color:var(--ink)}
+#tabs button[aria-current="page"] .tl{color:var(--green)}
+:root[data-contrast="high"] #tabs{-webkit-backdrop-filter:none;backdrop-filter:none;border-top:2px solid var(--glass-edge)}
+:root[data-contrast="high"] #tabs button[aria-current="page"]{background:var(--chip-on);color:var(--chip-on-ink)}:root[data-contrast="high"] #tabs button[aria-current="page"] .tl{color:var(--chip-on-ink)}
+body.tabs-on #journey,body.tabs-on #ziarah,body.tabs-on #reader,body.tabs-on #trk{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#zopen,#ropen,#kopen{display:none!important}
+@media (max-width:600px){body.tabs-on #jcard,body.tabs-on #zcard,body.tabs-on #rcard,body.tabs-on #kcard{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}}
 /* telefon: teks rata kiri (justify + hyphen menghasilkan jarak besar dalam BM/ID) */
 @media (max-width:600px){
  #jbody p:not(.src):not(.cutmsg),#card p:not(.credit):not(.fine),#guide,#jbody li,.zinfo p,.pdesc{text-align:start;-webkit-hyphens:manual;hyphens:manual}
@@ -346,6 +359,12 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
   <div id="kcard" class="glass"><p class="credit"></p><div id="kbody"></div></div>
 </div>
 <div id="kpocket" style="display:none"><div class="pk"><p id="pSeg"></p><b id="pTime"></b><b id="pDist"></b><b id="pSteps"></b><p id="pGps"></p><p class="pkU" id="pUn"></p><div class="pkBar"></div></div></div>
+<nav id="tabs" aria-label="Menu utama / Main menu">
+  <button data-tab="journey"><span class="ti" aria-hidden="true">🕋</span><span class="tl"></span></button>
+  <button data-tab="trk"><span class="ti" aria-hidden="true">🏃</span><span class="tl"></span></button>
+  <button data-tab="reader"><span class="ti" aria-hidden="true">📖</span><span class="tl"></span></button>
+  <button data-tab="ziarah"><span class="ti" aria-hidden="true">📍</span><span class="tl"></span></button>
+</nav>
 <div id="intro">
   <div id="card" class="glass">
     <p class="credit"></p>
@@ -2650,6 +2669,20 @@ addEventListener("popstate",()=>{
   else if(!shown("journey"))openJourney(jstep);
   else history.back();
 });
+/* ---------- bar tab bawah ---------- */
+const TABS={bm:["Panduan","Penjejak","Bacaan","Ziarah"],en:["Guide","Tracker","Readings","Ziarah"],id:["Panduan","Pelacak","Bacaan","Ziarah"],ar:["الدليل","المتتبع","الأوراد","الزيارة"]};
+const TAB_IDS=["journey","trk","reader","ziarah"];
+function tabCur(){return TAB_IDS.find(id=>shown(id));}
+function tabsSync(){const T=TABS[lang]||TABS.en,cur=tabCur(),on=!!cur&&!shown("kpocket");$("tabs").classList.toggle("on",on);document.body.classList.toggle("tabs-on",on);
+  document.querySelectorAll("#tabs [data-tab]").forEach(b=>{b.querySelector(".tl").textContent=T[TAB_IDS.indexOf(b.dataset.tab)];if(b.dataset.tab===cur)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});}
+function tabGo(t){const cur=tabCur();if(t===cur){const c=$({journey:"jcard",trk:"kcard",reader:"rcard",ziarah:"zcard"}[t]);if(c)c.scrollTop=0;document.scrollingElement.scrollTop=0;["journey","ziarah","reader","trk"].forEach(id=>{$(id).scrollTop=0;});return;}
+  if(t==="journey"){["ziarah","reader","trk"].forEach(id=>$(id).style.display="none");openJourney(jstep);}
+  else if(t==="trk")openTrk();else if(t==="reader")openReader();
+  else{$("reader").style.display=$("trk").style.display="none";openZiarah();}}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)tabGo(b.dataset.tab);});
+TAB_IDS.concat("kpocket").forEach(id=>new MutationObserver(tabsSync).observe($(id),{attributes:true,attributeFilter:["style"]}));
+new MutationObserver(tabsSync).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
+tabsSync();
 setTimeout(()=>{try{const op=new URLSearchParams(location.search).get("open");if(op==="trk")openTrk();else if(op==="reader")openReader();else if(op==="ziarah")openZiarah();}catch(e){}},500);
 })();
 </script>
