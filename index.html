@@ -291,6 +291,9 @@ body.tabs-on #journey,body.tabs-on #ziarah,body.tabs-on #reader,body.tabs-on #tr
 body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 #zopen,#ropen,#kopen{display:none!important}
 @media (max-width:600px){body.tabs-on #jcard,body.tabs-on #zcard,body.tabs-on #rcard,body.tabs-on #kcard{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}}
+#miniNote{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55)}
+#miniNote .mnc{max-width:420px;width:100%;padding:20px 22px;background:var(--glass)}#miniNote h2{margin:0 0 8px;font-size:calc(20px*var(--fs))}#miniNote p{margin:0 0 14px;line-height:1.55;font-size:calc(15px*var(--fs))}
+#miniNote .pbtns button{flex:1}
 /* telefon: teks rata kiri (justify + hyphen menghasilkan jarak besar dalam BM/ID) */
 @media (max-width:600px){
  #jbody p:not(.src):not(.cutmsg),#card p:not(.credit):not(.fine),#guide,#jbody li,.zinfo p,.pdesc{text-align:start;-webkit-hyphens:manual;hyphens:manual}
@@ -1576,7 +1579,7 @@ function buildBar(){const L=TXT[lang];
   $("look").textContent=L.look;$("gyro").textContent=L.gyro;$("vr").textContent=L.vr;$("restart").textContent=L.restart;
   const sai=activity==="sai";if(sai){$("mode").style.display=$("snd").style.display=$("look").style.display="none";}else $("mode").style.display="";
   $("mode").style.display="none";$("gyro").style.display="none";
-  {const vb=$("vbtn"),VT=VTX[lang]||VTX.bm;vb.textContent=VO.on?VT.on:VT.off;vb.setAttribute("aria-pressed",VO.on);vb.style.display=mode==="sim"?"":"none";const qb=$("qbtn");qb.textContent=qt().bar;qb.style.display=mode==="sim"?"":"none";qb.setAttribute("aria-pressed",qOn&&qLoop);const mb=$("miniBtn");mb.textContent=mt().btn;mb.style.display=mode==="sim"?"":"none";}
+  {const vb=$("vbtn"),VT=VTX[lang]||VTX.bm;vb.textContent=VO.on?VT.on:VT.off;vb.setAttribute("aria-pressed",VO.on);vb.style.display=mode==="sim"?"":"none";const qb=$("qbtn");qb.textContent=qt().bar;qb.style.display=mode==="sim"?"":"none";qb.setAttribute("aria-pressed",qOn&&qLoop);const mb=$("miniBtn");mb.textContent=miniOn()?mt().close:mt().btn;mb.style.display=mode==="sim"?"":"none";}
   $("guideBtn").textContent=JT[lang].guide;$("nextstep").textContent=JT[lang].nextStep+(LANGS[lang].dir==="rtl"?" ‹":" ›");
   $("nextstep").style.display=((activity==="tawaf"&&finished)||(sai&&saiDone))?"":"none";
   {const t={bm:"Lagi",en:"More",id:"Lainnya",ar:"المزيد"}[lang]||"More",mb=$("moreBtn");mb.textContent="⋯";mb.setAttribute("aria-label",t);mb.title=t;}
@@ -1885,11 +1888,11 @@ function openJourney(i){hideHint();$("ziarah").style.display="none";
   ["hud","map","bar","intro"].forEach(id=>$(id).style.display="none");
   $("journey").style.display="grid";renderJourney();
 }
-$("jprev").onclick=()=>{if(jstep>0){jstep--;renderJourney();}};
-$("jnext").onclick=()=>{if(jstep<J.bm.length-1){jstep++;renderJourney();}};
+$("jprev").onclick=()=>{if(jstep>0)stepTo(jstep-1);};
+$("jnext").onclick=()=>{if(jstep<J.bm.length-1)stepTo(jstep+1);};
 $("jlang").onchange=e=>setLang(e.target.value);
 /* tekan bar langkah untuk lompat; leret kiri/kanan untuk langkah seterusnya/sebelumnya */
-$("jsteps").onclick=e=>{const b=e.target.closest("[data-js]");if(b&&+b.dataset.js!==jstep){jstep=+b.dataset.js;renderJourney();}};
+$("jsteps").onclick=e=>{const b=e.target.closest("[data-js]");if(b&&+b.dataset.js!==jstep)stepTo(+b.dataset.js);};
 (function(){let t0=null;const c=$("jcard");
   c.addEventListener("touchstart",e=>{if(e.touches.length!==1||e.target.closest(".cut,input,select,textarea,.kmap")){t0=null;return;}t0={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
   c.addEventListener("touchend",e=>{if(!t0)return;const p=e.changedTouches[0],dx=p.clientX-t0.x,dy=p.clientY-t0.y;t0=null;
@@ -2520,7 +2523,7 @@ function renderTrk(){const T=KT[kl()];setCredit();
     <div class="kmap kmapL" id="kmapL"></div>
     <p class="src" id="kGps"></p>${TS.gaps?`<p class="src">${T.gap} (×${TS.gaps})</p>`:""}
     <button id="kpk" class="act kbig">${T.pocket}</button>
-    <div class="pbtns kctl"><button id="kmini">${mt().btn}</button><button id="kpause">${TS.paused?T.resume:T.pause}</button><button id="kfin">${T.finish}</button></div>`;}
+    <div class="pbtns kctl"><button id="kmini">${miniOn()?mt().close:mt().btn}</button><button id="kpause">${TS.paused?T.resume:T.pause}</button><button id="kfin">${T.finish}</button></div>`;}
   $("kbody").innerHTML=h;
   const on=(id,f)=>{const e=document.getElementById(id);if(e)e.onclick=f;};
   on("kback",()=>{$("trk").style.display="none";openJourney(jstep);});
@@ -2548,9 +2551,21 @@ hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","i
 
 /* ---------- V2: Skrin mini (Picture-in-Picture) & kawalan media ---------- */
 const MINI={cv:null,vid:null,t:null,ms:0};
-const MTX={bm:{btn:"🗗 Skrin mini",un:"Skrin mini tidak disokong di sini. Gunakan Chrome (Android) atau Safari (iPhone), di luar aplikasi lain.",idle:"Simulasi Umrah V2",ready:"Sedia"},
- en:{btn:"🗗 Mini screen",un:"Mini screen is not supported here. Use Chrome (Android) or Safari (iPhone), outside other apps.",idle:"Umrah Simulation V2",ready:"Ready"}};
+const MTX={bm:{close:"✕ Tutup skrin mini",ok:"OK",noteT:"🗗 Skrin mini aktif",noteB:"Tekan butang Utama (Home) atau leret ke atas untuk menggunakan aplikasi lain. Skrin mini akan terus memaparkan status anda. Apabila anda kembali ke aplikasi ini, skrin mini ditutup secara automatik.",btn:"🗗 Skrin mini",un:"Skrin mini tidak disokong di sini. Gunakan Chrome (Android) atau Safari (iPhone), di luar aplikasi lain.",idle:"Simulasi Umrah V2",ready:"Sedia"},
+ en:{close:"✕ Close mini screen",ok:"OK",noteT:"🗗 Mini screen is on",noteB:"Press Home or swipe up to use other apps. The mini screen keeps showing your status. When you come back to this app, the mini screen closes automatically.",btn:"🗗 Mini screen",un:"Mini screen is not supported here. Use Chrome (Android) or Safari (iPhone), outside other apps.",idle:"Umrah Simulation V2",ready:"Ready"}};
 function mt(){return MTX[lang==="en"||lang==="ar"?"en":"bm"];}
+function miniOn(){return !!document.pictureInPictureElement||!!(MINI.vid&&MINI.vid.webkitPresentationMode==="picture-in-picture");}
+/* label butang ikut keadaan, dan nota cara menggunakan skrin mini */
+function miniUI(){const on=miniOn();["miniBtn","kmini"].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent=on?mt().close:mt().btn;b.setAttribute("aria-pressed",String(on));}});
+  let n=document.getElementById("miniNote");
+  if(on&&document.visibilityState==="visible"&&!(n&&n.dataset.ok)){if(!n){n=document.createElement("div");n.id="miniNote";n.setAttribute("role","dialog");n.setAttribute("aria-modal","true");document.body.appendChild(n);}
+    const T=mt();n.innerHTML=`<div class="mnc glass"><h2>${T.noteT}</h2><p>${T.noteB}</p><div class="pbtns"><button id="miniOk">${T.ok}</button><button id="miniX">${T.close}</button></div></div>`;n.style.display="flex";
+    document.getElementById("miniOk").onclick=()=>{n.dataset.ok="1";n.style.display="none";};document.getElementById("miniX").onclick=()=>miniExit();
+    try{document.getElementById("miniOk").focus();}catch(e){}}
+  else if(!on&&n){n.style.display="none";delete n.dataset.ok;}}
+function miniExit(){try{if(document.pictureInPictureElement)document.exitPictureInPicture().catch(()=>{});else if(MINI.vid&&MINI.vid.webkitSetPresentationMode)MINI.vid.webkitSetPresentationMode("inline");}catch(e){}}
+/* skrin mini ditutup: hentikan lukisan (kecuali penjejak sedang merakam, supaya ia boleh dibuka semula apabila keluar aplikasi) */
+function miniLeft(){if(!(typeof TS!=="undefined"&&TS&&!TS.done))miniStop();miniUI();}
 function miniInfo(){
   if(typeof TS!=="undefined"&&TS&&!TS.done){const T=KT[kl()],s=TS.seg;let lap="";
     if(s===1)lap=` · ${Math.min(7,TS.mode==="prac"?TS.laps+1:Math.max(1,TS.vlap||1))}/7`;if(s===2)lap=` · ${Math.min(7,(TS.legs||0)+1)}/7`;
@@ -2569,17 +2584,20 @@ function miniDraw(){const c=MINI.cv;if(!c)return;const x=c.getContext("2d"),i=mi
 function miniPrep(){if(MINI.vid)return MINI.vid.play().catch(()=>{});const c=document.createElement("canvas");c.width=640;c.height=340;MINI.cv=c;miniDraw();
   const v=document.createElement("video");v.muted=true;v.playsInline=true;v.setAttribute("playsinline","");v.setAttribute("autopictureinpicture","");try{v.autoPictureInPicture=true;}catch(e){}
   v.style.cssText="position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1";document.body.appendChild(v);MINI.vid=v;
+  v.addEventListener("enterpictureinpicture",miniUI);v.addEventListener("leavepictureinpicture",()=>setTimeout(miniLeft,0));
+  v.addEventListener("webkitpresentationmodechanged",()=>{if(v.webkitPresentationMode==="picture-in-picture")miniUI();else setTimeout(miniLeft,0);});
   try{v.srcObject=c.captureStream?c.captureStream(2):null;}catch(e){}
   clearInterval(MINI.t);MINI.t=setInterval(miniDraw,1000);return v.play().catch(()=>{});}
-async function miniOpen(){try{if(document.pictureInPictureElement){await document.exitPictureInPicture();return;}
+async function miniOpen(){try{if(miniOn()){miniExit();return;}
   if(!(HTMLCanvasElement.prototype.captureStream)){flash(mt().un);return;}
   const p=miniPrep();const v=MINI.vid;
   if(v.requestPictureInPicture&&document.pictureInPictureEnabled){await p;await v.requestPictureInPicture();}
   else if(v.webkitSupportsPresentationMode&&v.webkitSupportsPresentationMode("picture-in-picture")){v.webkitSetPresentationMode("picture-in-picture");}
   else flash(mt().un);}catch(e){flash(mt().un);}}
-function miniStop(){clearInterval(MINI.t);MINI.t=null;try{if(document.pictureInPictureElement)document.exitPictureInPicture();}catch(e){}
+function miniStop(){clearInterval(MINI.t);MINI.t=null;try{if(document.pictureInPictureElement)document.exitPictureInPicture().catch(()=>{});}catch(e){}
   if(MINI.vid){try{MINI.vid.pause();MINI.vid.srcObject=null;MINI.vid.remove();}catch(e){}}MINI.vid=null;MINI.cv=null;}
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&MINI.vid&&!document.pictureInPictureElement&&MINI.vid.requestPictureInPicture){MINI.vid.requestPictureInPicture().catch(()=>{});}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&MINI.vid&&!document.pictureInPictureElement&&MINI.vid.requestPictureInPicture){MINI.vid.requestPictureInPicture().catch(()=>{});}
+  else if(document.visibilityState==="visible"&&miniOn())miniExit();});
 
 function openZiarah(){hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","intro","journey"].forEach(id=>$(id).style.display="none");$("ziarah").style.display="grid";renderZiarah();$("zcard").scrollTop=0;}
 
@@ -2656,19 +2674,37 @@ addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updat
 /* fokus ke tajuk skrin baharu supaya pembaca skrin mengumumkannya */
 ["journey","intro","ziarah","reader","trk"].forEach(id=>{const el=$(id);let was=getComputedStyle(el).display!=="none";
   new MutationObserver(()=>{const now=getComputedStyle(el).display!=="none";if(now&&!was){const h=el.querySelector("h1,h2");if(h){h.setAttribute("tabindex","-1");try{h.focus({preventScroll:true});}catch(e){}}}was=now;}).observe(el,{attributes:true,attributeFilter:["style"]});});
-/* ---------- Butang Kembali peranti: kembali ke Panduan, bukan menutup aplikasi ---------- */
+/* ---------- Butang Kembali peranti ----------
+   Panduan: Kembali = langkah sebelumnya (sehingga langkah pertama, kemudian keluar aplikasi).
+   Skrin lain: Kembali = pulang ke Panduan.
+   Chrome melangkau entri sejarah yang ditambah tanpa sentuhan pengguna, jadi entri hanya ditambah semasa pengguna menekan sesuatu. */
 const shown=id=>{const e=$(id);return !!e&&getComputedStyle(e).display!=="none";};
-function navGuard(){try{if(!(history.state&&history.state.su))history.pushState({su:1},"");}catch(e){}}
-new MutationObserver(()=>{if(!shown("journey"))navGuard();}).observe($("journey"),{attributes:true,attributeFilter:["style"]});
-addEventListener("popstate",()=>{
-  if(shown("kpocket")){navGuard();return;}
-  if(moreOpen()){moreSet(false);navGuard();return;}
-  if(shown("bar"))$("guideBtn").click();
+let hStep=0,hGuard=false,hSkip=0,hTo=null;
+function hPush(k){const u=navigator.userActivation;if(u&&!u.isActive)return false;try{history.pushState({su:1,k},"");return true;}catch(e){return false;}}
+/* tukar langkah atas tindakan pengguna; satu entri sejarah bagi setiap langkah ke hadapan */
+function stepTo(n){n=Math.max(0,Math.min(J.bm.length-1,n));if(n===jstep)return;
+  if(n<jstep&&hStep>n&&!hGuard&&!hSkip){hTo=n;const k=hStep-n;hStep=n;history.go(-k);return;}
+  if(hStep<n&&!hGuard&&!hSkip&&hPush("s"))hStep++;
+  jstep=n;renderJourney();}
+/* tinggalkan Panduan: satu entri pengawal; pulang ke Panduan melalui butang aplikasi: buang pengawal itu */
+new MutationObserver(()=>{const j=shown("journey");
+  if(!j&&!hGuard){if(hPush("g"))hGuard=true;}
+  else if(j&&hGuard){hGuard=false;hSkip++;history.back();}}).observe($("journey"),{attributes:true,attributeFilter:["style"]});
+/* jika pengawal tiada (cth. dibuka melalui pintasan), ketikan seterusnya memasangnya */
+document.addEventListener("click",()=>{if(!hGuard&&!shown("journey")&&hPush("g"))hGuard=true;});
+function goGuide(){if(shown("bar"))$("guideBtn").click();
   else if(shown("reader")){const b=$("rback");if(b)b.click();else{$("reader").style.display="none";openJourney(jstep);}}
   else if(shown("trk")){$("trk").style.display="none";openJourney(jstep);}
-  else if(!shown("journey"))openJourney(jstep);
-  else history.back();
-});
+  else openJourney(jstep);}
+addEventListener("popstate",()=>{
+  if(hSkip>0){hSkip--;return;}
+  if(hTo!==null){jstep=hTo;hTo=null;renderJourney();return;}
+  if(!shown("journey")){hGuard=false;
+    if(shown("kpocket")){if(hPush("g"))hGuard=true;return;}
+    if(moreOpen()){moreSet(false);if(hPush("g"))hGuard=true;return;}
+    goGuide();return;}
+  if(hStep>0)hStep--;
+  if(jstep>0){jstep--;renderJourney();}});
 /* ---------- bar tab bawah ---------- */
 const TABS={bm:["Panduan","Penjejak","Bacaan","Ziarah"],en:["Guide","Tracker","Readings","Ziarah"],id:["Panduan","Pelacak","Bacaan","Ziarah"],ar:["الدليل","المتتبع","الأوراد","الزيارة"]};
 const TAB_IDS=["journey","trk","reader","ziarah"];
