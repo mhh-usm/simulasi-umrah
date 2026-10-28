@@ -65,6 +65,17 @@ require("./harness")(__filename, async ({ ev, send, tap, back, sleep, shot, chec
   check("7th tap: done state, button disabled", await ev("document.getElementById('lcTap').classList.contains('done')&&document.getElementById('lcTap').disabled") && await num() === "7");
   check("7th tap: long finish vibration", await lastVib() === "[500,150,500]", await lastVib());
   await shot("l4-done");
+  // the long finish text ("Istilam terakhir…") must not be squeezed under the 7 / 7 button on small phones or with large text
+  const fits = () => ev(`(()=>{const d=document.getElementById('lcDir'),t=document.getElementById('lcTap');
+    return d.scrollHeight<=d.clientHeight+1&&d.getBoundingClientRect().bottom<=t.getBoundingClientRect().top+1;})()`);
+  for (const [w, h, fs] of [[360, 640, "1"], [320, 568, "1.3"]]) {
+    await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 2, mobile: true });
+    await ev(`document.documentElement.style.setProperty('--fs','${fs}')`); await sleep(300);
+    check(`${w}x${h} text ${fs}: finish text clear of the 7 / 7 button (screen scrolls)`, await fits());
+  }
+  await shot("l4b-done-small");
+  await ev("document.documentElement.style.setProperty('--fs','1')");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true }); await sleep(300);
   // reset needs a second tap
   await tap("#lcR"); await sleep(200);
   check("reset asks for confirmation first", await num() === "7");

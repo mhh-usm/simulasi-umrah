@@ -296,7 +296,7 @@ body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 /* pengira pusingan manual: skrin penuh, satu butang besar untuk ditekan sambil berjalan */
 #lapc{position:fixed;inset:0;z-index:9500;display:none;flex-direction:column;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));overflow:auto;background:linear-gradient(180deg,#e9f1ec,#f7f4ec)}
 :root[data-theme="dark"] #lapc{background:linear-gradient(180deg,#0c1a14,#0b0a08)}
-#lapc.on{display:flex}
+#lapc.on{display:flex}#lapc>*{flex-shrink:0} /* jangan mampat: teks panjang (cth. "Istilam terakhir…") ditolak ke bawah, skrin boleh skrol */
 .lct{display:flex;gap:8px;align-items:center}.lct .sp{flex:1}.lct .sp button{flex:1;min-height:44px;font-size:calc(15px*var(--fsh))}#lcV{min-width:52px}
 .lch{margin:2px 0 0;font-size:calc(14px*var(--fsh));font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);text-align:center}
 #lcN{text-align:center;line-height:1}#lcN span{display:block;font-size:calc(20px*var(--fsh));font-weight:700;color:var(--ink-soft);margin-bottom:2px}
@@ -304,7 +304,7 @@ body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 #lcDots{display:flex;justify-content:center;gap:10px}#lcDots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--ink-soft)}
 #lcDots i.on{background:var(--gold);border-color:var(--gold)}#lcDots i.cur{background:var(--green);border-color:var(--green)}
 #lcDir{text-align:center;margin:0;font-weight:800;font-size:calc(19px*var(--fsh));line-height:1.4;color:var(--gold);min-height:1.4em}
-#lcTap{flex:1;min-height:150px;width:100%;border-radius:22px;background:var(--green);color:#fff;font-size:calc(18px*var(--fsh));font-weight:700;line-height:1.35;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .2s,transform .1s}
+#lcTap{flex:1 0 150px;min-height:150px;width:100%;border-radius:22px;background:var(--green);color:#fff;font-size:calc(18px*var(--fsh));font-weight:700;line-height:1.35;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .2s,transform .1s}
 #lcTap .big{font-size:calc(30px*var(--fsh));font-weight:800}#lcTap:active{transform:scale(.98)}
 #lcTap.wait{background:var(--chip-on);color:var(--chip-on-ink)}#lcTap.done{background:var(--gold)}#lcTap:disabled{opacity:1;cursor:default}
 :root[data-theme="dark"] #lcTap:not(.wait){color:#08130d}
