@@ -25,6 +25,17 @@ The app (`index.html`, last script) sends `POST https://umrah.kilau.app/ping?e=â
 
 Events that fail offline are queued in `localStorage` (`su-cnt`) and sent later. Totals are at `https://umrah.kilau.app/stats.json` (public, counts only). Dates are UTC.
 
+## Status (28 October 2026)
+
+| Step | State |
+|---|---|
+| 1. Preflight | Done. No clashes. `fauzi` (uid 1001) owns `/opt/kilau/apps`. The shared Caddyfile is chmod 444. A wildcard `*.kilau.app` record already resolves. The shared `access_log` snippet keeps client IPs for 90 days, so the umrah block must not import it. |
+| 2. Upload | Done, release `6f23e1f` |
+| 3. Deploy app | Done. `umrah-web-1` is healthy and `/health` returns `ok`. **Still to check:** the `/` page, the `POST /ping` â†’ 204 log line has no IP, `stats.json` exists, the `# umrah-stats` cron line, and `test_stats.py` prints "passed". |
+| 4. DNS | Covered by the wildcard. The explicit A record is optional and not done. |
+| 5. Caddy route | **Not done.** Run `route.sh` after the step 3 checks pass. |
+| 6. Acceptance | Not done |
+
 ## First deployment
 
 Each step needs your go-ahead; steps 4 and 5 change shared infrastructure.
