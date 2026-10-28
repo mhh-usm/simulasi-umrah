@@ -14,8 +14,8 @@ This is for whoever picks up the code next. It covers:
 - **`main`** still holds the original upload.
 - **`poji`** has 12 commits on top of `main` (listed below): UX improvements, bug fixes, docs and an automated test suite. Everything is tested in headless Chrome but not yet on real phones.
 - **GitHub Pages is temporarily serving `poji`** at https://mhh-usm.github.io/simulasi-umrah/ so it can be tested on phones.
-- **Kilau VPS copy at `https://umrah.kilau.app` is half deployed** (28 October 2026). The app container `umrah-web-1` (release `6f23e1f`) is running and healthy on the VPS. The shared Caddy route is not added yet, so the public URL does not reach it. The next steps are in [deploy/vps/DEPLOYMENT.md](deploy/vps/DEPLOYMENT.md) under "Status".
-- **Anonymous usage count.** The app (on any HTTPS host, including GitHub Pages) sends pings to `umrah.kilau.app/ping`. Until the route is live, the pings fail and wait on the phone, then go out later. See DEPLOYMENT.md, "Usage counting".
+- **Kilau VPS copy is live at `https://umrah.kilau.app`** (28 October 2026, release `6f23e1f`). Server-side acceptance checks pass; phone install and offline testing are still to do. See "Status" in [deploy/vps/DEPLOYMENT.md](deploy/vps/DEPLOYMENT.md).
+- **Anonymous usage count.** The app (on any HTTPS host, including GitHub Pages) sends pings to `umrah.kilau.app/ping`. See DEPLOYMENT.md, "Usage counting".
 
 **To release:**
 1. Test on an Android and an iPhone (checklist in §7).
@@ -186,7 +186,7 @@ node tests/core.test.js          # one file, with PASS/FAIL detail
 - **Unused MP3s.** `*.mp3` and `audio/` (about 26 MB) are unused by the current app. Remove them in a separate commit if the author agrees.
 - **No license file.** Confirm the intended license with the author.
 - **Merge and Pages.** Merge `poji` into `main` and switch GitHub Pages back to `main`.
-- **Finish the Kilau deployment.** Run the step 3 checks, `route.sh` and the acceptance checks; see "Status" in [deploy/vps/DEPLOYMENT.md](deploy/vps/DEPLOYMENT.md). Optionally, add an explicit `umrah` A record; a wildcard covers it for now.
+- **Finish Kilau acceptance on phones.** Install from `https://umrah.kilau.app` and test offline. Optionally, add an explicit `umrah` A record; a wildcard covers it for now.
 - **Unused MP3s on the VPS.** The Docker image includes the root `*.mp3` files and `audio/` (see above). Drop them from the `Dockerfile` if they are removed from the repo.
 
 ## 7. Phone test checklist (before merging)

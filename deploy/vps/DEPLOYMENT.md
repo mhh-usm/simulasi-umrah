@@ -31,10 +31,10 @@ Events that fail offline are queued in `localStorage` (`su-cnt`) and sent later.
 |---|---|
 | 1. Preflight | Done. No clashes. `fauzi` (uid 1001) owns `/opt/kilau/apps`. The shared Caddyfile is chmod 444. A wildcard `*.kilau.app` record already resolves. The shared `access_log` snippet keeps client IPs for 90 days, so the umrah block must not import it. |
 | 2. Upload | Done, release `6f23e1f` |
-| 3. Deploy app | Done. `umrah-web-1` is healthy and `/health` returns `ok`. **Still to check:** the `/` page, the `POST /ping` → 204 log line has no IP, `stats.json` exists, the `# umrah-stats` cron line, and `test_stats.py` prints "passed". |
+| 3. Deploy app | Done. `umrah-web-1` is healthy: `/health` returns `ok`, `/` serves the app, `POST /ping` returns 204 and the log line has no IP, `stats.json` exists, the `# umrah-stats` cron line is in place, and `test_stats.py` passes. It uses about 12 MiB of its 64 MiB limit. |
 | 4. DNS | Covered by the wildcard. The explicit A record is optional and not done. |
-| 5. Caddy route | **Not done.** Run `route.sh` after the step 3 checks pass. |
-| 6. Acceptance | Not done |
+| 5. Caddy route | Done. `route.sh` added the block, validated and reloaded Caddy. Backup: `Caddyfile.pre-umrah-20261028T114507Z`. |
+| 6. Acceptance | Server side done: HTTPS with a Let's Encrypt certificate, HTTP redirects to HTTPS (308), `/health`, `/`, `/ping` (204), `stats.json`, `sw.js` and `privacy.html` all respond. Every other host is unchanged (`terminal` is deliberately 503 and `kirinscanner` returns 403 from its own app). **Still to do:** phone install and offline test. |
 
 ## First deployment
 
