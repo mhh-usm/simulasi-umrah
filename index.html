@@ -2352,7 +2352,10 @@ function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
   if(!doa)h+=`<p class="src">${T.src}</p>`;
   $("rbody").innerHTML=h;
   document.querySelectorAll("[data-rv]").forEach(b=>b.onclick=()=>{rview=b.dataset.rv;try{localStorage.setItem("su-rview",rview);}catch(e){}renderReader();$("rcard").scrollTop=0;});
-  document.querySelectorAll("[data-doa]").forEach(b=>b.onclick=()=>{const d=doaList()[+b.dataset.doa];if(d)vSpeak([{t:d.a,ar:1}],true);});
+  document.querySelectorAll("[data-doa]").forEach(b=>b.onclick=()=>{const d=doaList()[+b.dataset.doa];if(!d)return;
+    /* tiada suara Arab: suara lain melangkau teks Arab tanpa bunyi, jadi beritahu */
+    if(!window.speechSynthesis||(speechSynthesis.getVoices().length&&!vPick("ar-SA"))){flash("🔇 "+offT().voice[1]);return;}
+    vSpeak([{t:d.a,ar:1}],true);});
   document.querySelectorAll("[data-rt]").forEach(b=>b.onclick=()=>{rtime=+b.dataset.rt;renderReader();});
   document.querySelectorAll(".mcount").forEach(b=>b.onclick=()=>{const d=b.closest(".mitem"),k=d.dataset.k,x=+d.dataset.x;rcount[k]=Math.min(x,(rcount[k]||0)+1);const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;});
   if($("rreset"))$("rreset").onclick=()=>{rcount={};renderReader();};
