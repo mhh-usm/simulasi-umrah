@@ -316,7 +316,7 @@ body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 #jtop{flex-wrap:nowrap}#jsteps{min-width:0}#setBtn,#sosBtn{flex:none;min-width:48px;font-size:20px;line-height:1;padding:9px 10px}
 /* doa umrah dalam Bacaan */
 .dtr{font-style:italic;color:var(--ink-soft);font-size:calc(15px*var(--fs));line-height:1.55;margin:6px 0 0;text-align:start}
-.doa .pmeta{margin:2px 0 4px}.dhear{margin-top:10px;font-size:calc(14.5px*var(--fs));padding:8px 14px}
+.doa .pmeta{margin:2px 0 4px}
 /* kad kecemasan: kad putih berkontras tinggi untuk ditunjukkan kepada petugas (Arab + Inggeris) */
 #sos{position:fixed;inset:0;z-index:9400;display:none;overflow:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#e9f1ec,#f7f4ec)}
 :root[data-theme="dark"] #sos{background:linear-gradient(180deg,#0c1a14,#0b0a08)}:root[data-contrast="high"] #sos{background:var(--glass)}
@@ -2292,22 +2292,22 @@ const RT={bm:{open:"📖 Bacaan Jumaat: Yasin & al-Ma'thurat",back:"‹ Panduan 
 let rview=(()=>{try{const v=localStorage.getItem("su-rview");return ["doa","yasin","mathurat","audio"].includes(v)?v:"doa";}catch(e){return "doa";}})(),rtime=(new Date().getHours()>=12?2:1),rtr=true,rcount={};
 /* ---------- Doa & lafaz umrah: semua lafaz Panduan di satu tempat, ikut turutan ibadah ---------- */
 const DOA_T={bm:{tab:"🤲 Doa umrah",title:"Doa & lafaz umrah",sub:"Semua lafaz dalam Panduan di satu tempat, ikut turutan ibadah. Selebihnya, berdoalah dengan apa sahaja hajat, boleh dalam bahasa sendiri.",
-   g:["Ihram di miqat","Tawaf","Sa'ie"],ss:"Di Bukit Safa dan Marwah (setiap kali sampai)",hear:"🔊 Dengar",tr:"Maksud",src:"Lafaz dan transliterasi sama seperti dalam Panduan, mengikut nota bimbingan Lembaga Tabung Haji.",
+   g:["Ihram di miqat","Tawaf","Sa'ie"],ss:"Di Bukit Safa dan Marwah (setiap kali sampai)",tr:"Maksud",src:"Lafaz dan transliterasi sama seperti dalam Panduan, mengikut nota bimbingan Lembaga Tabung Haji.",
    m:{aswad:"Dengan nama Allah, dan Allah Maha Besar.",rabbana:"Wahai Tuhan kami, berikanlah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami daripada azab neraka. (al-Baqarah: 201)",
     verse:"Sesungguhnya Safa dan Marwah ialah sebahagian daripada syiar (agama) Allah. (al-Baqarah: 158)",
     dzikr:"Allah Maha Besar (3 kali). Tiada tuhan melainkan Allah, Yang Maha Esa, tiada sekutu bagi-Nya. Bagi-Nya kerajaan dan bagi-Nya segala pujian, dan Dia Maha Berkuasa atas segala sesuatu."}},
  en:{tab:"🤲 Umrah du'a",title:"Umrah du'a & recitations",sub:"Every recitation in the Guide in one place, in the order of the rites. Beyond these, make du'a for whatever you need, in your own language.",
-   g:["Ihram at the miqat","Tawaf","Sa'i"],ss:"On Safa and Marwah (each time you arrive)",hear:"🔊 Listen",tr:"Meaning",src:"Wording and transliteration as in the Guide, following the Lembaga Tabung Haji course notes.",
+   g:["Ihram at the miqat","Tawaf","Sa'i"],ss:"On Safa and Marwah (each time you arrive)",tr:"Meaning",src:"Wording and transliteration as in the Guide, following the Lembaga Tabung Haji course notes.",
    m:{aswad:"In the name of Allah, and Allah is the Greatest.",rabbana:"Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire. (al-Baqarah 2:201)",
     verse:"Indeed, Safa and Marwah are among the symbols of Allah. (al-Baqarah 2:158)",
     dzikr:"Allah is the Greatest (3 times). There is no god but Allah alone, with no partner. His is the dominion and His is all praise, and He has power over all things."}},
  id:{tab:"🤲 Doa umrah",title:"Doa & lafaz umrah",sub:"Semua lafaz dalam Panduan di satu tempat, sesuai urutan ibadah. Selebihnya, berdoalah untuk hajat apa saja, boleh dalam bahasa sendiri.",
-   g:["Ihram di miqat","Tawaf","Sa'i"],ss:"Di Bukit Shafa dan Marwah (setiap kali tiba)",hear:"🔊 Dengar",tr:"Arti",src:"Lafaz dan transliterasi sama seperti dalam Panduan, mengikuti catatan bimbingan Lembaga Tabung Haji.",
+   g:["Ihram di miqat","Tawaf","Sa'i"],ss:"Di Bukit Shafa dan Marwah (setiap kali tiba)",tr:"Arti",src:"Lafaz dan transliterasi sama seperti dalam Panduan, mengikuti catatan bimbingan Lembaga Tabung Haji.",
    m:{aswad:"Dengan nama Allah, dan Allah Mahabesar.",rabbana:"Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari azab neraka. (Al-Baqarah: 201)",
     verse:"Sesungguhnya Shafa dan Marwah merupakan sebagian dari syiar (agama) Allah. (Al-Baqarah: 158)",
     dzikr:"Allah Mahabesar (3 kali). Tidak ada tuhan selain Allah semata, tiada sekutu bagi-Nya. Milik-Nya kerajaan dan milik-Nya segala puji, dan Dia Mahakuasa atas segala sesuatu."}},
  ar:{tab:"🤲 أدعية العمرة",title:"أدعية العمرة وأذكارها",sub:"جميع الأذكار الواردة في الدليل في مكان واحد، بحسب ترتيب المناسك. وادعُ بعد ذلك بما شئت.",
-   g:["الإحرام من الميقات","الطواف","السعي"],ss:"على الصفا والمروة (في كل مرة)",hear:"🔊 استمع",tr:"",src:"الألفاظ كما في الدليل، وفق مذكرات تابونغ حاجي.",m:{}}};
+   g:["الإحرام من الميقات","الطواف","السعي"],ss:"على الصفا والمروة (في كل مرة)",tr:"",src:"الألفاظ كما في الدليل، وفق مذكرات تابونغ حاجي.",m:{}}};
 /* lafaz yang sama dalam Panduan (bahasa semasa): tajuk h3 sebelumnya, transliterasi dan makna */
 function lafFrom(a){const tp=document.createElement("template");
   for(const s of (J[lang]||J.bm)){if(!s.h.includes(a))continue;tp.innerHTML=s.h;
@@ -2320,7 +2320,7 @@ function doaList(){const D=DOA_T[lang]||DOA_T.en,X=(TXT[lang]||TXT.bm).seg,S=(JT
 function doaHTML(){const D=DOA_T[lang]||DOA_T.en;let h="",g=-1;
   doaList().forEach((d,i)=>{if(d.g!==g){g=d.g;h+=`<h3 class="zh3">${D.g[g]}</h3>`;}
     h+=`<div class="qaya doa"><div class="mname">${d.h}</div>${d.w?`<p class="pmeta">${d.w}</p>`:""}<p class="qar" dir="rtl" lang="ar">${d.a}</p>`+
-      `${lang!=="ar"&&d.t?`<p class="dtr">${d.t}</p>`:""}${rtr&&d.m?`<p class="qtr">${d.m}</p>`:""}<button class="dhear" data-doa="${i}">${D.hear}</button></div>`;});
+      `${lang!=="ar"&&d.t?`<p class="dtr">${d.t}</p>`:""}${rtr&&d.m?`<p class="qtr">${d.m}</p>`:""}</div>`;});
   return h;}
 function rl(){return RT[lang]?lang:"bm";}
 function ayaNum(n){return "﴿"+String(n).replace(/\d/g,d=>"٠١٢٣٤٥٦٧٨٩"[d])+"﴾";}
@@ -2352,10 +2352,6 @@ function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
   if(!doa)h+=`<p class="src">${T.src}</p>`;
   $("rbody").innerHTML=h;
   document.querySelectorAll("[data-rv]").forEach(b=>b.onclick=()=>{rview=b.dataset.rv;try{localStorage.setItem("su-rview",rview);}catch(e){}renderReader();$("rcard").scrollTop=0;});
-  document.querySelectorAll("[data-doa]").forEach(b=>b.onclick=()=>{const d=doaList()[+b.dataset.doa];if(!d)return;
-    /* tiada suara Arab: suara lain melangkau teks Arab tanpa bunyi, jadi beritahu */
-    if(!window.speechSynthesis||(speechSynthesis.getVoices().length&&!vPick("ar-SA"))){flash("🔇 "+offT().voice[1]);return;}
-    vSpeak([{t:d.a,ar:1}],true);});
   document.querySelectorAll("[data-rt]").forEach(b=>b.onclick=()=>{rtime=+b.dataset.rt;renderReader();});
   document.querySelectorAll(".mcount").forEach(b=>b.onclick=()=>{const d=b.closest(".mitem"),k=d.dataset.k,x=+d.dataset.x;rcount[k]=Math.min(x,(rcount[k]||0)+1);const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;});
   if($("rreset"))$("rreset").onclick=()=>{rcount={};renderReader();};
@@ -2745,7 +2741,7 @@ const OFF_T={bm:{t:"📶 Sedia untuk perjalanan",intro:"Semak sebelum berangkat,
    keep:["Storan kekal: tidak akan dipadam oleh pelayar","Storan belum kekal: pelayar mungkin memadamnya jika ruang telefon penuh."],
    aud:["Surah audio yang ditanda: {k}/{n} disimpan untuk luar talian","Surah audio yang ditanda: {k}/{n} disimpan. Buka Bacaan › Surah › Simpan semua yang ditanda."],
    sos:["Kad kecemasan sudah diisi","Kad kecemasan belum diisi"],sosB:"Isi sekarang",
-   voice:["Suara bacaan Arab tersedia dalam telefon","Tiada suara Arab dalam telefon: butang Dengar mungkin senyap. Pasang suara Arab dalam tetapan teks-ke-pertuturan telefon."],
+   voice:["Suara bacaan Arab tersedia dalam telefon","Tiada suara Arab dalam telefon: bacaan Arab dalam simulasi tawaf dan sa'ie tidak berbunyi. Pasang suara Arab dalam tetapan teks-ke-pertuturan telefon."],
    net:"Perlu internet: peta dan surah audio yang belum disimpan. Panduan, pengira pusingan, doa, kad kecemasan dan Penjejak berfungsi tanpa internet.",
    off:"📴 Tiada internet. Panduan, pengira pusingan, doa dan kad kecemasan masih berfungsi.",on:"📶 Internet kembali.",map:"📴 Peta memerlukan internet. Jarak dan langkah tetap direkodkan."},
  en:{t:"📶 Ready for the trip",intro:"Check before you leave, while you still have internet.",chk:"🔄 Check & save again",wait:"Checking…",
@@ -2754,7 +2750,7 @@ const OFF_T={bm:{t:"📶 Sedia untuk perjalanan",intro:"Semak sebelum berangkat,
    keep:["Persistent storage: the browser will not clear it","Storage not persistent yet: the browser may clear it if the phone runs low on space."],
    aud:["Ticked surah audio: {k}/{n} saved for offline","Ticked surah audio: {k}/{n} saved. Open Readings › Surahs › Save all ticked."],
    sos:["Emergency card filled in","Emergency card not filled in yet"],sosB:"Fill in now",
-   voice:["Arabic reading voice available on this phone","No Arabic voice on this phone: the Listen buttons may be silent. Add an Arabic voice in the phone's text-to-speech settings."],
+   voice:["Arabic reading voice available on this phone","No Arabic voice on this phone: the Arabic readings in the tawaf and sa'i simulation will be silent. Add an Arabic voice in the phone's text-to-speech settings."],
    net:"Needs internet: maps and surah audio not yet saved. The guide, lap counter, du'a, emergency card and tracker work without internet.",
    off:"📴 No internet. The guide, lap counter, du'a and emergency card still work.",on:"📶 Back online.",map:"📴 Maps need internet. Distance and steps are still recorded."},
  id:{t:"📶 Siap untuk perjalanan",intro:"Periksa sebelum berangkat, selagi masih ada internet.",chk:"🔄 Periksa & simpan ulang",wait:"Memeriksa…",
@@ -2763,7 +2759,7 @@ const OFF_T={bm:{t:"📶 Sedia untuk perjalanan",intro:"Semak sebelum berangkat,
    keep:["Penyimpanan permanen: tidak akan dihapus oleh peramban","Penyimpanan belum permanen: peramban dapat menghapusnya jika memori ponsel penuh."],
    aud:["Audio surah yang ditandai: {k}/{n} tersimpan untuk luar jaringan","Audio surah yang ditandai: {k}/{n} tersimpan. Buka Bacaan › Surah › Simpan semua yang ditanda."],
    sos:["Kartu darurat sudah diisi","Kartu darurat belum diisi"],sosB:"Isi sekarang",
-   voice:["Suara bahasa Arab tersedia di ponsel","Tidak ada suara Arab di ponsel: tombol Dengar mungkin tidak bersuara. Tambahkan suara Arab di pengaturan teks-ke-ucapan ponsel."],
+   voice:["Suara bahasa Arab tersedia di ponsel","Tidak ada suara Arab di ponsel: bacaan Arab dalam simulasi tawaf dan sa'i tidak bersuara. Tambahkan suara Arab di pengaturan teks-ke-ucapan ponsel."],
    net:"Perlu internet: peta dan audio surah yang belum disimpan. Panduan, penghitung putaran, doa, kartu darurat dan pelacak berfungsi tanpa internet.",
    off:"📴 Tidak ada internet. Panduan, penghitung putaran, doa dan kartu darurat tetap berfungsi.",on:"📶 Internet tersambung kembali.",map:"📴 Peta memerlukan internet. Jarak dan langkah tetap tercatat."},
  ar:{t:"📶 الاستعداد للسفر",intro:"تحقق قبل السفر ما دام الإنترنت متاحًا.",chk:"🔄 تحقق واحفظ من جديد",wait:"جارٍ التحقق…",
@@ -2772,7 +2768,7 @@ const OFF_T={bm:{t:"📶 Sedia untuk perjalanan",intro:"Semak sebelum berangkat,
    keep:["تخزين دائم: لن يحذفه المتصفح","التخزين غير دائم بعد: قد يحذفه المتصفح إذا امتلأت ذاكرة الهاتف."],
    aud:["تلاوات السور المحددة: {k}/{n} محفوظة دون إنترنت","تلاوات السور المحددة: {k}/{n} محفوظة. افتح الأوراد › Surahs › Save all ticked."],
    sos:["بطاقة الطوارئ مكتملة","بطاقة الطوارئ غير مكتملة"],sosB:"املأها الآن",
-   voice:["صوت القراءة العربية متاح في الهاتف","لا يوجد صوت عربي في الهاتف: قد لا يعمل زر الاستماع. أضف صوتًا عربيًا من إعدادات تحويل النص إلى كلام."],
+   voice:["صوت القراءة العربية متاح في الهاتف","لا يوجد صوت عربي في الهاتف: لن تُسمع الأذكار العربية في محاكاة الطواف والسعي. أضف صوتًا عربيًا من إعدادات تحويل النص إلى كلام."],
    net:"يحتاج إلى الإنترنت: الخرائط وتلاوات السور غير المحفوظة. الدليل وعدّاد الأشواط والأدعية وبطاقة الطوارئ والمتتبع تعمل دون إنترنت.",
    off:"📴 لا يوجد إنترنت. الدليل وعدّاد الأشواط والأدعية وبطاقة الطوارئ تعمل.",on:"📶 عاد الاتصال بالإنترنت.",map:"📴 الخرائط تحتاج إلى الإنترنت. تُسجَّل المسافة والخطوات كالمعتاد."}};
 function offT(){return OFF_T[lang]||OFF_T.en;}

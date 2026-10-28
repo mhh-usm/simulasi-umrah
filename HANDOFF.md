@@ -153,7 +153,7 @@ The last full run passed all suites with no page errors.
 | Back-button scenarios, including every history entry added during a tap | 22 |
 | Mini screen (simulated and real picture-in-picture) | 16 |
 | Offline: local fonts only, service worker caches everything, readiness list, then with the network cut: reload, Arabic font, 3D, du'a, card, lap counter, map notice, offline/online messages | 19 |
-| Doa tab (order, meanings, listen, 4 languages, remembered tab) and emergency card (form, hotel prefill, Arabic + English card, tap-to-call, escaping, Back, shortcut, Ziarah link, outdoor contrast) | 35 |
+| Doa tab (order, meanings, no Listen button, 4 languages, remembered tab) and emergency card (form, hotel prefill, Arabic + English card, tap-to-call, escaping, Back, shortcut, Ziarah link, outdoor contrast) | 35 |
 | Guide layout: one-row header, Settings sheet (Back, dimmed area, language, Arabic, largest text), sticky nav on the tab bar, no credit line on other screens | 27 |
 | Lap counter: count, double-tap guard, undo, reset, voice, vibration, reload, shortcut, Back, outdoor contrast | 26 |
 
@@ -194,7 +194,7 @@ node tests/core.test.js          # one file, with PASS/FAIL detail
 5. **Tracker in practice mode:** do Semak & benarkan, Start, then walk. Expect 1 buzz at lap 1 and 2 buzzes at lap 2.
 6. **Lap counter:** on the tawaf step, tap Pengira pusingan, then tap the green area. Expect 2 buzzes and a spoken count. Lock and unlock the phone (the count should stay), then press Back (the counter should close on the same step). Long-press the home-screen icon for the Pengira shortcut.
 7. **Emergency card:** tap 🆘, fill in the form and save. Tap the leader's phone; the dialler should open with the number. Turn on flight mode and reopen the card; it should still show.
-8. **Doa:** open Bacaan, then Doa umrah, then Dengar on Rabbana atina. Check whether the phone has an Arabic voice (Uji suara in the tracker shows this).
+8. **Doa:** open Bacaan, then Doa umrah. Check that the Arabic, transliteration and meaning are readable in sunlight and with A+. Check whether the phone has an Arabic voice for the tawaf and sa'ie simulation (Uji suara in the tracker shows this).
 9. **Offline:** after installing, open ⚙ and tap Semak & simpan semula (check & save again); every line should be ✅ except the ones you chose to skip. Then turn on flight mode, close the app fully and reopen it. The guide, Arabic text, 360° tawaf, Doa, the lap counter and the emergency card should all work.
 10. **Mini screen:** tawaf, ⋯, Skrin mini. Read the note, press Home (the mini screen should stay), then reopen the app (the mini screen should close).
 

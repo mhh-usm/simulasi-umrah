@@ -1,4 +1,4 @@
-// Doa umrah (Bacaan tab): default view, items in ritual order, meanings from the Guide, listen, translation toggle, 4 languages, remembered view.
+// Doa umrah (Bacaan tab): default view, items in ritual order, meanings from the Guide, translation toggle, 4 languages, remembered view.
 // Emergency card: header 🆘, empty -> form, hotel from tracker, save -> Arabic+English card, tap-to-call, escaping, gender, Back, shortcut, Ziarah link, outdoor dark.
 // Run: node tests/doa-sos.test.js   (or node tests/run-all.js)
 require("./harness")(__filename, async ({ ev, send, tap, back, sleep, shot, check, PORT }) => {
@@ -18,14 +18,7 @@ require("./harness")(__filename, async ({ ev, send, tap, back, sleep, shot, chec
   check("every item has Arabic, transliteration and meaning", await ev("[...document.querySelectorAll('#rbody .doa')].every(d=>d.querySelector('.qar').textContent.length>5&&d.querySelector('.dtr')&&d.querySelector('.qtr'))"));
   check("Rabbana atina with its meaning", await ev("[...document.querySelectorAll('#rbody .doa')].some(d=>d.querySelector('.qar').textContent.startsWith('رَبَّنَا')&&d.querySelector('.qtr').textContent.includes('al-Baqarah: 201'))"));
   await shot("d1-doa");
-  await ev("window.__gv=speechSynthesis.getVoices;speechSynthesis.getVoices=()=>[]"); // voice list not loaded yet: still try to speak
-  await ev("document.querySelectorAll('#rbody [data-doa]')[3].click()"); await sleep(200);
-  check("Dengar speaks the Arabic", (await ev("window.__say.join('|')")).includes("رَبَّنَا"), await ev("window.__say.join('|')"));
-  // device with only English voices (e.g. Windows PC): explain instead of staying silent
-  await ev("speechSynthesis.getVoices=()=>[{lang:'en-US',name:'Microsoft David'}];window.__say=[]");
-  await ev("document.querySelectorAll('#rbody [data-doa]')[3].click()"); await sleep(200);
-  check("no Arabic voice: Dengar shows how to add one", (await txt("#flash")).startsWith("🔇 Tiada suara Arab") && (await ev("window.__say.length")) === 0, await txt("#flash"));
-  await ev("speechSynthesis.getVoices=window.__gv");
+  check("no synthetic-voice Listen button on the du'a (text-to-speech mispronounces Quranic Arabic)", await ev("document.querySelectorAll('#rbody .doa button').length") === 0);
   check("translation toggle says Maksud", (await txt("#rhead .rtr")).trim() === "Maksud");
   await tap("#rtrc"); await sleep(300);
   check("toggle off hides meanings, keeps transliteration", await ev("document.querySelectorAll('#rbody .qtr').length") === 0 && await ev("document.querySelectorAll('#rbody .dtr').length") === 6);
