@@ -23,7 +23,7 @@ Developed by Ir. Ts. Dr. Muhammad Hafiz HASSAN, School of Mechanical Engineering
 - **Ziarah:** places in and around Makkah, food and family tips, photo spots, useful apps and practical information.
 - **Friday readings:** Yasin and al-Ma'thurat. Quran audio streams from MP3Quran.net and can be saved for offline use.
 - **Usability:** four languages (Malay, English, Indonesian, Arabic with right-to-left layout), larger-text control (A− / A+), an outdoor high-contrast mode, and light and dark themes, all in the ⚙ Settings sheet. Kembali / Seterusnya (Back / Next) stay on screen while reading, and the phone's Back button steps back through the guide.
-- **Installable and offline:** a PWA that works offline after the first visit, including its fonts, 360° photos and 3D view. **⚙ → Sedia untuk perjalanan** (ready for travel) checks before the trip whether everything is saved, and whether the app is installed, the surah audio is saved, the emergency card is filled in and the phone has an Arabic voice. Only maps and audio that hasn't been saved need internet. No account, no ads, no tracking; see [privacy.html](privacy.html).
+- **Installable and offline:** a PWA that works offline after the first visit, including its fonts, 360° photos and 3D view. **⚙ → Sedia untuk perjalanan** (ready for travel) checks before the trip whether everything is saved, and whether the app is installed, the surah audio is saved, the emergency card is filled in and the phone has an Arabic voice. Only maps and audio that hasn't been saved need internet. No account, no ads, no tracking; only an anonymous usage count (new devices, installs, daily use) with no IDs or IP addresses. See [privacy.html](privacy.html).
 
 ## Run locally
 
@@ -46,7 +46,7 @@ See [HANDOFF.md](HANDOFF.md) §5 for details.
 
 ## Deploy
 
-GitHub Pages serves the repository root (Settings → Pages → Deploy from a branch).
+GitHub Pages serves the repository root (Settings → Pages → Deploy from a branch). The Kilau VPS copy at https://umrah.kilau.app, which also receives the usage-count pings, is deployed with [deploy/vps/DEPLOYMENT.md](deploy/vps/DEPLOYMENT.md).
 
 `index.html`, `privacy.html` and `manifest.json` are fetched fresh whenever the phone is online, so changing them needs nothing extra.
 

@@ -1,0 +1,51 @@
+name: umrah
+
+services:
+  web:
+    image: umrah-web:${APP_IMAGE_TAG}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    user: "${APP_UID}:${APP_GID}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      XDG_CONFIG_HOME: /tmp/config
+      XDG_DATA_HOME: /tmp/data
+    expose:
+      - "8080"
+    volumes:
+      - ./state/logs:/logs
+      - ./state/stats:/stats:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 64M
+        reservations:
+          memory: 16M
+    networks:
+      app_internal: {}
+      kilau_proxy:
+        aliases:
+          - umrah-web
+
+networks:
+  app_internal:
+    internal: true
+  kilau_proxy:
+    external: true
+    name: kilau_proxy

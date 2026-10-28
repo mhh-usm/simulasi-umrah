@@ -1,0 +1,7 @@
+.git
+.claude
+tests
+*.md
+state
+backups
+.env

@@ -1,0 +1,54 @@
+# In-container web server for umrah.kilau.app (behind the shared Kilau Caddy proxy).
+# The access log keeps no IP addresses, ports or headers: only time, method, path and status.
+{
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:8080 {
+	log {
+		output file /logs/access.log {
+			roll_size 10MiB
+			roll_keep 20
+			roll_keep_for 720h
+		}
+		format filter {
+			wrap json
+			fields {
+				request>remote_ip delete
+				request>remote_port delete
+				request>client_ip delete
+				request>headers delete
+				request>tls delete
+				resp_headers delete
+				user_id delete
+			}
+		}
+	}
+	log_skip /health
+
+	handle /health {
+		respond "ok" 200
+	}
+
+	# Anonymous usage ping from the app; the query string (e=new|app|day) is all that is recorded.
+	handle /ping {
+		header Cache-Control "no-store"
+		respond 204
+	}
+
+	# Daily summary written by deploy/vps/stats.py on the host.
+	handle /stats.json {
+		root * /stats
+		header Cache-Control "no-cache"
+		file_server
+	}
+
+	handle {
+		root * /srv
+		@fresh path / /index.html /privacy.html /manifest.json /sw.js
+		header @fresh Cache-Control "no-cache"
+		file_server
+	}
+}

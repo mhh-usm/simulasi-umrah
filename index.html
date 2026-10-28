@@ -3069,6 +3069,22 @@ addEventListener("load",()=>{const b=document.getElementById("instBtn");
  if("serviceWorker" in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.register("sw.js").catch(()=>{});
   navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)banner(T().upd,T().reload,()=>location.reload());});}});
 })();
+// kiraan tanpa nama: hanya nama peristiwa dihantar (tiada ID, lokasi atau data peribadi); yang gagal semasa luar talian dihantar semula kemudian
+(function(){
+if(location.protocol!=="https:")return; // tiada kiraan semasa ujian tempatan
+const K="su-cnt",today=new Date().toISOString().slice(0,10),app=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+let s;try{s=JSON.parse(localStorage.getItem(K))||{};}catch(e){s={};}
+s.q=s.q||[];
+if(!s.new){s.new=1;s.q.push("e=new");}
+if(app&&!s.app){s.app=1;s.q.push("e=app");}
+if(s.day!==today){s.day=today;s.q.push("e=day&m="+(app?"app":"web")+"&d="+today);}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(s));}catch(e){}};save();
+let busy=false;
+async function flush(){if(busy)return;busy=true;
+ while(s.q.length&&navigator.onLine!==false){try{await fetch("https://umrah.kilau.app/ping?"+s.q[0],{method:"POST",mode:"no-cors",keepalive:true});}catch(e){break;}s.q.shift();save();}
+ busy=false;}
+addEventListener("online",flush);flush();
+})();
 </script>
 
 </body>
