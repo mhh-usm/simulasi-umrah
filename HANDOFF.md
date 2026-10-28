@@ -67,6 +67,12 @@ The app is one static page with no build step and no framework. Almost everythin
 | `Penjejak Umrah` | Tracker state `TS`; `autoStage()` (Makkah zones), `pracStage()` (practice), `onFix()` (GPS), `lapBuzz()` |
 | `Peta sebenar` | Leaflet maps; `loadLeaflet()` / `trkMaps()` |
 | `Semakan telefon` | Pre-start checklist: `chkPassive()` (no prompts), `chkRun()` (asks for permissions; iOS motion first) |
+| `Lapisan atas skrin` | Shared helper for the three overlays (Settings, lap counter, emergency card): `ovOpen(id)` / `ovShut(id)` add and remove one history entry, `ovReg(id, close)` registers an overlay for Back and Escape, and `ovPop()` closes the top overlay on `popstate` |
+| `Sedia untuk perjalanan` | Readiness list in Settings: `offAsk()` (service worker status), `offRender()` (app files, installed, persistent storage, surah audio, emergency card, Arabic voice), and `offOpen()`, which runs when Settings opens. The button requests persistent storage and re-saves missing files. It also shows a message on going offline or back online, and a notice over maps while offline |
+| `Tetapan (helaian bawah)` | Settings sheet `#sset`, opened by ⚙ (`#setBtn`) in the guide header: language (`#jlang`), A− / A+, theme, outdoor mode and the full credit. `ssOpen()` / `ssClose()`; it adds its own history entry (`ssH`), so Back closes it |
+| `Pengira pusingan manual` | Full-screen lap counter `#lapc`: `lcOpen(m)`, `lcTap()` (ignores taps within `LC_WAIT`), `lcUndo()`, `lcClose()`. Opened by any `[data-lc]` button; `renderJourney()` adds one beside the tawaf and sa'ie simulation buttons |
+| `Kad kecemasan` | Emergency card `#sos`: a form (`sosMode="edit"`) and a card for officers (`"card"`). The card is always in Arabic and English (`SOS_C`), and the Arabic headline follows the gender chosen in the form. The hotel is filled in from the tracker profile. Values are escaped with `esc()`. Opened by any `[data-sos]` element: 🆘 in the guide header, Ziarah → Info penting, and `?open=sos` |
+| `Doa & lafaz umrah` | First tab of the reader (`rview="doa"`, remembered in `su-rview`). `doaList()` builds the six recitations from existing constants (`NIAT_AR`, `TALBIAH_AR`, `AR`, `SAR`). Titles and meanings of the niat and talbiah come from the guide itself (`lafFrom()`), so they stay in sync. Meanings for the other four are in `DOA_T[lang].m` |
 | `Skrin mini` | Picture-in-picture: a canvas drawn every second → video → PiP; `miniUI()`, `miniExit()`, `miniLeft()` |
 | `Light / dark theme` | Theme, outdoor mode (`hcSet`), text size (`fsSet`) |
 | `Loop` | Render loop |
@@ -97,6 +103,9 @@ Everything stays on the device; nothing is sent to a server.
 | `su-qari`, `su-qsel` | Quran reciter and selected surahs |
 | `su-rsize` | Reader text size |
 | `su-ziarah` | Places ticked as visited |
+| `su-sos` | Emergency card details (name, hotel, phones, medical notes …) and gender (`g`) |
+| `su-rview` | Last reader tab (`doa`, `yasin`, `mathurat`, `audio`) |
+| `su-lapc` | Lap counter: mode (`t` tawaf / `s` sa'ie), tap times for each mode (count = number of taps), voice on/off |
 | `su-trk-prof`, `su-trk-cur`, `su-trk-hist` | Tracker profile, current recording, history (history moves to IndexedDB) |
 
 **IndexedDB:**
@@ -118,9 +127,10 @@ Everything stays on the device; nothing is sent to a server.
    - **iPhones can't vibrate from web pages**, so lap vibration is Android-only.
 3. **Swipes need `touch-action`.** `#jcard` has `touch-action: pan-y pinch-zoom`, and the page has `overscroll-behavior-x: none`. Without them the browser treats a sideways swipe as back/forward navigation.
 4. **Old three.js API.** The app pins three.js r128, where textures have no `userData`. The panorama loader stores its flag as `t._ld`.
-5. **Service worker caching.** Only `index.html`, `privacy.html` and `manifest.json` are network-first. The panoramas, `leaflet.js` and the icons are served from cache, so bump `CACHE` in `sw.js` whenever you change them.
+5. **Service worker caching.** Only `index.html`, `privacy.html` and `manifest.json` are network-first. The panoramas, `leaflet.js`, the icons and `fonts/` are served from cache, so bump `CACHE` in `sw.js` whenever you change them. A new font file must also be added to `FONTS` in `sw.js`. The Settings readiness check asks the service worker which `CORE` files are missing (message `{t:"offline"}`), and the `tests/harness.js` server must send `text/css` and `font/woff2`, or the browser ignores the stylesheet. Map tiles are deliberately never cached, because OpenStreetMap's tile policy forbids bulk downloading.
 6. **The page is registered as `sw.js`.** The local file was once named `sw-1.js`, which silently disabled offline mode.
-7. **Text-size scaling.** All app font sizes are `calc(Npx * var(--fs))`. The tawaf panel and tab bar use `--fsh` (capped at 1.15×), and the tawaf control bar uses fixed sizes so it stays on one row in all four languages.
+7. **Sticky Kembali / Seterusnya.** `#jnav` is `position: sticky` inside `#jcard`, which is the element that scrolls, on phones too (its `min-height: 100dvh` holds it to screen height). Sticky offsets are measured inside the scroller's padding, so `#jcard` has no bottom padding. An `::after` spacer reserves that room instead, sized to the tab bar on phones. `tabsSync()` writes the tab bar's height to `--tabh`, which is also the nav's `bottom` offset. Don't add bottom padding to `#jcard`, and don't set it to `overflow: visible`.
+8. **Text-size scaling.** All app font sizes are `calc(Npx * var(--fs))`. The tawaf panel and tab bar use `--fsh` (capped at 1.15×), and the tawaf control bar uses fixed sizes so it stays on one row in all four languages.
 
 ## 5. Testing
 
@@ -142,6 +152,10 @@ The last full run passed all suites with no page errors.
 | Messages, hair-cut vibration, 74 s practice walk (1 buzz at lap 1, 2 at lap 2) | 8 |
 | Back-button scenarios, including every history entry added during a tap | 22 |
 | Mini screen (simulated and real picture-in-picture) | 16 |
+| Offline: local fonts only, service worker caches everything, readiness list, then with the network cut: reload, Arabic font, 3D, du'a, card, lap counter, map notice, offline/online messages | 19 |
+| Doa tab (order, meanings, listen, 4 languages, remembered tab) and emergency card (form, hotel prefill, Arabic + English card, tap-to-call, escaping, Back, shortcut, Ziarah link, outdoor contrast) | 35 |
+| Guide layout: one-row header, Settings sheet (Back, dimmed area, language, Arabic, largest text), sticky nav on the tab bar, no credit line on other screens | 27 |
+| Lap counter: count, double-tap guard, undo, reset, voice, vibration, reload, shortcut, Back, outdoor contrast | 26 |
 
 **The tests are in [tests/](tests/).**
 
@@ -169,7 +183,6 @@ node tests/core.test.js          # one file, with PASS/FAIL detail
 - **Unused MP3s.** `*.mp3` and `audio/` (about 26 MB) are unused by the current app. Remove them in a separate commit if the author agrees.
 - **No license file.** Confirm the intended license with the author.
 - **Merge and Pages.** Merge `poji` into `main` and switch GitHub Pages back to `main`.
-- **Optional.** Add a short "About" page for the full credit, which now appears only on the welcome step.
 
 ## 7. Phone test checklist (before merging)
 
@@ -177,9 +190,13 @@ node tests/core.test.js          # one file, with PASS/FAIL detail
 1. **Install** from the ⋮ menu.
 2. **Back on the guide:** tap Seterusnya ×3, then Back ×4. It should step back, then close.
 3. **Back from a tab:** open Penjejak, then Panduan, then Back. It should go back one step.
-4. **Swipe** between steps; try **A+** up to the largest size; try **◐** outdoors.
+4. **Swipe** between steps. On a long step (Tawaf), Kembali / Seterusnya should stay just above the tab bar while you scroll. Open **⚙**: try A+ up to the largest size and Mod luar outdoors. Back should close the sheet.
 5. **Tracker in practice mode:** do Semak & benarkan, Start, then walk. Expect 1 buzz at lap 1 and 2 buzzes at lap 2.
-6. **Mini screen:** tawaf, ⋯, Skrin mini. Read the note, press Home (the mini screen should stay), then reopen the app (the mini screen should close).
+6. **Lap counter:** on the tawaf step, tap Pengira pusingan, then tap the green area. Expect 2 buzzes and a spoken count. Lock and unlock the phone (the count should stay), then press Back (the counter should close on the same step). Long-press the home-screen icon for the Pengira shortcut.
+7. **Emergency card:** tap 🆘, fill in the form and save. Tap the leader's phone; the dialler should open with the number. Turn on flight mode and reopen the card; it should still show.
+8. **Doa:** open Bacaan, then Doa umrah, then Dengar on Rabbana atina. Check whether the phone has an Arabic voice (Uji suara in the tracker shows this).
+9. **Offline:** after installing, open ⚙ and tap Semak & simpan semula (check & save again); every line should be ✅ except the ones you chose to skip. Then turn on flight mode, close the app fully and reopen it. The guide, Arabic text, 360° tawaf, Doa, the lap counter and the emergency card should all work.
+10. **Mini screen:** tawaf, ⋯, Skrin mini. Read the note, press Home (the mini screen should stay), then reopen the app (the mini screen should close).
 
 **iPhone Safari:**
 1. Share → **Add to Home Screen**.

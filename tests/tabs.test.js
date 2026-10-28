@@ -40,7 +40,9 @@ require("./harness")(__filename, async ({ ev, send, tap, sleep, shot, check, POR
   await ev("(()=>{const s=document.getElementById('jlang');s.value='en';s.dispatchEvent(new Event('change'));})()"); await sleep(300);
   check("labels follow language", await labels() === "Guide,Tracker,Readings,Ziarah", await labels());
   await ev("(()=>{const s=document.getElementById('jlang');s.value='bm';s.dispatchEvent(new Event('change'));})()");
+  await tap("#setBtn"); await sleep(300);
   for (let i = 0; i < 4; i++) await tap("#fsUp");
+  await tap("#ssX"); await sleep(300);
   const clip = await ev("[...document.querySelectorAll('#tabs .tl')].filter(e=>e.scrollWidth>e.clientWidth+1).map(e=>e.textContent)");
   check("at largest text, labels still fit (no cut-off)", clip.length === 0, JSON.stringify(clip));
   check("tab bar stays one row", await ev("document.getElementById('tabs').getBoundingClientRect().height") < 90);

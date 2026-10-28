@@ -8,7 +8,7 @@
 const http = require("http"), fs = require("fs"), os = require("os"), path = require("path"), { spawn } = require("child_process");
 
 const ROOT = path.join(__dirname, "..");
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".jpg": "image/jpeg", ".png": "image/png", ".mp3": "audio/mpeg" };
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".jpg": "image/jpeg", ".png": "image/png", ".mp3": "audio/mpeg", ".css": "text/css", ".woff2": "font/woff2" };
 
 function findChrome() {
   if (process.env.CHROME) return process.env.CHROME;

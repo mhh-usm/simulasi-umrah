@@ -16,12 +16,14 @@ require("./harness")(__filename, async ({ ev, send, tap, sleep, shot, check, POR
   await send("Page.reload"); await sleep(3500);
   const after = await ev(`document.getElementById("jtitle").textContent`);
   check("reload keeps step + language", before === after && /Tawaf/.test(after), `${before} | ${after}`);
-  check("other steps show compact credit", await ev("(()=>{const c=document.querySelector('#jcard .credit');return c.classList.contains('mini')&&c.getBoundingClientRect().height<70;})()"), await ev("Math.round(document.querySelector('#jcard .credit').getBoundingClientRect().height)+'px'"));
+  check("other steps: no credit line, title near the top", await ev("document.querySelector('#jcard .credit').hidden") && await ev("document.getElementById('jtitle').getBoundingClientRect().top") < 140, await ev("Math.round(document.getElementById('jtitle').getBoundingClientRect().top)+'px'"));
   check("phone: body text left-aligned", await ev("getComputedStyle(document.querySelector('#jbody p')).textAlign")==="start");
   const small = await ev("[...document.querySelectorAll('#jcard button,#jcard select')].filter(b=>b.offsetParent&&b.getBoundingClientRect().height<44&&!b.classList.contains('strand')).map(b=>b.id||b.textContent.slice(0,12)+':'+Math.round(b.getBoundingClientRect().height))");
   check("guide buttons are at least 44px tall", small.length===0, JSON.stringify(small));
   const fs0 = await ev("parseFloat(getComputedStyle(document.getElementById('jbody')).fontSize)");
+  await tap("#setBtn"); await sleep(300);
   for(let i=0;i<4;i++) await tap("#fsUp");
+  await tap("#ssX"); await sleep(300);
   const fs1 = await ev("parseFloat(getComputedStyle(document.getElementById('jbody')).fontSize)");
   check("A+ enlarges text to 1.45x and stops there", Math.abs(fs1-fs0*1.45)<0.2 && await ev("document.getElementById('fsUp').disabled"), fs0+"px -> "+fs1+"px");
   await shot("1b-large-text");
@@ -33,11 +35,13 @@ require("./harness")(__filename, async ({ ev, send, tap, sleep, shot, check, POR
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-color-scheme",value:"light"}]});
   const t2 = await waitTheme("light");
   check("theme follows phone setting", t1==="dark"&&t2==="light", t1+","+t2);
-  await tap("#jtop .themeBtn");
+  await tap("#setBtn"); await sleep(300);
+  await tap("#sset .themeBtn");
   await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-color-scheme",value:"light"}]}); await sleep(1500);
   check("chosen theme sticks over phone setting", await theme()==="dark");
   await shot("1c-dark-picked");
-  await tap("#jtop .themeBtn");
+  await tap("#sset .themeBtn");
+  await tap("#ssX"); await sleep(300);
   check("reload keeps sex choice", await ev(`document.querySelector('[data-sex="f"]').getAttribute("aria-pressed")`) === "true");
 
   // ---- 1 + 4. tawaf view, More sheet, Back button ----

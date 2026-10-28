@@ -13,9 +13,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="description" content="Simulasi Umrah: panduan langkah demi langkah dari niat hingga tahallul, dengan simulasi 3D tawaf dan sa'ie.">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=Amiri:wght@400;700&family=Amiri+Quran&family=Noto+Sans+Arabic:wght@400;600;800&display=swap" rel="stylesheet">
+<!-- fon dalam folder fonts/ supaya berfungsi tanpa internet (SIL OFL 1.1) -->
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
 :root{
   --glass: rgba(255,255,255,.82);
@@ -290,10 +289,68 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
 body.tabs-on #journey,body.tabs-on #ziarah,body.tabs-on #reader,body.tabs-on #trk{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 #zopen,#ropen,#kopen{display:none!important}
-@media (max-width:600px){body.tabs-on #jcard,body.tabs-on #zcard,body.tabs-on #rcard,body.tabs-on #kcard{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}}
+@media (max-width:600px){body.tabs-on #zcard,body.tabs-on #rcard,body.tabs-on #kcard{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}}
 #miniNote{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55)}
 #miniNote .mnc{max-width:420px;width:100%;padding:20px 22px;background:var(--glass)}#miniNote h2{margin:0 0 8px;font-size:calc(20px*var(--fs))}#miniNote p{margin:0 0 14px;line-height:1.55;font-size:calc(15px*var(--fs))}
 #miniNote .pbtns button{flex:1}
+/* pengira pusingan manual: skrin penuh, satu butang besar untuk ditekan sambil berjalan */
+#lapc{position:fixed;inset:0;z-index:9500;display:none;flex-direction:column;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));overflow:auto;background:linear-gradient(180deg,#e9f1ec,#f7f4ec)}
+:root[data-theme="dark"] #lapc{background:linear-gradient(180deg,#0c1a14,#0b0a08)}
+#lapc.on{display:flex}
+.lct{display:flex;gap:8px;align-items:center}.lct .sp{flex:1}.lct .sp button{flex:1;min-height:44px;font-size:calc(15px*var(--fsh))}#lcV{min-width:52px}
+.lch{margin:2px 0 0;font-size:calc(14px*var(--fsh));font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);text-align:center}
+#lcN{text-align:center;line-height:1}#lcN span{display:block;font-size:calc(20px*var(--fsh));font-weight:700;color:var(--ink-soft);margin-bottom:2px}
+#lcN b{font-size:calc(116px*var(--fsh));font-weight:800;letter-spacing:-4px;font-variant-numeric:tabular-nums}#lcN small{font-size:calc(32px*var(--fsh));font-weight:700;color:var(--ink-soft);margin-inline-start:8px}
+#lcDots{display:flex;justify-content:center;gap:10px}#lcDots i{width:18px;height:18px;border-radius:50%;border:2px solid var(--ink-soft)}
+#lcDots i.on{background:var(--gold);border-color:var(--gold)}#lcDots i.cur{background:var(--green);border-color:var(--green)}
+#lcDir{text-align:center;margin:0;font-weight:800;font-size:calc(19px*var(--fsh));line-height:1.4;color:var(--gold);min-height:1.4em}
+#lcTap{flex:1;min-height:150px;width:100%;border-radius:22px;background:var(--green);color:#fff;font-size:calc(18px*var(--fsh));font-weight:700;line-height:1.35;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .2s,transform .1s}
+#lcTap .big{font-size:calc(30px*var(--fsh));font-weight:800}#lcTap:active{transform:scale(.98)}
+#lcTap.wait{background:var(--chip-on);color:var(--chip-on-ink)}#lcTap.done{background:var(--gold)}#lcTap:disabled{opacity:1;cursor:default}
+:root[data-theme="dark"] #lcTap:not(.wait){color:#08130d}
+.lcb{display:flex;gap:8px}.lcb button{flex:1;min-height:52px}
+#lapc .fine{text-align:center;margin:0}
+:root[data-contrast="high"] #lapc{background:var(--glass)!important}:root[data-contrast="high"] #lcTap:not(.wait){color:var(--glass)!important}
+.lcGo{background:var(--chip-on)!important;color:var(--chip-on-ink)!important}
+/* kepala Panduan ringkas: bar langkah + ⚙; tetapan dalam helaian bawah */
+#jtop{flex-wrap:nowrap}#jsteps{min-width:0}#setBtn,#sosBtn{flex:none;min-width:48px;font-size:20px;line-height:1;padding:9px 10px}
+/* doa umrah dalam Bacaan */
+.dtr{font-style:italic;color:var(--ink-soft);font-size:calc(15px*var(--fs));line-height:1.55;margin:6px 0 0;text-align:start}
+.doa .pmeta{margin:2px 0 4px}.dhear{margin-top:10px;font-size:calc(14.5px*var(--fs));padding:8px 14px}
+/* kad kecemasan: kad putih berkontras tinggi untuk ditunjukkan kepada petugas (Arab + Inggeris) */
+#sos{position:fixed;inset:0;z-index:9400;display:none;overflow:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#e9f1ec,#f7f4ec)}
+:root[data-theme="dark"] #sos{background:linear-gradient(180deg,#0c1a14,#0b0a08)}:root[data-contrast="high"] #sos{background:var(--glass)}
+#sos.on{display:block}.sosw{max-width:580px;margin:0 auto}#sosE{margin-inline-start:auto}
+.soscard{background:#fff;color:#111;border:3px solid #c62828;border-radius:18px;padding:14px 16px 6px;margin:12px 0 14px}
+.sosh{margin:0 0 8px;text-align:center;line-height:1.3}.sosh .ar{display:block;font-family:"Noto Sans Arabic",sans-serif;font-size:calc(28px*var(--fsh));font-weight:800;color:#b71c1c}
+.sosh .en{display:block;font-size:calc(22px*var(--fsh));font-weight:800;margin-top:2px}
+.sosp{text-align:center;margin:0 0 8px;font-size:calc(15px*var(--fs));line-height:1.5}.sosp .ar{display:block;font-family:"Noto Sans Arabic",sans-serif;font-size:calc(17px*var(--fs))}
+.sosdl{margin:0}.sosdl div{padding:8px 0;border-top:1px solid #d6d6d6}.sosdl dt{font-size:calc(13px*var(--fs));color:#444;font-weight:700}.sosdl dt .ar{font-family:"Noto Sans Arabic",sans-serif}
+.sosdl dd{margin:2px 0 0;font-size:calc(21px*var(--fs));font-weight:800;line-height:1.35;overflow-wrap:anywhere;white-space:pre-line}.sosdl a{color:#0b4fb8;text-decoration:none}
+.sosn{display:flex!important;align-items:center;gap:8px;margin:6px 0!important;background:#c62828!important;color:#fff!important;min-height:48px}
+.sosf label,.sosg{display:flex;flex-direction:column;gap:4px;margin:10px 0;font-weight:700;font-size:calc(14px*var(--fs));color:var(--ink-soft)}
+.sosf input,.sosf textarea{font:inherit;font-size:max(16px,calc(16px*var(--fs)));padding:10px;border-radius:10px;border:1px solid var(--glass-edge);background:var(--glass);color:var(--ink);width:100%}
+.sosf .sp{display:flex}.sosf .sp button{flex:1}
+#jmeta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;min-height:30px}#jmeta .pill{margin-inline-start:auto;margin-bottom:4px}
+#sset{position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45)}
+#sset.on{display:flex}
+#sset .ssc{width:100%;max-width:580px;max-height:90dvh;overflow:auto;padding:16px 18px calc(18px + env(safe-area-inset-bottom,0px));border-radius:20px 20px 0 0;background:rgba(253,252,249,.99);border:1px solid var(--glass-edge);box-shadow:0 -10px 30px rgba(0,0,0,.25)}
+:root[data-theme="dark"] #sset .ssc{background:rgba(22,20,16,.99)}:root[data-contrast="high"] #sset .ssc{background:var(--glass);border:2px solid var(--glass-edge)}
+.ssh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.ssh h2{margin:0;font-size:calc(20px*var(--fsh))}#ssX{min-width:48px;font-size:18px}
+.ssr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--glass-edge);font-weight:700;font-size:calc(15px*var(--fsh));color:var(--ink-soft)}
+.ssr select{font:inherit;font-weight:700;font-size:16px;color:var(--ink);background:var(--chip);border:0;border-radius:10px;padding:8px 10px;max-width:60%}
+.ssg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 16px}.ssg button{min-height:52px;font-size:calc(15px*var(--fsh))}
+#sset .themeBtn::after,#sset .hcBtn::after{content:"  " attr(title)}
+.ssoff{margin:0 0 14px}.ssoff .zh3{margin-top:4px}#offB{width:100%;font-weight:800;margin-top:4px}.offgo{min-height:40px;margin-inline-start:6px;padding:6px 10px}
+.kmapoff{position:absolute;left:8px;right:8px;bottom:26px;z-index:1000;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.75);color:#fff;font-weight:700;font-size:calc(14px*var(--fs))}
+#sset .credit{margin:0;padding:14px 0 0;border-top:1px solid var(--glass-edge);border-bottom:0}
+/* Kembali/Seterusnya sentiasa kelihatan di bawah skrin, di atas bar tab */
+#jnav{position:sticky;bottom:0;z-index:2;margin:18px -22px 0;padding:10px 22px;background:#fdfcf9;border-top:1px solid var(--glass-edge);box-shadow:0 -10px 16px -12px rgba(0,0,0,.3)}
+:root[data-theme="dark"] #jnav{background:#161410}:root[data-contrast="high"] #jnav{background:var(--glass);border-top:2px solid var(--glass-edge)}
+/* ruang bawah kad sebagai elemen, bukan padding: sticky diukur dari dalam padding */
+#jcard{padding-bottom:0!important}#jcard::after{content:"";display:block;height:calc(20px + env(safe-area-inset-bottom,0px))}
+@media (max-width:600px){#jnav{margin-inline:-16px;padding-inline:16px}body.tabs-on #jnav{bottom:var(--tabh,72px)}
+ body.tabs-on #jcard::after{height:calc(var(--tabh,72px) + 16px)}}
 /* telefon: teks rata kiri (justify + hyphen menghasilkan jarak besar dalam BM/ID) */
 @media (max-width:600px){
  #jbody p:not(.src):not(.cutmsg),#card p:not(.credit):not(.fine),#guide,#jbody li,.zinfo p,.pdesc{text-align:start;-webkit-hyphens:manual;hyphens:manual}
@@ -341,8 +398,8 @@ body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 <div id="journey">
   <div id="jcard" class="glass">
     <p class="credit"></p>
-    <div id="jtop"><div id="jsteps"></div><span id="jstate" class="pill"></span><select id="jlang" aria-label="Bahasa / Language"><option value="bm">🇲🇾 BM</option><option value="en">🇬🇧 EN</option><option value="id">🇮🇩 ID</option><option value="ar">🇸🇦 عربي</option></select><button class="themeBtn" aria-label="Tema cerah / gelap"></button><span class="fsz" role="group" aria-label="Saiz teks / Text size"><button id="fsDn" aria-label="Teks lebih kecil / Smaller text">A−</button><button id="fsUp" aria-label="Teks lebih besar / Larger text">A+</button></span><button class="hcBtn" aria-pressed="false" title="Mod luar / Outdoor" aria-label="Mod luar, kontras tinggi / Outdoor, high contrast">◐</button></div>
-    <div id="jbadges"></div>
+    <div id="jtop"><div id="jsteps"></div><button id="sosBtn" data-sos>🆘</button><button id="setBtn" aria-haspopup="dialog" aria-controls="sset">⚙️</button></div>
+    <div id="jmeta"><div id="jbadges"></div><span id="jstate" class="pill"></span></div>
     <h2 id="jtitle"></h2>
     <div id="jbody"></div>
     <div id="jnav"><button id="jprev"></button><button id="jnext"></button></div>
@@ -362,6 +419,30 @@ body.tabs-on #suBanner{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   <div id="kcard" class="glass"><p class="credit"></p><div id="kbody"></div></div>
 </div>
 <div id="kpocket" style="display:none"><div class="pk"><p id="pSeg"></p><b id="pTime"></b><b id="pDist"></b><b id="pSteps"></b><p id="pGps"></p><p class="pkU" id="pUn"></p><div class="pkBar"></div></div></div>
+<div id="sset" role="dialog" aria-modal="true" aria-labelledby="ssT">
+  <div class="ssc">
+    <div class="ssh"><h2 id="ssT"></h2><button id="ssX">✕</button></div>
+    <label class="ssr"><span id="ssLang"></span><select id="jlang"><option value="bm">🇲🇾 Bahasa Melayu</option><option value="en">🇬🇧 English</option><option value="id">🇮🇩 Bahasa Indonesia</option><option value="ar">🇸🇦 العربية</option></select></label>
+    <div class="ssr"><span id="ssSize"></span><span class="fsz" role="group" aria-labelledby="ssSize"><button id="fsDn" aria-label="Teks lebih kecil / Smaller text">A−</button><button id="fsUp" aria-label="Teks lebih besar / Larger text">A+</button></span></div>
+    <div class="ssg"><button class="themeBtn" aria-label="Tema cerah / gelap"></button><button class="hcBtn" aria-pressed="false" title="Mod luar / Outdoor" aria-label="Mod luar, kontras tinggi / Outdoor, high contrast">◐</button></div>
+    <div class="ssoff"><h3 class="zh3" id="offT"></h3><p class="pmeta" id="offI"></p><ul id="offL" class="kchkl" aria-live="polite"></ul><button id="offB"></button><p class="src" id="offN"></p></div>
+    <p class="credit"></p>
+  </div>
+</div>
+<div id="sos" role="dialog" aria-modal="true" aria-labelledby="sosT">
+  <div class="sosw"><div class="lct"><button id="sosX"></button><button id="sosE"></button></div><div id="sosB"></div></div>
+</div>
+<div id="lapc" role="dialog" aria-modal="true" aria-labelledby="lcTitle">
+  <div class="lct"><button id="lcX"></button><div class="sp" role="group"><button data-lcm="t"></button><button data-lcm="s"></button></div><button id="lcV" aria-pressed="true"></button></div>
+  <h2 id="lcTitle" class="lch"></h2>
+  <div id="lcN" aria-live="polite"><span></span><b></b><small>/ 7</small></div>
+  <div id="lcDots" aria-hidden="true"></div>
+  <p id="lcDir"></p>
+  <button id="lcTap"></button>
+  <div class="lcb"><button id="lcU"></button><button id="lcR"></button></div>
+  <p id="lcLast" class="fine"></p>
+  <p id="lcDoubt" class="fine"></p>
+</div>
 <nav id="tabs" aria-label="Menu utama / Main menu">
   <button data-tab="journey"><span class="ti" aria-hidden="true">🕋</span><span class="tl"></span></button>
   <button data-tab="trk"><span class="ti" aria-hidden="true">🏃</span><span class="tl"></span></button>
@@ -1608,7 +1689,7 @@ let drag=null;
 canvas.addEventListener("pointerdown",e=>{hideHint();drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
 canvas.addEventListener("pointermove",e=>{if(!drag||gyroOn)return;yawOff+=(e.clientX-drag.x)*.005;pitchOff=Math.max(-1.2,Math.min(1.2,pitchOff+(e.clientY-drag.y)*.004));drag={x:e.clientX,y:e.clientY};});
 canvas.addEventListener("pointerup",()=>drag=null);canvas.addEventListener("pointercancel",()=>drag=null);
-addEventListener("keydown",e=>{if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName||""))return;
+addEventListener("keydown",e=>{if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName||"")||document.querySelector("#lapc.on,#sset.on,#sos.on"))return;
   if(getComputedStyle($("journey")).display!=="none"){const r=LANGS[lang].dir==="rtl";if(e.key==="ArrowRight")$(r?"jprev":"jnext").click();if(e.key==="ArrowLeft")$(r?"jnext":"jprev").click();return;}
   if($("bar").style.display==="none")return;
   if(e.key==="ArrowLeft")yawOff+=.1;if(e.key==="ArrowRight")yawOff-=.1;if(e.key===" "){e.preventDefault();$("play").click();}});
@@ -1642,7 +1723,7 @@ const MISC={
    credit:"من تطوير<br><b>Ir. Ts. Dr. Muhammad Hafiz HASSAN</b><br>كلية الهندسة الميكانيكية، حرم توانكو سيد سراج الدين للهندسة،<br>جامعة العلوم الماليزية، بولاو بينانغ"}};
 function setLang(l){lang=l;const L=LANGS[l];document.documentElement.lang=L.html;document.documentElement.dir=L.dir;
   document.querySelectorAll("[data-lang]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.lang===l)));const sel=document.getElementById("jlang");if(sel)sel.value=l;
-  lastKey="";if(typeof lastSaiKey!=="undefined")lastSaiKey="";setIntroText();if(typeof renderJourney==="function")renderJourney();if($("ziarah").style.display!=="none")renderZiarah();if($("bar").style.display!=="none")buildBar();}
+  lastKey="";if(typeof lastSaiKey!=="undefined")lastSaiKey="";setIntroText();if(typeof renderJourney==="function")renderJourney();if($("ziarah").style.display!=="none")renderZiarah();if($("bar").style.display!=="none")buildBar();if(lcOn())lcRender();ssRender();sosLabel();if(ovOn("sset"))offRender();}
 function setTset(){const e=$("t-set");if(!e)return;const p=q=>{const b=document.querySelector(q+"[aria-pressed=\"true\"]");return b?b.textContent.trim():"";};
   e.textContent="⚙️ "+({bm:"Tetapan",en:"Settings",id:"Pengaturan",ar:"الإعدادات"}[lang]||"Settings")+": "+[p("[data-mode]"),p("[data-sex]"),p("[data-crowd]")].filter(Boolean).join(" · ");}
 function setIntroText(){const L=TXT[lang];{const e=$("t-pano");if(e)e.textContent=(PANO_T[lang]||PANO_T.en).intro;}document.title=MISC[lang].title;
@@ -1866,12 +1947,15 @@ const J={
 const BADGE={rukun:"b-rukun",wajib:"b-wajib",sunat:"b-sunat"};
 const USM_LOGO="data:image/png;base64,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";
 function setCredit(){const c=MISC[lang].credit,full=`<img class="credit-logo" src="${USM_LOGO}" alt="Universiti Sains Malaysia · APEX">`+c,mini=c.split("<br>")[0]+" <b>Ir. Ts. Dr. Muhammad Hafiz HASSAN</b> · USM";
-  document.querySelectorAll(".credit").forEach(el=>{const f=el.parentElement.id==="jcard"&&jstep===0;el.classList.toggle("mini",!f);el.innerHTML=f?full:mini;});}
+  /* kredit penuh di halaman pembuka dan dalam Tetapan sahaja; skrin lain tanpa baris kredit supaya kandungan bermula di atas */
+  document.querySelectorAll(".credit").forEach(el=>{const f=(el.parentElement.id==="jcard"&&jstep===0)||!!el.closest("#sset");
+    el.hidden=!f;el.classList.toggle("mini",!f);el.innerHTML=f?full:mini;});}
 function renderJourney(){setCredit();$("zopen").textContent=ZT[zl()].open;$("ropen").textContent=RT[rl()].open;$("kopen").textContent=KT[kl()].open;document.title=MISC[lang].title;
   const L=JT[lang], st=J[lang][jstep], n=J[lang].length;
   $("jsteps").innerHTML=Array.from({length:n},(_,i)=>`<button type="button" data-js="${i}" class="${i<jstep?"on":i===jstep?"cur":""}" aria-label="${String(J[lang][i].t).replace(/"/g,"&quot;")}"${i===jstep?' aria-current="step"':""}></button>`).join("");
   let bh="";for(let i=0;i<st.b.length;i++){const k=st.b[i];if(BADGE[k]){const lbl=st.b[i+1]&&!BADGE[st.b[i+1]]?st.b[++i]:L[k];bh+=`<span class="badge ${BADGE[k]}">${lbl.toUpperCase()}</span>`;}}
   $("jbadges").innerHTML=bh;$("jtitle").textContent=st.t;$("jbody").innerHTML=st.h;
+  {const a=$("jbody").querySelector('[data-act="tawaf"],[data-act="sai"]');if(a)a.insertAdjacentHTML("beforebegin",`<button class="act lcGo" data-lc="${a.dataset.act==="sai"?"s":"t"}">${(LC[lang]||LC.en).open}</button>`);}
   const pill=$("jstate");pill.textContent=cutN>=3?L.halal:ihram?L.inI:L.notI;pill.className="pill "+(ihram?"p-on":cutN>=3?"p-done":"");
   {const r=LANGS[lang].dir==="rtl";$("jprev").textContent=r?"› "+L.prev:"‹ "+L.prev;$("jnext").textContent=r?L.next+" ‹":L.next+" ›";}
   $("jprev").disabled=jstep===0;$("jnext").style.visibility=jstep===n-1?"hidden":"visible";
@@ -2161,7 +2245,7 @@ function zExtra(){const l=zl(),T=ZTX[l];
   if(zview==="food"){const F=FTX[l];return `<p class="zsub">${F.intro}</p>`+["budget","special","family"].map(g=>`<h3 class="zh3">${FG[g][l]}</h3>`+FOOD.filter(x=>x.g===g).map(x=>`<div class="place"><div class="pname">${x.ic} ${l==="en"&&x.en2?x.en2:x.n}</div><p class="pdesc">${x.d[l]}</p><p class="pmeta pfee">🎟️ ${x.p[l]}</p><a class="pmap" href="${x.map}" target="_blank" rel="noopener">${ZT[l].map}</a></div>`).join("")).join("")+`<div class="zinfo"><b>${F.tips}</b><p>${F.tipsB}</p></div><p class="src">${F.note}</p>`;}
   if(zview==="photo")return `<p class="zsub">${T.photoIntro}</p>`+PHOTO.map(p=>`<div class="place"><div class="pname">${p.ic} ${p.n[l]}</div><p class="pdesc">${p.d[l]}</p><p class="pmeta">💡 ${p.t[l]}</p><a class="pmap" href="${p.map}" target="_blank" rel="noopener">${ZT[l].map}</a></div>`).join("")+`<div class="zinfo"><b>${INFO[l][0][0]}</b><p>${INFO[l][0][1]}</p></div>`;
   if(zview==="apps")return `<p class="zsub">${T.appsIntro}</p>`+["must","ride","pay","life"].map(c=>`<h3 class="zh3">${ACAT[c][l]}</h3>`+APPS.filter(a=>a.cat===c).map(a=>`<div class="place app"><div class="pname">${a.ic} ${a.n}</div><p class="pdesc">${a.d[l]}</p>${a.q?`<a class="pmap" href="${PS(a.q)}" target="_blank" rel="noopener">▶ ${T.store}</a>`:""}</div>`).join("")).join("")+`<p class="src">${T.ios}</p>`;
-  if(zview==="info")return INFO[l].map(([t,b,k])=>`<div class="zinfo"><b>${t}</b><p>${b}</p><p class="zsrc">🔗 ${T.check}: ${(k||[]).map(x=>`<a href="${OFF[x][1]}" target="_blank" rel="noopener">${OFF[x][0]}</a>`).join(" · ")}</p></div>`).join("")
+  if(zview==="info")return `<button class="act sosn" data-sos>${(SOS_T[lang]||SOS_T.en).open}</button>`+INFO[l].map(([t,b,k])=>`<div class="zinfo"><b>${t}</b><p>${b}</p><p class="zsrc">🔗 ${T.check}: ${(k||[]).map(x=>`<a href="${OFF[x][1]}" target="_blank" rel="noopener">${OFF[x][0]}</a>`).join(" · ")}</p></div>`).join("")
    +`<div class="zinfo"><b>📚 ${T.offT}</b><p>${T.offB}</p><ul class="zoff">${Object.values(OFF).map(([n,u])=>`<li><a href="${u}" target="_blank" rel="noopener">${n}</a></li>`).join("")}</ul></div>`;
   return null;}
 
@@ -2205,20 +2289,53 @@ const RT={bm:{open:"📖 Bacaan Jumaat: Yasin & al-Ma'thurat",back:"‹ Panduan 
  en:{open:"📖 Friday readings: Yasin & al-Ma'thurat",back:"‹ Umrah guide",title:"Friday readings",sub:"Surah Yasin and the al-Ma'thurat litany (Sughra) to read anywhere, including in the Holy Land.",tabs:["📗 Surah Yasin","📘 Al-Ma'thurat"],tr:"Malay translation",pagi:"🌅 Morning (after Fajr)",petang:"🌇 Evening (after Asr)",reset:"↺ Reset counts",done:"Done",tap:"Tap to count",yasinInfo:"Surah 36, 83 verses, Makkan. Reading Yasin on Thursday night or Friday is a common practice among Malaysian Muslims. Reading Surah al-Kahf on Friday is a sunnah according to hadith.",mInfo:"The al-Ma'thurat litany compiled by Imam Hasan al-Banna from Quranic verses and transmitted supplications. Read morning and evening; the number of repetitions is shown on each item.",src:"Quran text: Uthmani script, Hafs narration (fawazahmed0/quran-api, from Tanzil). Yasin translation: Abdullah Muhammad Basmeih (Malay). Al-Ma'thurat text and translation: community project adiman-dev/Mathurat. Please check against a printed mushaf and al-Ma'thurat book; report any errors.",noTr:""},
  id:{open:"📖 Bacaan Jumat: Yasin & al-Ma'tsurat",back:"‹ Panduan Umrah",title:"Bacaan Jumat",sub:"Surah Yasin dan wirid al-Ma'tsurat (Sughra) untuk dibaca di mana saja, termasuk di Tanah Suci.",tabs:["📗 Surah Yasin","📘 Al-Ma'tsurat"],tr:"Terjemahan",pagi:"🌅 Pagi (setelah Subuh)",petang:"🌇 Sore (setelah Asar)",reset:"↺ Atur ulang hitungan",done:"Selesai",tap:"Ketuk untuk menghitung",yasinInfo:"Surah ke-36, 83 ayat, Makkiyah. Membaca Yasin pada malam atau hari Jumat adalah amalan yang lazim di masyarakat Melayu. Membaca Surah al-Kahfi pada hari Jumat adalah sunah menurut hadis.",mInfo:"Wirid al-Ma'tsurat susunan Imam Hasan al-Banna dari ayat al-Quran dan doa ma'tsur. Dibaca pagi dan sore; jumlah pengulangan ditampilkan pada setiap bacaan.",src:"Teks al-Quran: Rasm Utsmani riwayat Hafs (fawazahmed0/quran-api, dari Tanzil). Terjemahan Yasin: Kementerian Agama RI. Teks dan terjemahan (Melayu) al-Ma'tsurat: proyek komunitas adiman-dev/Mathurat. Mohon periksa dengan mushaf dan buku al-Ma'tsurat cetak.",noTr:""},
  ar:{open:"📖 قراءات الجمعة: يس والمأثورات",back:"› دليل العمرة",title:"قراءات الجمعة",sub:"سورة يس ووِرد المأثورات (الصغرى) للقراءة في أي مكان.",tabs:["📗 سورة يس","📘 المأثورات"],tr:"الترجمة الملايوية",pagi:"🌅 الصباح (بعد الفجر)",petang:"🌇 المساء (بعد العصر)",reset:"↺ إعادة العد",done:"تم",tap:"اضغط للعد",yasinInfo:"السورة ٣٦، ٨٣ آية، مكية. قراءة سورة الكهف يوم الجمعة سنة كما في الحديث.",mInfo:"وِرد المأثورات للإمام حسن البنا من آيات القرآن والأدعية المأثورة، يُقرأ صباحًا ومساءً.",src:"نص القرآن: الرسم العثماني برواية حفص (fawazahmed0/quran-api عن Tanzil). نص المأثورات: مشروع adiman-dev/Mathurat. يرجى المراجعة مع المصحف المطبوع.",noTr:""}};
-let rview="yasin",rtime=(new Date().getHours()>=12?2:1),rtr=true,rcount={};
+let rview=(()=>{try{const v=localStorage.getItem("su-rview");return ["doa","yasin","mathurat","audio"].includes(v)?v:"doa";}catch(e){return "doa";}})(),rtime=(new Date().getHours()>=12?2:1),rtr=true,rcount={};
+/* ---------- Doa & lafaz umrah: semua lafaz Panduan di satu tempat, ikut turutan ibadah ---------- */
+const DOA_T={bm:{tab:"🤲 Doa umrah",title:"Doa & lafaz umrah",sub:"Semua lafaz dalam Panduan di satu tempat, ikut turutan ibadah. Selebihnya, berdoalah dengan apa sahaja hajat, boleh dalam bahasa sendiri.",
+   g:["Ihram di miqat","Tawaf","Sa'ie"],ss:"Di Bukit Safa dan Marwah (setiap kali sampai)",hear:"🔊 Dengar",tr:"Maksud",src:"Lafaz dan transliterasi sama seperti dalam Panduan, mengikut nota bimbingan Lembaga Tabung Haji.",
+   m:{aswad:"Dengan nama Allah, dan Allah Maha Besar.",rabbana:"Wahai Tuhan kami, berikanlah kami kebaikan di dunia dan kebaikan di akhirat, dan peliharalah kami daripada azab neraka. (al-Baqarah: 201)",
+    verse:"Sesungguhnya Safa dan Marwah ialah sebahagian daripada syiar (agama) Allah. (al-Baqarah: 158)",
+    dzikr:"Allah Maha Besar (3 kali). Tiada tuhan melainkan Allah, Yang Maha Esa, tiada sekutu bagi-Nya. Bagi-Nya kerajaan dan bagi-Nya segala pujian, dan Dia Maha Berkuasa atas segala sesuatu."}},
+ en:{tab:"🤲 Umrah du'a",title:"Umrah du'a & recitations",sub:"Every recitation in the Guide in one place, in the order of the rites. Beyond these, make du'a for whatever you need, in your own language.",
+   g:["Ihram at the miqat","Tawaf","Sa'i"],ss:"On Safa and Marwah (each time you arrive)",hear:"🔊 Listen",tr:"Meaning",src:"Wording and transliteration as in the Guide, following the Lembaga Tabung Haji course notes.",
+   m:{aswad:"In the name of Allah, and Allah is the Greatest.",rabbana:"Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire. (al-Baqarah 2:201)",
+    verse:"Indeed, Safa and Marwah are among the symbols of Allah. (al-Baqarah 2:158)",
+    dzikr:"Allah is the Greatest (3 times). There is no god but Allah alone, with no partner. His is the dominion and His is all praise, and He has power over all things."}},
+ id:{tab:"🤲 Doa umrah",title:"Doa & lafaz umrah",sub:"Semua lafaz dalam Panduan di satu tempat, sesuai urutan ibadah. Selebihnya, berdoalah untuk hajat apa saja, boleh dalam bahasa sendiri.",
+   g:["Ihram di miqat","Tawaf","Sa'i"],ss:"Di Bukit Shafa dan Marwah (setiap kali tiba)",hear:"🔊 Dengar",tr:"Arti",src:"Lafaz dan transliterasi sama seperti dalam Panduan, mengikuti catatan bimbingan Lembaga Tabung Haji.",
+   m:{aswad:"Dengan nama Allah, dan Allah Mahabesar.",rabbana:"Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari azab neraka. (Al-Baqarah: 201)",
+    verse:"Sesungguhnya Shafa dan Marwah merupakan sebagian dari syiar (agama) Allah. (Al-Baqarah: 158)",
+    dzikr:"Allah Mahabesar (3 kali). Tidak ada tuhan selain Allah semata, tiada sekutu bagi-Nya. Milik-Nya kerajaan dan milik-Nya segala puji, dan Dia Mahakuasa atas segala sesuatu."}},
+ ar:{tab:"🤲 أدعية العمرة",title:"أدعية العمرة وأذكارها",sub:"جميع الأذكار الواردة في الدليل في مكان واحد، بحسب ترتيب المناسك. وادعُ بعد ذلك بما شئت.",
+   g:["الإحرام من الميقات","الطواف","السعي"],ss:"على الصفا والمروة (في كل مرة)",hear:"🔊 استمع",tr:"",src:"الألفاظ كما في الدليل، وفق مذكرات تابونغ حاجي.",m:{}}};
+/* lafaz yang sama dalam Panduan (bahasa semasa): tajuk h3 sebelumnya, transliterasi dan makna */
+function lafFrom(a){const tp=document.createElement("template");
+  for(const s of (J[lang]||J.bm)){if(!s.h.includes(a))continue;tp.innerHTML=s.h;
+    for(const x of tp.content.querySelectorAll(".lafaz")){if(x.querySelector(".a").textContent!==a)continue;let h=x.previousElementSibling;while(h&&h.tagName!=="H3")h=h.previousElementSibling;
+      return {h:h?h.textContent:"",t:x.querySelector(".t").textContent,m:(x.querySelector(".m")||{}).textContent||""};}}return {};}
+function doaList(){const D=DOA_T[lang]||DOA_T.en,X=(TXT[lang]||TXT.bm).seg,S=(JT[lang]||JT.bm).sai,n=lafFrom(NIAT_AR),t=lafFrom(TALBIAH_AR);
+  return [{g:0,h:n.h,a:NIAT_AR,t:n.t,m:n.m},{g:0,h:t.h,a:TALBIAH_AR,t:TALBIAH_TR,m:t.m},
+    {g:1,h:X.aswad[0],w:X.aswad[1],a:AR.aswad[0],t:AR.aswad[1],m:D.m.aswad},{g:1,h:X.rabbana[0],w:X.rabbana[1],a:AR.rabbana[0],t:AR.rabbana[1],m:D.m.rabbana},
+    {g:2,h:S.safa1[0],w:S.safa1[1],a:SAR.verse[0],t:SAR.verse[1],m:D.m.verse},{g:2,h:D.ss,w:S.safa[1],a:SAR.dzikr[0],t:SAR.dzikr[1],m:D.m.dzikr}];}
+function doaHTML(){const D=DOA_T[lang]||DOA_T.en;let h="",g=-1;
+  doaList().forEach((d,i)=>{if(d.g!==g){g=d.g;h+=`<h3 class="zh3">${D.g[g]}</h3>`;}
+    h+=`<div class="qaya doa"><div class="mname">${d.h}</div>${d.w?`<p class="pmeta">${d.w}</p>`:""}<p class="qar" dir="rtl" lang="ar">${d.a}</p>`+
+      `${lang!=="ar"&&d.t?`<p class="dtr">${d.t}</p>`:""}${rtr&&d.m?`<p class="qtr">${d.m}</p>`:""}<button class="dhear" data-doa="${i}">${D.hear}</button></div>`;});
+  return h;}
 function rl(){return RT[lang]?lang:"bm";}
 function ayaNum(n){return "﴿"+String(n).replace(/\d/g,d=>"٠١٢٣٤٥٦٧٨٩"[d])+"﴾";}
 function rSize(){let s=18;try{s=+localStorage.getItem("su-rsize")||26;}catch(e){} return s;}
 function setRSize(d){const s=Math.max(18,Math.min(44,rSize()+d));try{localStorage.setItem("su-rsize",s);}catch(e){} document.documentElement.style.setProperty("--qsize",s+"px");}
 const MSUR={"Al Fatihah (1-7)":1,"Al Ikhlas (1-4)":112,"Al Falaq (1-5)":113,"An Nas (1-6)":114};
 function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
-  const trLang=l==="id"?"id":"ms";
+  const trLang=l==="id"?"id":"ms",D=DOA_T[lang]||DOA_T.en,doa=rview==="doa",trL=doa?D.tr:T.tr;
   $("rhead").innerHTML=`<button id="rback">${T.back}</button>
-   <h2 class="ztitle">${T.title}</h2><p class="zsub">${T.sub}</p>
-   <div class="ztabs rtabs">${["yasin","mathurat","audio"].map((v,i)=>`<button data-rv="${v}" aria-pressed="${rview===v}">${i<2?T.tabs[i]:qt().tab}</button>`).join("")}</div>
-   <div class="rtools"><button id="rminus" aria-label="Kecilkan">A−</button><button id="rplus" aria-label="Besarkan">A+</button><label class="rtr"><input type="checkbox" id="rtrc" ${rtr?"checked":""}> ${T.tr}</label></div>`;
+   <h2 class="ztitle">${doa?D.title:T.title}</h2><p class="zsub">${doa?D.sub:T.sub}</p>
+   <div class="ztabs rtabs">${["doa","yasin","mathurat","audio"].map((v,i)=>`<button data-rv="${v}" aria-pressed="${rview===v}">${i===0?D.tab:i<3?T.tabs[i-1]:qt().tab}</button>`).join("")}</div>
+   <div class="rtools"><button id="rminus" aria-label="Kecilkan">A−</button><button id="rplus" aria-label="Besarkan">A+</button>${trL?`<label class="rtr"><input type="checkbox" id="rtrc" ${rtr?"checked":""}> ${trL}</label>`:""}</div>`;
   let h="";
-  if(rview==="yasin"){
+  if(doa){h+=doaHTML();h+=`<p class="src">${D.src}</p>`;}
+  else if(rview==="yasin"){
     h+=`<div class="zinfo"><p>${T.yasinInfo}</p></div><p class="qbasm">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</p>`;
     h+=RD.yasin.ar.map((a,i)=>`<div class="qaya"><p class="qar" dir="rtl" lang="ar">${a} <span class="qnum">${ayaNum(i+1)}</span></p>${rtr?`<p class="qtr"><b>${i+1}.</b> ${RD.yasin[trLang][i]}</p>`:""}</div>`).join("");
   }else if(rview==="audio"){const Q=qt();
@@ -2232,14 +2349,15 @@ function renderReader(){const l=rl(),T=RT[l],rtl=l==="ar";setCredit();
       h+=`<div class="qaya mitem${ok?" mdone":""}" data-k="${k}" data-x="${m.x}">${m.n?`<div class="mname">${m.n}</div>`:""}<p class="qar" dir="rtl" lang="ar">${m.a.replace(/([٠-٩]+)/g," ﴿$1﴾ ")}</p>${rtr&&m.m?`<p class="qtr">${m.m}</p>`:""}${MSUR[m.n]?`<button data-q="${MSUR[m.n]}" data-qk="${k}" class="mplay">${qt().play}</button> `:""}<button class="mcount">${ok?"✓ "+T.done:"×"+m.x+" · "+c+"/"+m.x+" · "+T.tap}</button></div>`;});
     h+=`<button id="rreset" class="zreset">${T.reset}</button>`;
   }
-  h+=`<p class="src">${T.src}</p>`;
+  if(!doa)h+=`<p class="src">${T.src}</p>`;
   $("rbody").innerHTML=h;
-  document.querySelectorAll("[data-rv]").forEach(b=>b.onclick=()=>{rview=b.dataset.rv;renderReader();$("rcard").scrollTop=0;});
+  document.querySelectorAll("[data-rv]").forEach(b=>b.onclick=()=>{rview=b.dataset.rv;try{localStorage.setItem("su-rview",rview);}catch(e){}renderReader();$("rcard").scrollTop=0;});
+  document.querySelectorAll("[data-doa]").forEach(b=>b.onclick=()=>{const d=doaList()[+b.dataset.doa];if(d)vSpeak([{t:d.a,ar:1}],true);});
   document.querySelectorAll("[data-rt]").forEach(b=>b.onclick=()=>{rtime=+b.dataset.rt;renderReader();});
   document.querySelectorAll(".mcount").forEach(b=>b.onclick=()=>{const d=b.closest(".mitem"),k=d.dataset.k,x=+d.dataset.x;rcount[k]=Math.min(x,(rcount[k]||0)+1);const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;});
   if($("rreset"))$("rreset").onclick=()=>{rcount={};renderReader();};
   $("rminus").onclick=()=>setRSize(-2);$("rplus").onclick=()=>setRSize(2);
-  $("rtrc").onchange=e=>{rtr=e.target.checked;const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;};
+  if($("rtrc"))$("rtrc").onchange=e=>{rtr=e.target.checked;const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;};
   $("rback").onclick=()=>{qStop();$("reader").style.display="none";openJourney(jstep);};
   document.querySelectorAll("#rbody [data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.qk;qToggleOne(+b.dataset.q,k?(()=>{const it=document.querySelector(`.mitem[data-k="${k}"]`);const x=it?+it.dataset.x:1;rcount[k]=Math.min(x,(rcount[k]||0)+1);const y=$("rcard").scrollTop;renderReader();$("rcard").scrollTop=y;}):null);});
   document.querySelectorAll("[data-qs]").forEach(c=>c.onchange=()=>{const a=[...document.querySelectorAll("[data-qs]")].filter(x=>x.checked).map(x=>+x.dataset.qs);qSetSel(a);});
@@ -2438,6 +2556,8 @@ const SEGC=["#2f7de1","#c9a227","#17894f","#c0392b","#8e44ad"];let liveMap=null,
 function mkMap(el){if(typeof L==="undefined"||!el)return null;if(el._lmap){try{el._lmap.remove();}catch(e){}el._lmap=null;}el.innerHTML="";el.classList.add("on");
   const m=el._lmap=L.map(el,{zoomControl:true,attributionControl:true,scrollWheelZoom:false,tap:true});
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(m);
+  /* tanpa internet jubin peta tidak dimuatkan: beritahu, jangan biarkan kotak kelabu kosong */
+  if(!navigator.onLine)el.insertAdjacentHTML("beforeend",`<div class="kmapoff">${offT().map}</div>`);
   setTimeout(()=>m.invalidateSize(),150);return m;}
 function drawRoute(m,pts){if(!m)return;const all=[];let cur=null,seg=-1;
   pts.forEach(p=>{const ll=[p[0],p[1]];all.push(ll);if(p[2]!==seg){if(cur&&cur.length>1)L.polyline(cur,{color:SEGC[seg]||"#555",weight:5,opacity:.85}).addTo(m);cur=cur&&cur.length?[cur[cur.length-1],ll]:[ll];seg=p[2];}else cur.push(ll);});
@@ -2500,6 +2620,7 @@ async function chkRun(){const btn=document.getElementById("kchkb");if(btn)btn.di
   chkUpd();getLoc();setTimeout(()=>{const b=document.getElementById("kchkb");if(b)b.disabled=false;},2500);}
 function renderTrk(){const T=KT[kl()];setCredit();
   let h=`<button id="kback">${T.back}</button><h2 class="ztitle">${T.title}</h2><p class="zsub">${T.sub}</p>`;
+  if(!TS||!TS.done)h+=`<button class="act lcGo" data-lc="${TS&&TS.seg===2?"s":TS&&TS.seg===1?"t":""}">${(LC[lang]||LC.en).open}</button>`;
   if(!TS){const pr=tprof(),H=thist();
     h+=`<div class="zinfo"><b>${T.discT}</b><p>${T.discB}</p></div>
     <div class="place kloc"><div class="pname">${T.locT}</div><div id="klocv">${locHTML(T)}</div><button id="kloc" class="act kbig">${tloc&&tloc.lat?T.locUpd:T.locBtn}</button></div>
@@ -2601,6 +2722,213 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 
 function openZiarah(){hideHint();playing=false;setMode("sim");activity="journey";["hud","map","bar","intro","journey"].forEach(id=>$(id).style.display="none");$("ziarah").style.display="grid";renderZiarah();$("zcard").scrollTop=0;}
 
+/* ---------- Lapisan atas skrin (tetapan, pengira pusingan, kad kecemasan) ----------
+   Semasa dibuka, satu entri sejarah supaya butang Kembali peranti menutupnya dahulu. */
+const OV={},OVC={};
+function ovOn(id){const e=$(id);return !!e&&e.classList.contains("on");}
+function ovAny(){return Object.keys(OVC).some(ovOn);}
+function ovOpen(id){$(id).classList.add("on");if(!OV[id]&&hPush("o"))OV[id]=true;}
+function ovShut(id,fromPop){$(id).classList.remove("on");if(OV[id]&&!fromPop){hSkip++;history.back();}OV[id]=false;}
+/* dibuka melalui pintasan (tiada sentuhan): pasang entri sejarah pada ketikan pertama */
+function ovReg(id,close){OVC[id]=close;$(id).addEventListener("click",()=>{if(ovOn(id)&&!OV[id]&&hPush("o"))OV[id]=true;});}
+/* Kembali peranti: tutup lapisan teratas; true jika entri sejarah itu milik lapisan */
+function ovPop(){for(const id of Object.keys(OVC).reverse())if(ovOn(id)){const h=!!OV[id];OVC[id](true);return h;}return null;}
+addEventListener("keydown",e=>{if(e.key!=="Escape")return;for(const id of Object.keys(OVC).reverse())if(ovOn(id)){OVC[id](false);break;}});
+
+/* ---------- Sedia untuk perjalanan: semak apa yang berfungsi tanpa internet (dalam Tetapan) ---------- */
+const OFF_T={bm:{t:"📶 Sedia untuk perjalanan",intro:"Semak sebelum berangkat, ketika masih ada internet.",chk:"🔄 Semak & simpan semula",wait:"Menyemak…",
+   app:["Aplikasi, gambar 360° dan fon disimpan untuk luar talian","{n} fail belum disimpan. Sambung ke internet dan tekan Semak & simpan semula.","Buka semula aplikasi sekali ketika ada internet untuk menyimpannya."],
+   inst:["Dipasang di skrin utama","Belum dipasang di skrin utama: pasang supaya mudah dibuka dan tidak dipadam."],
+   keep:["Storan kekal: tidak akan dipadam oleh pelayar","Storan belum kekal: pelayar mungkin memadamnya jika ruang telefon penuh."],
+   aud:["Surah audio yang ditanda: {k}/{n} disimpan untuk luar talian","Surah audio yang ditanda: {k}/{n} disimpan. Buka Bacaan › Surah › Simpan semua yang ditanda."],
+   sos:["Kad kecemasan sudah diisi","Kad kecemasan belum diisi"],sosB:"Isi sekarang",
+   voice:["Suara bacaan Arab tersedia dalam telefon","Tiada suara Arab dalam telefon: butang Dengar mungkin senyap. Pasang suara Arab dalam tetapan teks-ke-pertuturan telefon."],
+   net:"Perlu internet: peta dan surah audio yang belum disimpan. Panduan, pengira pusingan, doa, kad kecemasan dan Penjejak berfungsi tanpa internet.",
+   off:"📴 Tiada internet. Panduan, pengira pusingan, doa dan kad kecemasan masih berfungsi.",on:"📶 Internet kembali.",map:"📴 Peta memerlukan internet. Jarak dan langkah tetap direkodkan."},
+ en:{t:"📶 Ready for the trip",intro:"Check before you leave, while you still have internet.",chk:"🔄 Check & save again",wait:"Checking…",
+   app:["App, 360° photos and fonts saved for offline use","{n} files not saved yet. Connect to the internet and tap Check & save again.","Open the app once more while online to save it for offline use."],
+   inst:["Installed on the home screen","Not installed on the home screen yet: install it so it opens easily and is not cleared."],
+   keep:["Persistent storage: the browser will not clear it","Storage not persistent yet: the browser may clear it if the phone runs low on space."],
+   aud:["Ticked surah audio: {k}/{n} saved for offline","Ticked surah audio: {k}/{n} saved. Open Readings › Surahs › Save all ticked."],
+   sos:["Emergency card filled in","Emergency card not filled in yet"],sosB:"Fill in now",
+   voice:["Arabic reading voice available on this phone","No Arabic voice on this phone: the Listen buttons may be silent. Add an Arabic voice in the phone's text-to-speech settings."],
+   net:"Needs internet: maps and surah audio not yet saved. The guide, lap counter, du'a, emergency card and tracker work without internet.",
+   off:"📴 No internet. The guide, lap counter, du'a and emergency card still work.",on:"📶 Back online.",map:"📴 Maps need internet. Distance and steps are still recorded."},
+ id:{t:"📶 Siap untuk perjalanan",intro:"Periksa sebelum berangkat, selagi masih ada internet.",chk:"🔄 Periksa & simpan ulang",wait:"Memeriksa…",
+   app:["Aplikasi, foto 360° dan font tersimpan untuk luar jaringan","{n} file belum tersimpan. Sambungkan ke internet lalu tekan Periksa & simpan ulang.","Buka aplikasi sekali lagi saat ada internet untuk menyimpannya."],
+   inst:["Terpasang di layar utama","Belum terpasang di layar utama: pasang agar mudah dibuka dan tidak terhapus."],
+   keep:["Penyimpanan permanen: tidak akan dihapus oleh peramban","Penyimpanan belum permanen: peramban dapat menghapusnya jika memori ponsel penuh."],
+   aud:["Audio surah yang ditandai: {k}/{n} tersimpan untuk luar jaringan","Audio surah yang ditandai: {k}/{n} tersimpan. Buka Bacaan › Surah › Simpan semua yang ditanda."],
+   sos:["Kartu darurat sudah diisi","Kartu darurat belum diisi"],sosB:"Isi sekarang",
+   voice:["Suara bahasa Arab tersedia di ponsel","Tidak ada suara Arab di ponsel: tombol Dengar mungkin tidak bersuara. Tambahkan suara Arab di pengaturan teks-ke-ucapan ponsel."],
+   net:"Perlu internet: peta dan audio surah yang belum disimpan. Panduan, penghitung putaran, doa, kartu darurat dan pelacak berfungsi tanpa internet.",
+   off:"📴 Tidak ada internet. Panduan, penghitung putaran, doa dan kartu darurat tetap berfungsi.",on:"📶 Internet tersambung kembali.",map:"📴 Peta memerlukan internet. Jarak dan langkah tetap tercatat."},
+ ar:{t:"📶 الاستعداد للسفر",intro:"تحقق قبل السفر ما دام الإنترنت متاحًا.",chk:"🔄 تحقق واحفظ من جديد",wait:"جارٍ التحقق…",
+   app:["التطبيق وصور 360° والخطوط محفوظة للاستخدام دون إنترنت","{n} ملفات لم تُحفظ بعد. اتصل بالإنترنت ثم اضغط «تحقق واحفظ من جديد».","افتح التطبيق مرة أخرى أثناء الاتصال بالإنترنت لحفظه."],
+   inst:["مثبت على الشاشة الرئيسية","غير مثبت على الشاشة الرئيسية بعد: ثبّته ليسهل فتحه ولا يُحذف."],
+   keep:["تخزين دائم: لن يحذفه المتصفح","التخزين غير دائم بعد: قد يحذفه المتصفح إذا امتلأت ذاكرة الهاتف."],
+   aud:["تلاوات السور المحددة: {k}/{n} محفوظة دون إنترنت","تلاوات السور المحددة: {k}/{n} محفوظة. افتح الأوراد › Surahs › Save all ticked."],
+   sos:["بطاقة الطوارئ مكتملة","بطاقة الطوارئ غير مكتملة"],sosB:"املأها الآن",
+   voice:["صوت القراءة العربية متاح في الهاتف","لا يوجد صوت عربي في الهاتف: قد لا يعمل زر الاستماع. أضف صوتًا عربيًا من إعدادات تحويل النص إلى كلام."],
+   net:"يحتاج إلى الإنترنت: الخرائط وتلاوات السور غير المحفوظة. الدليل وعدّاد الأشواط والأدعية وبطاقة الطوارئ والمتتبع تعمل دون إنترنت.",
+   off:"📴 لا يوجد إنترنت. الدليل وعدّاد الأشواط والأدعية وبطاقة الطوارئ تعمل.",on:"📶 عاد الاتصال بالإنترنت.",map:"📴 الخرائط تحتاج إلى الإنترنت. تُسجَّل المسافة والخطوات كالمعتاد."}};
+function offT(){return OFF_T[lang]||OFF_T.en;}
+let offSW=null,offKeep=null; /* offSW: jawapan service worker {total,missing}; offKeep: storan kekal */
+/* tanya service worker fail mana yang belum disimpan; fix=true cuba simpan semula */
+function offAsk(fix){const sw=navigator.serviceWorker,c=sw&&sw.controller;if(!c){offSW=null;offRender();return Promise.resolve();}
+  return new Promise(res=>{const h=e=>{if(!e.data||e.data.t!=="offline")return;sw.removeEventListener("message",h);offSW=e.data;offRender();res();};
+    sw.addEventListener("message",h);try{sw.startMessages();}catch(e){}c.postMessage({t:"offline",fix:!!fix});setTimeout(res,20000);});}
+function offRender(){const T=offT(),L=$("offL");if(!L)return;const it=[];
+  const sa=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  it.push(!offSW?[0,T.app[2]]:offSW.missing.length?[0,T.app[1].replace("{n}",offSW.missing.length)]:[1,T.app[0]]);
+  it.push(sa?[1,T.inst[0]]:[0,T.inst[1]]);
+  if(offKeep!==null)it.push(offKeep?[1,T.keep[0]]:[0,T.keep[1]]);
+  const sel=qSel(),k=sel.filter(n=>qOffKeys.has(qKey(n))).length,ak=k>=sel.length;it.push([ak,T.aud[ak?0:1].replace("{k}",k).replace("{n}",sel.length)]);
+  const sf=sosFilled(sosS());it.push([sf,T.sos[sf?0:1]+(sf?"":` <button data-sos class="offgo">${T.sosB}</button>`)]);
+  const vo=!!vPick("ar-SA");it.push([vo,T.voice[vo?0:1]]);
+  L.innerHTML=it.map(([ok,t])=>`<li class="${ok?"ok":"warn"}"><span class="st" aria-hidden="true">${ok?"✅":"⚠️"}</span><span>${t}</span></li>`).join("");
+  $("offT").textContent=T.t;$("offI").textContent=T.intro;$("offN").textContent=T.net;if(!$("offB").disabled)$("offB").textContent=T.chk;}
+function offOpen(){offRender();offAsk(false);
+  try{navigator.storage.persisted().then(v=>{offKeep=v;offRender();}).catch(()=>{});}catch(e){}
+  try{if(!speechSynthesis.getVoices().length)speechSynthesis.addEventListener("voiceschanged",offRender,{once:true});}catch(e){}}
+$("offB").onclick=async()=>{const b=$("offB");b.disabled=true;b.textContent=offT().wait;
+  try{if(navigator.storage&&navigator.storage.persist)offKeep=await navigator.storage.persist();}catch(e){}
+  await offAsk(true);b.disabled=false;offRender();};
+addEventListener("offline",()=>flash(offT().off));addEventListener("online",()=>flash(offT().on));
+
+/* ---------- Tetapan (helaian bawah): bahasa, saiz teks, tema, mod luar, kredit ---------- */
+const SST={bm:{t:"Tetapan",lang:"Bahasa",size:"Saiz teks",close:"Tutup"},en:{t:"Settings",lang:"Language",size:"Text size",close:"Close"},
+  id:{t:"Pengaturan",lang:"Bahasa",size:"Ukuran teks",close:"Tutup"},ar:{t:"الإعدادات",lang:"اللغة",size:"حجم النص",close:"إغلاق"}};
+function ssOn(){return ovOn("sset");}
+function ssRender(){const L=SST[lang]||SST.en;$("ssT").textContent="⚙️ "+L.t;$("ssLang").textContent=L.lang;$("ssSize").textContent=L.size;
+  $("ssX").setAttribute("aria-label",L.close);$("setBtn").setAttribute("aria-label",L.t);$("setBtn").title=L.t;}
+function ssOpen(){ssRender();setCredit();offOpen();ovOpen("sset");$("setBtn").setAttribute("aria-expanded","true");
+  try{$("ssT").setAttribute("tabindex","-1");$("ssT").focus({preventScroll:true});}catch(e){}}
+function ssClose(fromPop){ovShut("sset",fromPop);$("setBtn").setAttribute("aria-expanded","false");
+  if(!fromPop)try{$("setBtn").focus({preventScroll:true});}catch(e){}}
+$("setBtn").onclick=ssOpen;$("ssX").onclick=()=>ssClose(false);
+$("sset").addEventListener("click",e=>{if(e.target===$("sset"))ssClose(false);});
+ovReg("sset",ssClose);
+ssRender();
+
+/* ---------- Pengira pusingan manual (tawaf & sa'ie) ----------
+   Satu tekan = satu pusingan/perjalanan tamat. Tidak bergantung pada GPS, berfungsi tanpa internet,
+   dan disimpan dalam peranti supaya bilangan kekal jika aplikasi ditutup. */
+const LC={bm:{open:"🔢 Pengira pusingan",title:"Pengira pusingan",close:"✕ Tutup",voice:"Suara",t:"🕋 Tawaf",s:"🏃 Sa'ie",
+   endT:n=>`✓ Tamat pusingan ${n}`,endS:n=>`✓ Tamat perjalanan ${n}`,hintT:"Tekan apabila tiba di garisan Hajar Aswad",hintS:["Tekan apabila tiba di Marwah","Tekan apabila tiba di Safa"],
+   undo:"↶ Tolak 1",reset:"⟲ Mula semula",last:"Kali terakhir ditekan",doubt:"Ragu-ragu tentang bilangan? Ambil bilangan yang lebih sedikit (yang yakin), kemudian sempurnakan hingga 7.",
+   sayT:n=>`Pusingan ${n} selesai. Mula pusingan ${n+1}.`,sayS:(n,d)=>`Perjalanan ${n} selesai. Mula perjalanan ${n+1}, ${d}.`,sayU:n=>`Dibatalkan. Kini ${n} selesai.`},
+ en:{open:"🔢 Lap counter",title:"Lap counter",close:"✕ Close",voice:"Voice",t:"🕋 Tawaf",s:"🏃 Sa'i",
+   endT:n=>`✓ End of circuit ${n}`,endS:n=>`✓ End of lap ${n}`,hintT:"Tap when you reach the Black Stone line",hintS:["Tap when you reach Marwah","Tap when you reach Safa"],
+   undo:"↶ Minus 1",reset:"⟲ Start over",last:"Last tap",doubt:"Unsure of the count? Take the lower number (the one you are certain of), then complete it to 7.",
+   sayT:n=>`Circuit ${n} done. Start circuit ${n+1}.`,sayS:(n,d)=>`Lap ${n} done. Start lap ${n+1}, ${d}.`,sayU:n=>`Undone. ${n} completed.`},
+ id:{open:"🔢 Penghitung putaran",title:"Penghitung putaran",close:"✕ Tutup",voice:"Suara",t:"🕋 Tawaf",s:"🏃 Sa'i",
+   endT:n=>`✓ Akhir putaran ${n}`,endS:n=>`✓ Akhir perjalanan ${n}`,hintT:"Tekan saat tiba di garis Hajar Aswad",hintS:["Tekan saat tiba di Marwah","Tekan saat tiba di Shafa"],
+   undo:"↶ Kurangi 1",reset:"⟲ Mulai lagi",last:"Terakhir ditekan",doubt:"Ragu tentang jumlahnya? Ambil jumlah yang lebih sedikit (yang yakin), lalu sempurnakan hingga 7.",
+   sayT:n=>`Putaran ${n} selesai. Mulai putaran ${n+1}.`,sayS:(n,d)=>`Perjalanan ${n} selesai. Mulai perjalanan ${n+1}, ${d}.`,sayU:n=>`Dibatalkan. Sekarang ${n} selesai.`},
+ ar:{open:"🔢 عدّاد الأشواط",title:"عدّاد الأشواط",close:"✕ إغلاق",voice:"الصوت",t:"🕋 الطواف",s:"🏃 السعي",
+   endT:n=>`✓ نهاية الشوط ${n}`,endS:n=>`✓ نهاية الشوط ${n}`,hintT:"اضغط عند الوصول إلى خط الحجر الأسود",hintS:["اضغط عند الوصول إلى المروة","اضغط عند الوصول إلى الصفا"],
+   undo:"↶ إنقاص 1",reset:"⟲ البدء من جديد",last:"آخر ضغطة",doubt:"إن شككت في العدد فابنِ على الأقل (اليقين)، ثم أكمل سبعة.",
+   sayT:n=>`انتهى الشوط ${n}. ابدأ الشوط ${n+1}.`,sayS:(n,d)=>`انتهى الشوط ${n}. ابدأ الشوط ${n+1}، ${d}.`,sayU:n=>`تم الإلغاء. المكتمل الآن ${n}.`}};
+const LC_WAIT=4000; /* abaikan tekanan kedua dalam 4 s (tersentuh dua kali dalam kesesakan) */
+let lcT0=0,lcTo=null,lcLock=null;
+function lcS(){let s=null;try{s=JSON.parse(localStorage.getItem("su-lapc"));}catch(e){}s=s&&typeof s==="object"?s:{};
+  return {m:s.m==="s"?"s":"t",t:Array.isArray(s.t)?s.t.slice(0,7):[],s:Array.isArray(s.s)?s.s.slice(0,7):[],v:s.v===0?0:1};}
+function lcSave(s){try{localStorage.setItem("su-lapc",JSON.stringify(s));}catch(e){}}
+function lcOn(){return ovOn("lapc");}
+function lcRender(){const L=LC[lang]||LC.en,s=lcS(),a=s[s.m],n=a.length,cur=Math.min(7,n+1),fin=n>=7,sai=s.m==="s",J2=JT[lang]||JT.bm;
+  $("lcX").textContent=L.close;$("lcTitle").textContent=L.title;
+  document.querySelectorAll("[data-lcm]").forEach(b=>{b.textContent=L[b.dataset.lcm];b.setAttribute("aria-pressed",String(b.dataset.lcm===s.m));});
+  $("lcV").textContent=(s.v?"🔊 ":"🔇 ")+L.voice;$("lcV").setAttribute("aria-pressed",String(!!s.v));
+  const done=sai?J2.sai.done:(TXT[lang]||TXT.bm).seg.done;
+  $("lcN").querySelector("span").textContent=fin?done[0]:sai?J2.trip:(TXT[lang]||TXT.bm).lap;$("lcN").querySelector("b").textContent=fin?7:cur;
+  $("lcDots").innerHTML=Array.from({length:7},(_,i)=>`<i class="${i<n?"on":i===n?"cur":""}"></i>`).join("");
+  $("lcDir").textContent=fin?done[1]:sai?(cur%2?J2.dir1:J2.dir2):"";
+  const b=$("lcTap"),wait=!fin&&Date.now()-lcT0<LC_WAIT&&n>0;b.className=fin?"done":wait?"wait":"";b.disabled=fin;
+  b.innerHTML=fin?`<span class="big">✓ 7 / 7</span>`:wait?`<span class="big">✓ ${n} / 7</span>`
+    :`<span class="big">${(sai?L.endS:L.endT)(cur)}</span><span>${sai?L.hintS[(cur+1)%2]:L.hintT}</span>`;
+  $("lcU").textContent=L.undo;$("lcU").disabled=!n;$("lcR").textContent=L.reset;$("lcR").disabled=!n;
+  $("lcLast").textContent=n?`${L.last}: ${new Date(a[n-1]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}`:"";
+  $("lcDoubt").textContent=L.doubt;}
+function lcSay(t){if(lcS().v)vSpeak([{t}],true);}
+function lcTap(){const s=lcS(),a=s[s.m];if(a.length>=7||Date.now()-lcT0<LC_WAIT)return;
+  a.push(Date.now());lcT0=Date.now();lcSave(s);const n=a.length,L=LC[lang]||LC.en,J2=JT[lang]||JT.bm;
+  lapBuzz(n<7?n+1:8);
+  lcSay(n>=7?(s.m==="s"?J2.sai.done[0]:(TXT[lang]||TXT.bm).seg.done[0]):s.m==="s"?L.sayS(n,(n+1)%2?J2.dir1:J2.dir2):L.sayT(n));
+  lcRender();clearTimeout(lcTo);lcTo=setTimeout(()=>{if(lcOn())lcRender();},LC_WAIT+50);}
+function lcUndo(){const s=lcS();if(!s[s.m].length)return;s[s.m].pop();lcT0=0;lcSave(s);lcSay((LC[lang]||LC.en).sayU(s[s.m].length));try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}lcRender();}
+async function lcWake(){try{if("wakeLock"in navigator&&!lcLock&&lcOn()){lcLock=await navigator.wakeLock.request("screen");lcLock.addEventListener("release",()=>{lcLock=null;});}}catch(e){}}
+/* buka di atas skrin semasa; satu entri sejarah supaya butang Kembali peranti menutupnya */
+function lcOpen(m){const s=lcS();if(m==="t"||m==="s"){s.m=m;lcSave(s);}ovOpen("lapc");
+  lcRender();lcWake();try{$("lcTitle").setAttribute("tabindex","-1");$("lcTitle").focus({preventScroll:true});}catch(e){}}
+function lcClose(fromPop){ovShut("lapc",fromPop);try{lcLock&&lcLock.release();}catch(e){}lcLock=null;}
+$("lcTap").onclick=lcTap;$("lcU").onclick=lcUndo;$("lcX").onclick=()=>lcClose(false);
+$("lcR").onclick=()=>twice("lc",$("lcR"),()=>{const s=lcS();s[s.m]=[];lcT0=0;lcSave(s);lcRender();});
+$("lcV").onclick=()=>{const s=lcS();s.v=s.v?0:1;lcSave(s);lcRender();};
+document.querySelectorAll("[data-lcm]").forEach(b=>b.onclick=()=>{const s=lcS();s.m=b.dataset.lcm;lcT0=0;lcSave(s);lcRender();});
+ovReg("lapc",lcClose);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-lc]");if(b)lcOpen(b.dataset.lc);});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&lcOn()){lcWake();lcRender();}});
+
+/* ---------- Kad kecemasan ----------
+   Butiran jemaah disimpan dalam peranti sahaja. Kad untuk petugas sentiasa dalam bahasa Arab + Inggeris. */
+const SOS_T={bm:{open:"🆘 Kad kecemasan",title:"Kad kecemasan",sub:"Isi sebelum berangkat. Jika sesat atau sakit, buka kad ini dan tunjukkan kepada petugas atau polis. Butiran disimpan dalam telefon ini sahaja.",
+   close:"✕ Tutup",edit:"✏️ Ubah",save:"✓ Simpan & tunjuk kad",show:"Tunjukkan skrin ini kepada petugas atau polis.",nums:"Nombor kecemasan di Arab Saudi",who:"Jantina",
+   f:{name:"Nama penuh",nat:"Warganegara",hotel:"Hotel",room:"No. bilik",group:"Kumpulan / agensi umrah",leader:"Nama ketua kumpulan / mutawwif",phone:"Telefon ketua kumpulan / mutawwif",meet:"Tempat berjumpa (cth. Pintu 1, King Abdulaziz)",family:"Telefon keluarga",med:"Nota perubatan (penyakit, ubat, alahan)"},
+   n:["Kecemasan: polis, ambulans, bomba","Kementerian Haji dan Umrah","Pusat Penjagaan Tetamu"]},
+ en:{open:"🆘 Emergency card",title:"Emergency card",sub:"Fill this in before you travel. If you are lost or unwell, open this card and show it to an officer or the police. Details stay on this phone only.",
+   close:"✕ Close",edit:"✏️ Edit",save:"✓ Save & show card",show:"Show this screen to an officer or the police.",nums:"Emergency numbers in Saudi Arabia",who:"Gender",
+   f:{name:"Full name",nat:"Nationality",hotel:"Hotel",room:"Room number",group:"Group / umrah agency",leader:"Group leader / mutawwif name",phone:"Group leader / mutawwif phone",meet:"Meeting point (e.g. Gate 1, King Abdulaziz)",family:"Family phone",med:"Medical notes (conditions, medicines, allergies)"},
+   n:["Emergency: police, ambulance, fire","Ministry of Hajj and Umrah","Guest Care Centre"]},
+ id:{open:"🆘 Kartu darurat",title:"Kartu darurat",sub:"Isi sebelum berangkat. Jika tersesat atau sakit, buka kartu ini dan tunjukkan kepada petugas atau polisi. Data hanya disimpan di ponsel ini.",
+   close:"✕ Tutup",edit:"✏️ Ubah",save:"✓ Simpan & tampilkan kartu",show:"Tunjukkan layar ini kepada petugas atau polisi.",nums:"Nomor darurat di Arab Saudi",who:"Jenis kelamin",
+   f:{name:"Nama lengkap",nat:"Kewarganegaraan",hotel:"Hotel",room:"Nomor kamar",group:"Rombongan / travel umrah",leader:"Nama ketua rombongan / mutawif",phone:"Telepon ketua rombongan / mutawif",meet:"Tempat bertemu (mis. Pintu 1, King Abdulaziz)",family:"Telepon keluarga",med:"Catatan medis (penyakit, obat, alergi)"},
+   n:["Darurat: polisi, ambulans, pemadam kebakaran","Kementerian Haji dan Umrah","Pusat Layanan Tamu"]},
+ ar:{open:"🆘 بطاقة الطوارئ",title:"بطاقة الطوارئ",sub:"املأها قبل السفر. إذا تهت أو مرضت فافتح هذه البطاقة وأرِها لرجل الأمن أو الشرطة. تُحفظ البيانات في هذا الهاتف فقط.",
+   close:"✕ إغلاق",edit:"✏️ تعديل",save:"✓ حفظ وعرض البطاقة",show:"أرِ هذه الشاشة لرجل الأمن أو الشرطة.",nums:"أرقام الطوارئ في السعودية",who:"الجنس",
+   f:{name:"الاسم الكامل",nat:"الجنسية",hotel:"الفندق",room:"رقم الغرفة",group:"المجموعة / شركة العمرة",leader:"اسم رئيس المجموعة / المطوف",phone:"هاتف رئيس المجموعة / المطوف",meet:"نقطة اللقاء (مثل: باب 1، الملك عبد العزيز)",family:"هاتف العائلة",med:"ملاحظات طبية (أمراض، أدوية، حساسية)"},
+   n:["الطوارئ: الشرطة والإسعاف والدفاع المدني","وزارة الحج والعمرة","مركز العناية بالضيوف"]}};
+/* label kad untuk petugas: [Arab, Inggeris] */
+const SOS_C={name:["الاسم","Name"],nat:["الجنسية","Nationality"],hotel:["الفندق","Hotel"],room:["رقم الغرفة","Room"],group:["المجموعة / الشركة","Group / agency"],
+  leader:["رئيس المجموعة / المطوف","Group leader / mutawwif"],phone:["هاتف رئيس المجموعة","Group leader's phone"],meet:["نقطة اللقاء","Meeting point"],family:["هاتف العائلة","Family phone"],med:["ملاحظات طبية","Medical notes"]};
+const SOS_K=["name","nat","hotel","room","group","leader","phone","meet","family","med"],SOS_TEL=["phone","family"],SOS_N=["911","937","1966"];
+let sosMode="card";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function sosS(){let s=null;try{s=JSON.parse(localStorage.getItem("su-sos"));}catch(e){}s=s&&typeof s==="object"?s:{};
+  /* hotel daripada Penjejak jika pengguna sudah memilihnya */
+  if(!s.hotel){try{const p=JSON.parse(localStorage.getItem("su-trk-prof"));if(p&&p.hid)s.hotel=p.hid==="x"?(p.hn||""):((hotelAt(p.hid)||[""])[0]);}catch(e){}}
+  if(s.g!=="m"&&s.g!=="f")s.g=sex==="f"?"f":"m";return s;}
+function sosFilled(s){return SOS_K.some(k=>s[k]&&String(s[k]).trim()&&k!=="hotel");}
+function sosRender(){const T=SOS_T[lang]||SOS_T.en,s=sosS();$("sosX").textContent=T.close;
+  $("sosE").textContent=sosMode==="card"?T.edit:"👁 "+T.title;$("sosE").style.visibility=sosMode==="edit"&&!sosFilled(s)?"hidden":"visible";
+  const nums=`<h3 class="zh3">${T.nums}</h3>`+SOS_N.map((n,i)=>`<a class="pmap sosn" href="tel:${n}"><b dir="ltr">📞 ${n}</b> ${T.n[i]}</a>`).join("");
+  let h;
+  if(sosMode==="card"){const ar=s.g==="f"?"أنا تائهة، أرجو المساعدة":"أنا تائه، أرجو المساعدة";
+    h=`<p class="src">${T.show}</p><div class="soscard"><h2 id="sosT" class="sosh"><span class="ar" lang="ar" dir="rtl">${ar}</span><span class="en" lang="en">I am lost. Please help me.</span></h2>
+      <p class="sosp"><span class="ar" lang="ar" dir="rtl">أرجو مساعدتي في الوصول إلى فندقي أو الاتصال برئيس مجموعتي.</span><span lang="en">Please help me get back to my hotel or call my group leader.</span></p><dl class="sosdl">`+
+      SOS_K.filter(k=>s[k]&&String(s[k]).trim()).map(k=>{const v=esc(String(s[k]).trim()),tel=SOS_TEL.includes(k)?v.replace(/[^\d+]/g,""):"";
+        return `<div><dt><span class="ar" lang="ar" dir="rtl">${SOS_C[k][0]}</span> · <span lang="en">${SOS_C[k][1]}</span></dt><dd dir="auto">${tel?`<a href="tel:${tel}" dir="ltr">📞 ${v}</a>`:v}</dd></div>`;}).join("")+`</dl></div>`+nums;}
+  else{const X=TXT[lang]||TXT.bm;
+    h=`<h2 id="sosT" class="ztitle">${T.title}</h2><p class="zsub">${T.sub}</p><div class="sosf">`+
+      `<div class="sosg"><span id="sosWho">${T.who}</span><span class="sp" role="group" aria-labelledby="sosWho">${["m","f"].map(g=>`<button type="button" data-sg="${g}" aria-pressed="${s.g===g}">${X[g]}</button>`).join("")}</span></div>`+
+      SOS_K.map(k=>{const tel=SOS_TEL.includes(k),v=esc(s[k]||"");
+        return `<label>${T.f[k]}${k==="med"?`<textarea id="sos_${k}" rows="3">${v}</textarea>`:`<input id="sos_${k}" type="${tel?"tel":"text"}"${tel?' inputmode="tel" dir="ltr"':""}${k==="name"?' autocomplete="name"':""} value="${v}">`}</label>`;}).join("")+
+      `<button id="sosSave" class="act">${T.save}</button></div>`+nums;}
+  $("sosB").innerHTML=h;
+  document.querySelectorAll("[data-sg]").forEach(b=>b.onclick=()=>document.querySelectorAll("[data-sg]").forEach(x=>x.setAttribute("aria-pressed",String(x===b))));
+  const sv=$("sosSave");if(sv)sv.onclick=()=>{const o={};SOS_K.forEach(k=>{const e=$("sos_"+k);o[k]=e?e.value.trim():"";});
+    const g=document.querySelector('[data-sg][aria-pressed="true"]');o.g=g?g.dataset.sg:"m";try{localStorage.setItem("su-sos",JSON.stringify(o));}catch(e){}
+    sosMode="card";sosRender();$("sos").scrollTop=0;};}
+function sosOpen(){sosMode=sosFilled(sosS())?"card":"edit";ovOpen("sos");sosRender();$("sos").scrollTop=0;
+  try{$("sosT").setAttribute("tabindex","-1");$("sosT").focus({preventScroll:true});}catch(e){}}
+function sosClose(fromPop){ovShut("sos",fromPop);}
+$("sosX").onclick=()=>sosClose(false);
+$("sosE").onclick=()=>{sosMode=sosMode==="card"?"edit":"card";sosRender();$("sos").scrollTop=0;};
+ovReg("sos",sosClose);
+document.addEventListener("click",e=>{if(e.target.closest("[data-sos]"))sosOpen();});
+function sosLabel(){const T=SOS_T[lang]||SOS_T.en;$("sosBtn").setAttribute("aria-label",T.title);$("sosBtn").title=T.title;if(ovOn("sos"))sosRender();}
+sosLabel();
+
 /* ---------- 360° look hint ---------- */
 function showHint(){if(gyroOn||renderer.xr.isPresenting)return;$("hintTxt").textContent=MISC[lang].hint;$("hint").style.display="flex";clearTimeout(showHint.t);showHint.t=setTimeout(hideHint,7000);}
 function hideHint(){$("hint").style.display="none";}
@@ -2691,13 +3019,14 @@ new MutationObserver(()=>{const j=shown("journey");
   if(!j&&!hGuard){if(hPush("g"))hGuard=true;}
   else if(j&&hGuard){hGuard=false;hSkip++;history.back();}}).observe($("journey"),{attributes:true,attributeFilter:["style"]});
 /* jika pengawal tiada (cth. dibuka melalui pintasan), ketikan seterusnya memasangnya */
-document.addEventListener("click",()=>{if(!hGuard&&!shown("journey")&&hPush("g"))hGuard=true;});
+document.addEventListener("click",()=>{if(!hGuard&&!shown("journey")&&!ovAny()&&hPush("g"))hGuard=true;});
 function goGuide(){if(shown("bar"))$("guideBtn").click();
   else if(shown("reader")){const b=$("rback");if(b)b.click();else{$("reader").style.display="none";openJourney(jstep);}}
   else if(shown("trk")){$("trk").style.display="none";openJourney(jstep);}
   else openJourney(jstep);}
 addEventListener("popstate",()=>{
   if(hSkip>0){hSkip--;return;}
+  if(ovPop())return;
   if(hTo!==null){jstep=hTo;hTo=null;renderJourney();return;}
   if(!shown("journey")){hGuard=false;
     if(shown("kpocket")){if(hPush("g"))hGuard=true;return;}
@@ -2710,6 +3039,7 @@ const TABS={bm:["Panduan","Penjejak","Bacaan","Ziarah"],en:["Guide","Tracker","R
 const TAB_IDS=["journey","trk","reader","ziarah"];
 function tabCur(){return TAB_IDS.find(id=>shown(id));}
 function tabsSync(){const T=TABS[lang]||TABS.en,cur=tabCur(),on=!!cur&&!shown("kpocket");$("tabs").classList.toggle("on",on);document.body.classList.toggle("tabs-on",on);
+  if(on)document.body.style.setProperty("--tabh",Math.ceil($("tabs").getBoundingClientRect().height)+"px");
   document.querySelectorAll("#tabs [data-tab]").forEach(b=>{b.querySelector(".tl").textContent=T[TAB_IDS.indexOf(b.dataset.tab)];if(b.dataset.tab===cur)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});}
 function tabGo(t){const cur=tabCur();if(t===cur){const c=$({journey:"jcard",trk:"kcard",reader:"rcard",ziarah:"zcard"}[t]);if(c)c.scrollTop=0;document.scrollingElement.scrollTop=0;["journey","ziarah","reader","trk"].forEach(id=>{$(id).scrollTop=0;});return;}
   if(t==="journey"){["ziarah","reader","trk"].forEach(id=>$(id).style.display="none");openJourney(jstep);}
@@ -2719,7 +3049,7 @@ $("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if
 TAB_IDS.concat("kpocket").forEach(id=>new MutationObserver(tabsSync).observe($(id),{attributes:true,attributeFilter:["style"]}));
 new MutationObserver(tabsSync).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
 tabsSync();
-setTimeout(()=>{try{const op=new URLSearchParams(location.search).get("open");if(op==="trk")openTrk();else if(op==="reader")openReader();else if(op==="ziarah")openZiarah();}catch(e){}},500);
+setTimeout(()=>{try{const op=new URLSearchParams(location.search).get("open");if(op==="trk")openTrk();else if(op==="reader")openReader();else if(op==="ziarah")openZiarah();else if(op==="lapc")lcOpen();else if(op==="sos")sosOpen();}catch(e){}},500);
 })();
 </script>
 <script>
